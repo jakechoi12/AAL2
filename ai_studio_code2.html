@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AAL - Market Intelligence</title>
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        /* --- RESET & VARIABLES --- */
+        :root {
+            --bg-body: #f4f4f4;
+            --bg-white: #ffffff;
+            --text-main: #111111;
+            --text-sub: #666666;
+            --border-color: #dddddd;
+            --accent-blue: #2563eb;
+            --transition: all 0.3s ease;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            line-height: 1.5;
+        }
+
+        a { text-decoration: none; color: inherit; }
+        ul { list-style: none; }
+        button { border: none; background: none; cursor: pointer; font-family: inherit; }
+
+        /* --- LAYOUT UTILS --- */
+        .container { max-width: 1400px; margin: 0 auto; padding: 0 4vw; }
+        .section-padding { padding: 5rem 0; }
+        .serif-font { font-family: 'Playfair Display', serif; }
+
+        /* --- HEADER --- */
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1.2rem 4vw;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .logo { font-size: 1.5rem; font-weight: 900; letter-spacing: -0.05em; }
+        .logo span { color: var(--accent-blue); }
+
+        nav ul { display: flex; gap: 2.5rem; }
+        nav a { font-weight: 500; font-size: 0.95rem; color: var(--text-sub); transition: var(--transition); }
+        nav a:hover, nav a.active { color: var(--text-main); font-weight: 700; }
+
+        /* --- MARKET HUB SECTION (Main Focus) --- */
+        .market-hub {
+            background: var(--bg-body);
+            min-height: 100vh; /* Full screen feel */
+        }
+
+        /* 1. Controller (Tabs) */
+        .market-controller {
+            background: var(--bg-white);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 0;
+        }
+        .tab-container {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+        .tab-btn {
+            padding: 0.8rem 2rem;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-sub);
+            transition: var(--transition);
+            border: 1px solid transparent;
+        }
+        .tab-btn:hover { color: var(--text-main); background: #f9f9f9; }
+        .tab-btn.active {
+            background: var(--text-main);
+            color: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        /* 2. Content Area */
+        .market-content {
+            display: none; /* Hidden by default */
+            animation: fadeIn 0.6s ease;
+        }
+        .market-content.active { display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- PRODUCT: EXCHANGE RATE (Specific Feature) --- */
+        .product-grid {
+            display: grid;
+            grid-template-columns: 350px 1fr; /* Sidebar + Main */
+            gap: 2rem;
+            padding-top: 3rem;
+        }
+
+        /* Sidebar Menu for Economy Products */
+        .product-sidebar h3 { font-size: 0.9rem; text-transform: uppercase; color: var(--text-sub); margin-bottom: 1.5rem; letter-spacing: 1px; }
+        .product-menu li {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .product-menu li:hover, .product-menu li.selected {
+            background: white;
+            padding-left: 1.5rem;
+            font-weight: 600;
+            border-left: 3px solid var(--accent-blue);
+        }
+        .tag-beta { font-size: 0.7rem; background: #eee; padding: 2px 6px; border-radius: 4px; color: #555; }
+
+        /* Main Workspace (Exchange Rate Tool) */
+        .tool-workspace {
+            background: var(--bg-white);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 3rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.03);
+        }
+
+        .tool-header { margin-bottom: 2.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: flex-end;}
+        .tool-header h2 { font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem; }
+        .tool-header p { color: var(--text-sub); }
+        .live-badge { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #16a34a; font-weight: 600; background: #dcfce7; padding: 6px 12px; border-radius: 20px;}
+        .live-dot { width: 8px; height: 8px; background: #16a34a; border-radius: 50%; animation: pulse 2s infinite; }
+
+        /* Calculator UI */
+        .converter-box {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 1rem;
+            align-items: center;
+            background: #f8f9fa;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+        .input-group label { display: block; font-size: 0.85rem; color: var(--text-sub); margin-bottom: 0.5rem; font-weight: 600; }
+        .input-wrapper { display: flex; background: white; border: 1px solid var(--border-color); padding: 0.8rem; border-radius: 8px; align-items: center; }
+        .input-wrapper input { border: none; font-size: 1.2rem; font-weight: 700; width: 100%; color: var(--text-main); }
+        .currency-select { border: none; font-weight: 600; background: transparent; cursor: pointer; color: var(--text-sub); }
+        
+        .swap-btn {
+            width: 40px; height: 40px; border-radius: 50%; background: white; border: 1px solid var(--border-color);
+            display: flex; align-items: center; justify-content: center; color: var(--accent-blue); transition: var(--transition);
+        }
+        .swap-btn:hover { transform: rotate(180deg); border-color: var(--accent-blue); }
+
+        /* Chart Placeholder */
+        .chart-area {
+            height: 300px;
+            background: linear-gradient(180deg, rgba(37,99,235,0.05) 0%, rgba(255,255,255,0) 100%);
+            border-radius: 8px;
+            border: 1px dashed var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .chart-line {
+            position: absolute; bottom: 0; left: 0; right: 0; top: 50px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='none' stroke='%232563eb' stroke-width='3' d='M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,224C672,245,768,267,864,234.7C960,203,1056,117,1152,101.3C1248,85,1344,139,1392,165.3L1440,192'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-size: cover;
+            opacity: 0.6;
+        }
+
+        /* Sub-Info Cards */
+        .rate-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        .rate-card { background: white; padding: 1.2rem; border-radius: 8px; border: 1px solid var(--border-color); }
+        .rate-head { display: flex; justify-content: space-between; font-size: 0.9rem; color: var(--text-sub); margin-bottom: 0.5rem; }
+        .rate-val { font-size: 1.2rem; font-weight: 700; }
+        .rate-change { font-size: 0.8rem; font-weight: 500; }
+        .up { color: #16a34a; } .down { color: #dc2626; }
+
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(22, 163, 74, 0); } 100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); } }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .product-grid { grid-template-columns: 1fr; }
+            .product-sidebar { display: flex; overflow-x: auto; margin-bottom: 2rem; border-bottom: 1px solid var(--border-color); }
+            .product-sidebar h3 { display: none; }
+            .product-menu { display: flex; width: 100%; }
+            .product-menu li { white-space: nowrap; border: none; border-bottom: 3px solid transparent; }
+            .product-menu li.selected { border-left: none; border-bottom-color: var(--accent-blue); padding-left: 1rem; }
+        }
+        @media (max-width: 768px) {
+            .converter-box { grid-template-columns: 1fr; }
+            .swap-btn { margin: 0 auto; transform: rotate(90deg); }
+            .swap-btn:hover { transform: rotate(270deg); }
+            .rate-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="logo">AAL<span>.</span></div>
+        <nav>
+            <ul>
+                <li><a href="#" class="active">Market</a></li>
+                <li><a href="#">Tools</a></li>
+                <li><a href="#">News</a></li>
+                <li><a href="#">Report</a></li>
+            </ul>
+        </nav>
+        <!-- Simple menu for mobile could go here -->
+    </header>
+
+    <!-- Market Controller (Top Sub-Nav) -->
+    <div class="market-controller">
+        <div class="container tab-container">
+            <button class="tab-btn active" onclick="switchTab('economy')">Economy</button>
+            <button class="tab-btn" onclick="switchTab('logistics')">Logistics</button>
+        </div>
+    </div>
+
+    <!-- MAIN MARKET HUB -->
+    <section class="market-hub container">
+        
+        <!-- 1. ECONOMY PANEL (Active by default) -->
+        <div id="economy-panel" class="market-content active">
+            <div class="product-grid">
+                
+                <!-- Sidebar Navigation for Economy -->
+                <aside class="product-sidebar">
+                    <h3>Financial Products</h3>
+                    <ul class="product-menu">
+                        <li class="selected">Exchange Rate <i class="fas fa-chevron-right" style="font-size:0.8rem"></i></li>
+                        <li>Interest Rates</li>
+                        <li>Commodities (Oil/Gold)</li>
+                        <li>Cryptocurrency <span class="tag-beta">Beta</span></li>
+                        <li>Global Stocks</li>
+                    </ul>
+                </aside>
+
+                <!-- Product Workspace: Exchange Rate -->
+                <main class="tool-workspace">
+                    <div class="tool-header">
+                        <div>
+                            <span style="font-size: 0.85rem; font-weight: 600; color: var(--accent-blue); text-transform: uppercase;">Economy / FX</span>
+                            <h2>Exchange Rate</h2>
+                            <p>실시간 환율 조회 및 과거 데이터 분석 도구</p>
+                        </div>
+                        <div class="live-badge">
+                            <div class="live-dot"></div> Live Market Open
+                        </div>
+                    </div>
+
+                    <!-- Functional Converter UI -->
+                    <div class="converter-box">
+                        <div class="input-group">
+                            <label>Amount</label>
+                            <div class="input-wrapper">
+                                <span style="font-weight:600; color:#888; margin-right:5px;">$</span>
+                                <input type="number" value="1" id="amount-from">
+                                <select class="currency-select">
+                                    <option>USD</option>
+                                    <option>EUR</option>
+                                    <option>JPY</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button class="swap-btn"><i class="fas fa-exchange-alt"></i></button>
+
+                        <div class="input-group">
+                            <label>Converted to</label>
+                            <div class="input-wrapper">
+                                <span style="font-weight:600; color:#888; margin-right:5px;">₩</span>
+                                <input type="text" value="1,342.50" id="amount-to" readonly>
+                                <select class="currency-select">
+                                    <option>KRW</option>
+                                    <option>CNY</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Visualization Chart -->
+                    <div style="margin-bottom: 1rem; display:flex; justify-content:space-between; align-items:center;">
+                        <h4 style="font-size:1.1rem;">Trend Analysis (USD/KRW)</h4>
+                        <div style="font-size:0.85rem; color:#888;">
+                            <span style="margin-right:10px; color:var(--text-main); font-weight:600;">1D</span>
+                            <span style="margin-right:10px; cursor:pointer;">1W</span>
+                            <span style="margin-right:10px; cursor:pointer;">1M</span>
+                            <span style="cursor:pointer;">1Y</span>
+                        </div>
+                    </div>
+                    <div class="chart-area">
+                        <div class="chart-line"></div>
+                        <p style="position: relative; z-index: 1; color: var(--text-sub); font-size: 0.9rem;">Interactive Chart Visualization (API Connected)</p>
+                    </div>
+
+                    <!-- Key Indicators Grid -->
+                    <div class="rate-grid">
+                        <div class="rate-card">
+                            <div class="rate-head">USD/KRW <img src="https://flagcdn.com/16x12/us.png"></div>
+                            <div class="rate-val">1,342.50</div>
+                            <div class="rate-change up">▲ 5.20 (+0.39%)</div>
+                        </div>
+                        <div class="rate-card">
+                            <div class="rate-head">JPY/KRW <img src="https://flagcdn.com/16x12/jp.png"></div>
+                            <div class="rate-val">894.12</div>
+                            <div class="rate-change down">▼ 1.50 (-0.17%)</div>
+                        </div>
+                        <div class="rate-card">
+                            <div class="rate-head">EUR/USD <img src="https://flagcdn.com/16x12/eu.png"></div>
+                            <div class="rate-val">1.09</div>
+                            <div class="rate-change up">▲ 0.002 (+0.18%)</div>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </div>
+
+        <!-- 2. LOGISTICS PANEL (Placeholder for expansion) -->
+        <div id="logistics-panel" class="market-content">
+            <div class="product-grid">
+                <aside class="product-sidebar">
+                    <h3>Logistics Indices</h3>
+                    <ul class="product-menu">
+                        <li class="selected">SCFI (Shanghai)</li>
+                        <li>BDI (Baltic Dry)</li>
+                        <li>NCFI (Ningbo)</li>
+                        <li>Air Freight Rates</li>
+                    </ul>
+                </aside>
+                <main class="tool-workspace" style="display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; min-height:400px;">
+                    <i class="fas fa-ship" style="font-size:3rem; color:#ddd; margin-bottom:1.5rem;"></i>
+                    <h2 style="margin-bottom:0.5rem;">Logistics Dashboard</h2>
+                    <p style="color:var(--text-sub);">운임 지수 및 물류 데이터를 확인하려면 메뉴를 선택하세요.</p>
+                </main>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- Script -->
+    <script>
+        // Tab Switching Logic
+        function switchTab(tabName) {
+            // 1. Remove active class from all buttons and panels
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.market-content').forEach(panel => panel.classList.remove('active'));
+
+            // 2. Add active class to clicked button and target panel
+            event.target.classList.add('active');
+            document.getElementById(tabName + '-panel').classList.add('active');
+        }
+
+        // Simple Mock Calculator Logic
+        const amountFrom = document.getElementById('amount-from');
+        const amountTo = document.getElementById('amount-to');
+        const rate = 1342.50; // Fixed Mock Rate
+
+        amountFrom.addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value);
+            if (!isNaN(val)) {
+                amountTo.value = (val * rate).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            } else {
+                amountTo.value = "0.00";
+            }
+        });
+    </script>
+</body>
+</html>
