@@ -1,0 +1,72 @@
+/* =====================================================
+   Base Styles - Reset, Typography, Layout
+   ===================================================== */
+
+/* --- RESET --- */
+* { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    font-family: var(--font-main);
+    overflow-x: hidden;
+    line-height: 1.6;
+}
+
+a { text-decoration: none; color: inherit; cursor: pointer; }
+ul { list-style: none; }
+button { font-family: inherit; border: none; background: none; cursor: pointer; }
+
+/* --- TYPOGRAPHY --- */
+h1, h2, h3, h4 { font-weight: 700; letter-spacing: -0.02em; }
+
+.section-header {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    margin-bottom: 3rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;
+}
+.section-title { font-size: clamp(2rem, 4vw, 3.5rem); }
+.section-subtitle { color: var(--text-sub); font-size: 0.9rem; margin-bottom: 5px; letter-spacing: 1px; }
+
+/* --- LAYOUT UTILS --- */
+.container { max-width: 1800px; margin: 0 auto; padding: 0 3%; }
+
+/* 대형 화면에서 추가 확대 */
+@media (min-width: 1920px) {
+    .container { max-width: 2000px; padding: 0 2%; }
+}
+
+.section-padding { padding: 6rem 0; }
+.reveal { opacity: 0; transform: translateY(30px); transition: all 0.8s ease-out; }
+.reveal.active { opacity: 1; transform: translateY(0); }
+
+/* --- ANIMATIONS --- */
+@keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+@keyframes Data { 0% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.4); } 70% { box-shadow: 0 0 0 8px rgba(74, 222, 128, 0); } 100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0); } }
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes pulse-red {
+    0% {
+        transform: scale(0.5);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(1.5);
+        opacity: 0;
+    }
+}
+

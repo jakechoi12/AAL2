@@ -1,0 +1,37 @@
+/* =====================================================
+   Hero Section Styles
+   ===================================================== */
+
+.hero { 
+    height: 90vh; 
+    display: flex; 
+    flex-direction: column; 
+    justify-content: center; 
+    padding-top: 80px; 
+}
+
+.hero h1 { 
+    font-size: clamp(3.5rem, 9vw, 8rem); 
+    line-height: 1; 
+    margin-bottom: 2rem; 
+    opacity: 0; 
+    animation: fadeUp 1.2s forwards 0.3s; 
+}
+
+.hero h1 span { 
+    color: var(--accent-color); 
+}
+
+.hero p { 
+    font-size: 1.25rem; 
+    color: var(--text-sub); 
+    max-width: 500px; 
+    opacity: 0; 
+    animation: fadeUp 1.2s forwards 0.6s; 
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .hero h1 { font-size: 13vw; }
+}
+

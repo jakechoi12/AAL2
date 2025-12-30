@@ -15,6 +15,25 @@
     <script>
         // Google Maps API 키를 백엔드에서 가져옵니다
         let googleMapsApiKey = null;
+        // 전역 변수 선언 (body script에서도 사용)
+        window.isMapInitialized = false;
+        window.intersectionObserver = null;
+        
+        // checkAndInitMap 함수를 먼저 선언 (initMapsAPI에서 호출되므로)
+        // 실제 구현은 body script에서 이루어지므로 여기서는 선언만 함
+        function checkAndInitMap() {
+            // body script의 checkAndInitMap이 정의되어 있으면 호출
+            // 아직 정의되지 않았으면 나중에 재시도
+            if (typeof window.checkAndInitMap === 'function') {
+                window.checkAndInitMap();
+            } else {
+                // body script가 로드될 때까지 대기
+                setTimeout(checkAndInitMap, 100);
+            }
+        }
+        
+        // head script에서도 window에 바인딩 (body script가 로드되기 전에 호출될 수 있음)
+        window.checkAndInitMap = checkAndInitMap;
         
         // Google Maps API 로드 완료 콜백
         function initMapsAPI() {
@@ -49,1572 +68,19 @@
         // 페이지 로드 시 API 키 가져오기
         loadGoogleMapsAPI();
     </script>
-    <style>
-        /* --- RESET & VARIABLES --- */
-        :root {
-            --bg-color: #0b0b0d;
-            --text-main: #ffffff;
-            --text-sub: #949494;
-            --accent-color: #3b82f6; /* Blue */
-            --card-bg: #141416;
-            --border-color: rgba(255, 255, 255, 0.08);
-            --font-main: 'Inter', 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-            --transition: all 0.3s ease;
-
-            /* Currency Colors for Graph */
-            --c-usd: #3b82f6; /* Blue */
-            --c-jpy: #ec4899; /* Pink */
-            --c-cny: #eab308; /* Yellow */
-            --c-eur: #22c55e; /* Green */
-            --c-hkd: #a855f7; /* Purple */
-            --c-gbp: #06b6d4; /* Cyan */
-            --c-chf: #f59e0b; /* Amber */
-            --c-cad: #10b981; /* Emerald */
-            --c-rub: #ef4444; /* Red */
-
-            /* Trade Statistics Colors */
-            --c-trade-export: #3b82f6; /* Blue for Export */
-            --c-trade-import: #ef4444; /* Red for Import */
-            --c-trade-balance: #22c55e; /* Green for Trade Balance */
-            --c-trade-balance-surplus: #22c55e; /* Green for Surplus */
-            --c-trade-balance-deficit: #f97316; /* Orange for Deficit */
-            --c-trade-growth-export: #a855f7; /* Purple for Export Growth Rate */
-            --c-trade-growth-import: #14b8a6; /* Teal for Import Growth Rate */
-            --c-trade-growth-line: #a855f7; /* Purple for Growth Rate Line (unified) */
-            
-            /* Employment Statistics Colors */
-            --c-employment-unemployment: #ef4444; /* Red for Unemployment Rate */
-            --c-employment-employment: #22c55e; /* Green for Employment Rate */
-            --c-employment-employed: #3b82f6; /* Blue for Employed */
-            
-            /* International Interest Rates Colors */
-            --c-interest-kor: #3b82f6;  /* Blue - 한국 */
-            --c-interest-usa: #ef4444;  /* Red - 미국 */
-            --c-interest-jpn: #ec4899;  /* Pink - 일본 */
-            --c-interest-chn: #eab308;  /* Yellow - 중국 */
-            --c-interest-gbr: #06b6d4;  /* Cyan - 영국 */
-            --c-interest-deu: #22c55e;  /* Green - 독일 */
-            --c-interest-fra: #a855f7;  /* Purple - 프랑스 */
-            --c-interest-ita: #f59e0b;  /* Amber - 이탈리아 */
-            --c-interest-esp: #10b981;  /* Emerald - 스페인 */
-            --c-interest-can: #14b8a6;  /* Teal - 캐나다 */
-            --c-interest-aus: #f97316;  /* Orange - 호주 */
-            --c-interest-nzl: #84cc16;  /* Lime - 뉴질랜드 */
-            --c-interest-bra: #22c55e;  /* Green - 브라질 */
-            --c-interest-ind: #8b5cf6;  /* Violet - 인도 */
-            --c-interest-rus: #ef4444;  /* Red - 러시아 */
-
-            /* Inflation Colors */
-            --c-cpi-total: #3b82f6;      /* Blue - 총지수 */
-            --c-cpi-fresh: #22c55e;      /* Green - 신선식품 */
-            --c-cpi-industrial: #f59e0b;  /* Amber - 공업제품 */
-
-            /* GDP Colors */
-            --c-gdp-total: #3b82f6;      /* Blue - GDP 총액 */
-            --c-gdp-consumption: #22c55e; /* Green - 소비 */
-            --c-gdp-investment: #f59e0b;  /* Amber - 투자 */
-            
-            /* Global Alarm Colors */
-            --c-alert-critical: #ef4444; /* Red for Critical Alerts */
-            --c-alert-warning: #f59e0b;  /* Amber for Warning */
-            --c-alert-info: #3b82f6;     /* Blue for Info */
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            font-family: var(--font-main);
-            overflow-x: hidden;
-            line-height: 1.6;
-        }
-
-        a { text-decoration: none; color: inherit; cursor: pointer; }
-        ul { list-style: none; }
-        button { font-family: inherit; border: none; background: none; cursor: pointer; }
-
-        /* --- TYPOGRAPHY --- */
-        h1, h2, h3, h4 { font-weight: 700; letter-spacing: -0.02em; }
-        .section-header {
-            display: flex; justify-content: space-between; align-items: flex-end;
-            margin-bottom: 3rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;
-        }
-        .section-title { font-size: clamp(2rem, 4vw, 3.5rem); }
-        .section-subtitle { color: var(--text-sub); font-size: 0.9rem; margin-bottom: 5px; letter-spacing: 1px; }
-
-        /* --- HEADER --- */
-        header {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 1.5rem 5%; position: fixed; width: 100%; top: 0; z-index: 1000;
-            background: rgba(11, 11, 13, 0.85); backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border-color);
-        }
-        .logo { font-size: 2rem; font-weight: 900; letter-spacing: -0.05em; display: flex; align-items: center; }
-        .logo span { color: var(--accent-color); }
-        .logo .full-name {
-            font-size: 0.75rem; font-weight: 500; color: var(--text-sub); margin-left: 12px;
-            letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.8;
-            border-left: 1px solid var(--border-color); padding-left: 12px; line-height: 1;
-        }
-        nav ul { display: flex; gap: 2.5rem; }
-        nav li a { font-size: 0.95rem; color: var(--text-sub); transition: var(--transition); font-weight: 500; }
-        nav li a:hover, nav li a.active { color: var(--text-main); }
-        .nav-highlight { color: var(--accent-color) !important; }
-
-        /* --- LAYOUT UTILS --- */
-        .container { max-width: 1800px; margin: 0 auto; padding: 0 3%; }
-        
-        /* 대형 화면에서 추가 확대 */
-        @media (min-width: 1920px) {
-            .container { max-width: 2000px; padding: 0 2%; }
-        }
-        .section-padding { padding: 6rem 0; }
-        .reveal { opacity: 0; transform: translateY(30px); transition: all 0.8s ease-out; }
-        .reveal.active { opacity: 1; transform: translateY(0); }
-
-        /* --- HERO SECTION --- */
-        .hero { height: 90vh; display: flex; flex-direction: column; justify-content: center; padding-top: 80px; }
-        .hero h1 { font-size: clamp(3.5rem, 9vw, 8rem); line-height: 1; margin-bottom: 2rem; opacity: 0; animation: fadeUp 1.2s forwards 0.3s; }
-        .hero h1 span { color: var(--accent-color); }
-        .hero p { font-size: 1.25rem; color: var(--text-sub); max-width: 500px; opacity: 0; animation: fadeUp 1.2s forwards 0.6s; }
-
-        /* --- MARKET SECTION --- */
-        .market-controller { margin-bottom: 3rem; }
-        .tab-container { display: flex; gap: 1rem; }
-        .tab-btn {
-            color: var(--text-sub); border: 1px solid var(--border-color); padding: 0.8rem 2rem;
-            border-radius: 50px; font-size: 1rem; font-weight: 600; transition: var(--transition);
-        }
-        .tab-btn:hover { border-color: var(--text-main); color: var(--text-main); }
-        .tab-btn.active { background: var(--accent-color); border-color: var(--accent-color); color: #fff; }
-
-        .market-content { display: none; animation: fadeUp 0.6s ease; }
-        .market-content.active { display: block; }
-        .product-grid { display: grid; grid-template-columns: 280px 1fr; gap: 2rem; }
-
-        /* Sidebar */
-        .product-sidebar h3 { font-size: 0.8rem; text-transform: uppercase; color: var(--text-sub); margin-bottom: 1.5rem; letter-spacing: 1px; }
-        .product-menu li {
-            padding: 1rem; border-bottom: 1px solid var(--border-color); color: var(--text-sub);
-            cursor: pointer; transition: var(--transition); display: flex; justify-content: space-between; align-items: center;
-        }
-        .product-menu li:hover, .product-menu li.selected {
-            background: var(--card-bg); color: var(--text-main); padding-left: 1rem;
-            border-left: 2px solid var(--accent-color); font-weight: 600;
-        }
-
-        /* Workspace */
-        .tool-workspace {
-            background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px;
-            padding: 2.5rem; position: relative;
-        }
-        .tool-header {
-            margin-bottom: 2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1.5rem;
-            display: flex; justify-content: space-between; align-items: flex-end;
-        }
-        .tool-header h2 { font-size: 2rem; margin-bottom: 0.5rem; }
-        .live-badge {
-            font-size: 0.8rem; color: #4ade80; background: rgba(74, 222, 128, 0.1);
-            padding: 5px 12px; border-radius: 20px; display: flex; align-items: center; gap: 6px;
-        }
-        .live-dot { width: 8px; height: 8px; background: #4ade80; border-radius: 50%; animation: Data 2s infinite; }
-
-        /* --- NEW: FILTER & GRAPH CONTROLS --- */
-        .chart-controls {
-            display: flex; 
-            flex-wrap: wrap; 
-            gap: 2rem; 
-            justify-content: space-between; 
-            align-items: center; 
-            margin-bottom: 1.5rem;
-            width: 100%;
-            box-sizing: border-box;
-        }
-        
-        .filter-group { 
-            display: flex; 
-            align-items: center; 
-            gap: 10px; 
-            flex-wrap: wrap;
-            min-width: 0; /* flexbox에서 잘림 방지 */
-        }
-        .filter-label { font-size: 0.8rem; color: var(--text-sub); font-weight: 600; margin-right: 5px; flex-shrink: 0; }
-        
-        .date-input {
-            background: rgba(255,255,255,0.05); 
-            border: 1px solid var(--border-color); 
-            color: var(--text-main);
-            padding: 8px 12px; 
-            border-radius: 6px; 
-            font-family: inherit; 
-            font-size: 0.9rem;
-            min-width: 0; /* flexbox에서 잘림 방지 */
-            flex-shrink: 0; /* 날짜 입력 필드가 축소되지 않도록 */
-        }
-        .date-input::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
-
-        .period-btns { 
-            display: flex; 
-            background: rgba(255,255,255,0.05); 
-            border-radius: 6px; 
-            padding: 4px; 
-            flex-wrap: nowrap; /* 버튼이 줄바꿈되지 않도록 */
-            gap: 4px;
-            flex-shrink: 0; /* 버튼 그룹이 축소되지 않도록 */
-        }
-        .period-btn {
-            padding: 6px 12px; font-size: 0.8rem; color: var(--text-sub); border-radius: 4px; font-weight: 600;
-        }
-        .period-btn.active { background: var(--text-main); color: var(--bg-color); }
-
-        /* Currency Chips (Toggles) */
-        .currency-chips { display: flex; gap: 8px; flex-wrap: wrap; }
-        .country-chips { display: flex; gap: 8px; flex-wrap: wrap; }
-        .gdp-indicators-list { display: flex; flex-direction: column; gap: 12px; }
-        .gdp-indicator-item { display: flex; align-items: center; gap: 12px; }
-        .gdp-indicator-btn { flex: 1; }
-        .currency-buttons { display: flex; gap: 4px; }
-        .currency-btn {
-            padding: 4px 12px; border-radius: 16px; font-size: 0.75rem; font-weight: 600;
-            border: 1px solid var(--border-color); color: var(--text-sub); 
-            background: transparent; transition: var(--transition);
-            cursor: pointer;
-        }
-        .currency-btn:hover { border-color: var(--text-main); color: var(--text-main); }
-        .currency-btn.active {
-            background: rgba(59, 130, 246, 0.2); border-color: var(--c-gdp-total); 
-            color: var(--c-gdp-total);
-        }
-
-        /* GDP Flyout Menu - 사이드바 옆에 작은 서브메뉴 */
-        .product-sidebar {
-            position: relative;
-        }
-        
-        #gdp-submenu {
-            position: absolute;
-            left: 100%; /* 사이드바 오른쪽 */
-            top: 0;
-            margin-left: 0.5rem;
-            z-index: 100;
-            display: none;
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 1rem;
-            min-width: 250px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-        }
-        
-        #gdp-submenu.show {
-            display: block;
-        }
-        
-        .gdp-submenu-header {
-            margin-bottom: 0.75rem;
-            padding-bottom: 0.75rem;
-            border-bottom: 1px solid var(--border-color);
-        }
-        
-        .gdp-submenu-header h3 {
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: var(--text-main);
-            margin: 0;
-        }
-        
-        .gdp-submenu-items {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-        
-        .gdp-submenu-item {
-            display: flex;
-            align-items: center;
-        }
-        
-        .gdp-submenu-btn {
-            width: 100%;
-            text-align: left;
-            background: none;
-            border: none;
-            color: var(--text-main);
-            cursor: pointer;
-            padding: 0.75rem;
-            border-radius: 8px;
-            transition: var(--transition);
-            font-size: 0.9rem;
-            font-weight: 500;
-        }
-        
-        .gdp-submenu-btn:hover {
-            background: rgba(59, 130, 246, 0.1);
-            color: var(--accent-color);
-        }
-        
-        .submenu-item-name {
-            font-size: 0.9rem;
-            font-weight: 500;
-        }
-        .gdp-submenu-header {
-            margin-bottom: 2rem;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 1.5rem;
-        }
-        .gdp-submenu-header h2 {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-        }
-        .gdp-submenu-header p {
-            color: var(--text-sub);
-            font-size: 0.9rem;
-        }
-        .gdp-submenu-items {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-        .gdp-submenu-item {
-            display: flex;
-            align-items: center;
-            padding: 1rem;
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            transition: var(--transition);
-        }
-        .gdp-submenu-item:hover {
-            border-color: var(--accent-color);
-            background: rgba(59, 130, 246, 0.05);
-        }
-        .gdp-submenu-btn {
-            width: 100%;
-            text-align: left;
-            background: none;
-            border: none;
-            color: var(--text-main);
-            cursor: pointer;
-            padding: 0;
-            display: flex;
-            align-items: center;
-        }
-        .submenu-item-name {
-            font-size: 1rem;
-            font-weight: 600;
-        }
-        .gdp-panel-currency {
-            display: flex;
-            gap: 8px;
-        }
-        .chip {
-            padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;
-            border: 1px solid var(--border-color); color: var(--text-sub); transition: var(--transition);
-            display: flex; align-items: center; gap: 6px;
-        }
-        .chip:hover { border-color: var(--text-main); color: var(--text-main); }
-        
-        /* Chip Active States (Dynamic Colors) */
-        .chip.active[data-curr="USD"] { background: rgba(59, 130, 246, 0.2); border-color: var(--c-usd); color: var(--c-usd); }
-        .chip.active[data-curr="JPY"] { background: rgba(236, 72, 153, 0.2); border-color: var(--c-jpy); color: var(--c-jpy); }
-        .chip.active[data-curr="CNY"] { background: rgba(234, 179, 8, 0.2); border-color: var(--c-cny); color: var(--c-cny); }
-        .chip.active[data-curr="EUR"] { background: rgba(34, 197, 94, 0.2); border-color: var(--c-eur); color: var(--c-eur); }
-        .chip.active[data-curr="GBP"] { background: rgba(6, 182, 212, 0.2); border-color: var(--c-gbp); color: var(--c-gbp); }
-        .chip.active[data-curr="CHF"] { background: rgba(245, 158, 11, 0.2); border-color: var(--c-chf); color: var(--c-chf); }
-        .chip.active[data-curr="HKD"] { background: rgba(168, 85, 247, 0.2); border-color: var(--c-hkd); color: var(--c-hkd); }
-        .chip.active[data-curr="CAD"] { background: rgba(16, 185, 129, 0.2); border-color: var(--c-cad); color: var(--c-cad); }
-        .chip.active[data-curr="RUB"] { background: rgba(239, 68, 68, 0.2); border-color: var(--c-rub); color: var(--c-rub); }
-        
-        /* Trade Indicator Chip Active States */
-        .chip.active[data-indicator="EXPORT"] { 
-            background: rgba(59, 130, 246, 0.2); 
-            border-color: var(--c-trade-export); 
-            color: var(--c-trade-export); 
-        }
-        .chip.active[data-indicator="IMPORT"] { 
-            background: rgba(239, 68, 68, 0.2); 
-            border-color: var(--c-trade-import); 
-            color: var(--c-trade-import); 
-        }
-        .chip.active[data-indicator="TRADE_BALANCE"] { 
-            background: rgba(34, 197, 94, 0.2); 
-            border-color: var(--c-trade-balance); 
-            color: var(--c-trade-balance); 
-        }
-        .chip.active[data-indicator="BALANCE"] { 
-            background: rgba(34, 197, 94, 0.2); 
-            border-color: var(--c-trade-balance-surplus); 
-            color: var(--c-trade-balance-surplus); 
-        }
-        
-        .chip-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
-
-        /* Chart Header (Yahoo Finance Style) */
-        .chart-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 2rem;
-            padding-bottom: 1.5rem;
-            border-bottom: 1px solid var(--border-color);
-            flex-wrap: wrap;
-            gap: 2rem;
-            animation: fadeInUp 0.6s ease-out;
-        }
-        .chart-title-section {
-            flex: 1;
-            min-width: 250px;
-        }
-        .chart-main-title {
-            font-size: 1rem;
-            color: var(--text-sub);
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        .chart-main-value {
-            font-size: clamp(2.5rem, 5vw, 3.5rem);
-            font-weight: 700;
-            color: var(--text-main);
-            line-height: 1;
-            margin-bottom: 0.5rem;
-            transition: color 0.3s ease;
-        }
-        .chart-change {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 1.2rem;
-            font-weight: 600;
-        }
-        .change-value,
-        .change-percent {
-            transition: color 0.3s ease;
-        }
-        .change-value.up,
-        .change-percent.up {
-            color: #ef4444; /* Red for increase */
-        }
-        .change-value.down,
-        .change-percent.down {
-            color: #22c55e; /* Green for decrease */
-        }
-        .chart-stats {
-            display: flex;
-            gap: 2rem;
-            flex-wrap: wrap;
-        }
-        .stat-item {
-            display: flex;
-            flex-direction: column;
-            gap: 0.25rem;
-            min-width: 80px;
-        }
-        .stat-label {
-            font-size: 0.85rem;
-            color: var(--text-sub);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        .stat-value {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--text-main);
-            transition: all 0.3s ease;
-        }
-
-        /* Chart Area */
-        .chart-area {
-            height: clamp(350px, 50vh, 500px); background: rgba(0,0,0,0.2); border-radius: 12px; border: 1px solid var(--border-color);
-            margin-bottom: 2rem; position: relative; overflow: visible; display: flex; align-items: flex-end;
-            padding: 20px 0 50px 40px; /* space for axis and x-axis labels */
-        }
-        .chart-svg { width: 100%; height: 100%; overflow: visible; }
-        .chart-grid-line { 
-            stroke: rgba(255,255,255,0.08); 
-            stroke-width: 1;
-            stroke-dasharray: 2, 2; /* 점선 스타일 */
-        }
-        .chart-yaxis-label {
-            font-size: 0.75rem;
-            fill: var(--text-sub);
-            text-anchor: end;
-            dominant-baseline: middle;
-        }
-        
-        /* 오른쪽 Y축 라벨 스타일 */
-        #trade-y-axis-labels-right .chart-yaxis-label {
-            text-anchor: start;
-            fill: var(--c-trade-growth-line);
-            font-size: 11px;
-            font-weight: 600;
-        }
-        
-        /* 막대 그래프 스타일 */
-        .trade-bar {
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            shape-rendering: geometricPrecision;
-        }
-        
-        .trade-bar:hover {
-            filter: brightness(1.1);
-            transform-origin: center bottom;
-            transform: scaleY(1.02);
-            opacity: 0.9;
-        }
-        
-        .trade-bar-export {
-            fill: var(--c-trade-export);
-        }
-        
-        .trade-bar-import {
-            fill: var(--c-trade-import);
-        }
-
-        /* X Axis Labels */
-        .chart-xaxis-label {
-            fill: rgba(255, 255, 255, 0.55);
-            font-size: 12px;
-            pointer-events: none;
-        }
-        
-        /* Dynamic Paths */
-        .chart-path { 
-            fill: none; 
-            stroke-width: 2.5; 
-            stroke-linecap: round; 
-            stroke-linejoin: round; 
-            opacity: 0; 
-            transition: opacity 0.5s ease, stroke-width 0.3s ease;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
-        }
-        .chart-path.visible { opacity: 1; }
-        .chart-path:hover { stroke-width: 3.5; }
-        
-        /* Growth Rate Data Points */
-        .trade-growth-point {
-            fill: var(--bg-card);
-            stroke-width: 2;
-            r: 4;
-            transition: r 0.2s;
-            cursor: pointer;
-        }
-        .trade-growth-point:hover {
-            r: 6;
-        }
-        
-        /* Chart Animations */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        .chart-main-value,
-        .stat-value {
-            animation: fadeIn 0.8s ease-out;
-        }
-        
-        /* War Room - Global Alarm Styles */
-        .war-room-container {
-            position: relative;
-        }
-        
-        /* Pulse Marker Animation */
-        .pulse-marker {
-            width: 12px;
-            height: 12px;
-            background: var(--c-alert-critical);
-            border-radius: 50%;
-            position: relative;
-            box-shadow: 0 0 10px var(--c-alert-critical);
-        }
-        
-        .pulse-marker::after {
-            content: '';
-            position: absolute;
-            top: -14px;
-            left: -14px;
-            width: 40px;
-            height: 40px;
-            border: 2px solid var(--c-alert-critical);
-            border-radius: 50%;
-            animation: pulse-red 2s infinite;
-            opacity: 0;
-        }
-        
-        @keyframes pulse-red {
-            0% {
-                transform: scale(0.5);
-                opacity: 0.8;
-            }
-            100% {
-                transform: scale(1.5);
-                opacity: 0;
-            }
-        }
-        
-        /* Fade In Animation */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .alert-card {
-            animation: fadeInUp 0.3s ease-out;
-            animation-fill-mode: both;
-        }
-        
-        /* Stagger animation for cards */
-        .alert-card:nth-child(1) { animation-delay: 0.05s; }
-        .alert-card:nth-child(2) { animation-delay: 0.1s; }
-        .alert-card:nth-child(3) { animation-delay: 0.15s; }
-        .alert-card:nth-child(4) { animation-delay: 0.2s; }
-        .alert-card:nth-child(5) { animation-delay: 0.25s; }
-        .alert-card:nth-child(n+6) { animation-delay: 0.3s; }
-        
-        /* Severity Colors */
-        :root {
-            --severity-extreme: #991b1b;
-            --severity-extreme-bg: #7f1d1d;
-            --severity-severe: #dc2626;
-            --severity-severe-bg: #991b1b;
-            --severity-high: #ea580c;
-            --severity-high-bg: #c2410c;
-            --severity-moderate: #f59e0b;
-            --severity-moderate-bg: #d97706;
-            --severity-low: #3b82f6;
-            --severity-low-bg: #2563eb;
-        }
-        
-        /* Severity Legend */
-        .severity-legend {
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 20px;
-            border: 1px solid var(--border-color);
-        }
-        
-        .legend-title {
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: var(--text-main);
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        
-        .legend-items {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.75rem;
-        }
-        
-        .legend-badge {
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-weight: 600;
-            font-size: 0.65rem;
-            white-space: nowrap;
-            min-width: 80px;
-            text-align: center;
-        }
-        
-        .legend-badge.extreme { background: var(--severity-extreme); color: white; }
-        .legend-badge.severe { background: var(--severity-severe); color: white; }
-        .legend-badge.high { background: var(--severity-high); color: white; }
-        .legend-badge.moderate { background: var(--severity-moderate); color: white; }
-        .legend-badge.low { background: var(--severity-low); color: white; }
-        
-        .legend-range {
-            color: var(--text-sub);
-            min-width: 80px;
-        }
-        
-        .legend-desc {
-            color: var(--text-sub);
-            flex: 1;
-        }
-        
-        /* Alert Controls (Filters & Sort) */
-        .alert-controls {
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 15px;
-            border: 1px solid var(--border-color);
-        }
-        
-        .control-group {
-            margin-bottom: 12px;
-        }
-        
-        .control-group:last-child {
-            margin-bottom: 0;
-        }
-        
-        .control-label {
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--text-sub);
-            margin-bottom: 6px;
-            display: block;
-        }
-        
-        .filter-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-        }
-        
-        .filter-btn {
-            padding: 6px 12px;
-            border: 1px solid var(--border-color);
-            background: transparent;
-            color: var(--text-sub);
-            border-radius: 6px;
-            font-size: 0.7rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-weight: 600;
-        }
-        
-        .filter-btn:hover {
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--text-main);
-        }
-        
-        .filter-btn.active {
-            background: var(--accent-color);
-            color: white;
-            border-color: var(--accent-color);
-        }
-        
-        .control-select {
-            width: 100%;
-            padding: 8px 12px;
-            background: #f8fafc;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            color: #1e293b;
-            font-size: 0.8rem;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .control-select:hover {
-            background: #e2e8f0;
-        }
-        
-        .control-select:focus {
-            outline: none;
-            border-color: var(--accent-color);
-            background: #ffffff;
-        }
-        
-        .control-select option {
-            background: #ffffff;
-            color: #1e293b;
-            padding: 8px;
-        }
-        
-        /* Alert Card Styles */
-        .alert-card {
-            padding: 15px;
-            border-bottom: 1px solid var(--border-color);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer;
-            border-radius: 8px;
-            margin-bottom: 4px;
-            border-left: 3px solid transparent;
-        }
-        
-        .alert-card:hover {
-            background: rgba(255, 255, 255, 0.05);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
-        
-        .alert-card:last-child {
-            border-bottom: none;
-        }
-        
-        .alert-card.extreme { border-left-color: var(--severity-extreme); }
-        .alert-card.severe { border-left-color: var(--severity-severe); }
-        .alert-card.high { border-left-color: var(--severity-high); }
-        .alert-card.moderate { border-left-color: var(--severity-moderate); }
-        .alert-card.low { border-left-color: var(--severity-low); }
-        
-        .alert-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 10px;
-        }
-        
-        .severity-badge {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.65rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .severity-badge.extreme { background: var(--severity-extreme-bg); color: white; }
-        .severity-badge.severe { background: var(--severity-severe-bg); color: white; }
-        .severity-badge.high { background: var(--severity-high-bg); color: white; }
-        .severity-badge.moderate { background: var(--severity-moderate-bg); color: white; }
-        .severity-badge.low { background: var(--severity-low-bg); color: white; }
-        
-        .alert-meta {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 2px;
-            font-size: 0.7rem;
-            color: var(--text-sub);
-        }
-        
-        .alert-category {
-            font-size: 0.65rem;
-            padding: 2px 6px;
-            border-radius: 3px;
-            background: rgba(255, 255, 255, 0.1);
-        }
-        
-        .alert-content {
-            margin-bottom: 8px;
-        }
-        
-        .alert-card-title {
-            color: var(--text-main);
-            font-size: 0.85rem;
-            font-weight: 600;
-            margin-bottom: 4px;
-            line-height: 1.4;
-        }
-        
-        .alert-card-name {
-            color: var(--text-main);
-            font-size: 0.85rem;
-            margin: 5px 0;
-            line-height: 1.4;
-        }
-        
-        .alert-footer {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            font-size: 0.7rem;
-            color: var(--text-sub);
-        }
-        
-        .alert-location {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-        
-        .alert-actors {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            flex-wrap: wrap;
-        }
-        
-        .alert-card-scale {
-            color: var(--text-sub);
-            font-size: 0.75rem;
-            margin-top: 4px;
-        }
-        
-        /* Map Loading State */
-        #map-loading {
-            transition: opacity 0.3s ease;
-        }
-        
-        #map-loading.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-        
-        /* Alert Detail Modal */
-        .alert-modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(4px);
-            z-index: 9999;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .alert-modal-overlay.active {
-            display: flex;
-            opacity: 1;
-        }
-        
-        .alert-modal {
-            background: var(--card-bg);
-            border-radius: 16px;
-            max-width: 700px;
-            width: 90%;
-            max-height: 85vh;
-            overflow-y: auto;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-            border: 1px solid var(--border-color);
-            transform: scale(0.9);
-            transition: transform 0.3s ease;
-        }
-        
-        .alert-modal-overlay.active .alert-modal {
-            transform: scale(1);
-        }
-        
-        .modal-header {
-            padding: 24px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 16px;
-        }
-        
-        .modal-severity-info {
-            flex: 1;
-        }
-        
-        .modal-severity-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-weight: 700;
-            font-size: 0.9rem;
-            margin-bottom: 8px;
-        }
-        
-        .modal-severity-badge.extreme { background: var(--severity-extreme); color: white; }
-        .modal-severity-badge.severe { background: var(--severity-severe); color: white; }
-        .modal-severity-badge.high { background: var(--severity-high); color: white; }
-        .modal-severity-badge.moderate { background: var(--severity-moderate); color: white; }
-        .modal-severity-badge.low { background: var(--severity-low); color: white; }
-        
-        .modal-severity-meaning {
-            font-size: 0.85rem;
-            color: var(--text-sub);
-        }
-        
-        .modal-close-btn {
-            background: none;
-            border: none;
-            color: var(--text-sub);
-            font-size: 1.5rem;
-            cursor: pointer;
-            padding: 4px;
-            line-height: 1;
-            transition: color 0.2s;
-        }
-        
-        .modal-close-btn:hover {
-            color: var(--text-main);
-        }
-        
-        .modal-body {
-            padding: 24px;
-        }
-        
-        .modal-section {
-            margin-bottom: 24px;
-        }
-        
-        .modal-section:last-child {
-            margin-bottom: 0;
-        }
-        
-        .modal-section-title {
-            font-size: 0.9rem;
-            font-weight: 700;
-            color: var(--text-main);
-            margin-bottom: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .modal-event-title {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: var(--text-main);
-            margin-bottom: 16px;
-            line-height: 1.4;
-        }
-        
-        .modal-meta-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 12px;
-            margin-bottom: 16px;
-        }
-        
-        .modal-meta-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.85rem;
-            color: var(--text-sub);
-        }
-        
-        .modal-actors {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            padding: 16px;
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 12px;
-        }
-        
-        .modal-actor-card {
-            flex: 1;
-            text-align: center;
-        }
-        
-        .modal-actor-flag {
-            font-size: 2rem;
-            margin-bottom: 8px;
-        }
-        
-        .modal-actor-name {
-            font-weight: 600;
-            color: var(--text-main);
-            margin-bottom: 4px;
-        }
-        
-        .modal-actor-role {
-            font-size: 0.75rem;
-            color: var(--text-sub);
-        }
-        
-        .modal-relationship {
-            text-align: center;
-        }
-        
-        .modal-relationship-arrow {
-            font-size: 1.5rem;
-            margin-bottom: 4px;
-        }
-        
-        .modal-relationship-type {
-            font-size: 0.75rem;
-            color: var(--text-sub);
-        }
-        
-        .modal-stats-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-        }
-        
-        .modal-stat-card {
-            padding: 12px;
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 8px;
-            text-align: center;
-        }
-        
-        .modal-stat-label {
-            font-size: 0.75rem;
-            color: var(--text-sub);
-            margin-bottom: 4px;
-        }
-        
-        .modal-stat-value {
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: var(--text-main);
-        }
-        
-        .modal-source-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 12px 20px;
-            background: var(--accent-color);
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
-        
-        .modal-source-link:hover {
-            background: var(--accent-hover);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
-        }
-        
-        /* Timeline View */
-        .view-toggle {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 15px;
-        }
-        
-        .view-btn {
-            flex: 1;
-            padding: 8px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--border-color);
-            color: var(--text-sub);
-            border-radius: 6px;
-            font-size: 0.75rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-weight: 600;
-        }
-        
-        .view-btn:hover {
-            background: rgba(255, 255, 255, 0.05);
-        }
-        
-        .view-btn.active {
-            background: var(--accent-color);
-            color: white;
-            border-color: var(--accent-color);
-        }
-        
-        .timeline-view {
-            display: none;
-            flex-direction: column;
-            gap: 16px;
-            overflow-y: auto;
-            flex: 1;
-        }
-        
-        .timeline-view.active {
-            display: flex;
-        }
-        
-        .timeline-date-group {
-            border-left: 3px solid var(--accent-color);
-            padding-left: 16px;
-        }
-        
-        .timeline-date-header {
-            font-size: 0.9rem;
-            font-weight: 700;
-            color: var(--accent-color);
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .timeline-date-count {
-            font-size: 0.7rem;
-            padding: 2px 8px;
-            background: var(--accent-color);
-            color: white;
-            border-radius: 12px;
-        }
-        
-        .timeline-events {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        
-        .timeline-event {
-            padding: 12px;
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 8px;
-            border-left: 3px solid transparent;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .timeline-event:hover {
-            background: rgba(255, 255, 255, 0.05);
-            transform: translateX(4px);
-        }
-        
-        .timeline-event.extreme { border-left-color: var(--severity-extreme); }
-        .timeline-event.severe { border-left-color: var(--severity-severe); }
-        .timeline-event.high { border-left-color: var(--severity-high); }
-        .timeline-event.moderate { border-left-color: var(--severity-moderate); }
-        .timeline-event.low { border-left-color: var(--severity-low); }
-        
-        .timeline-event-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 6px;
-        }
-        
-        .timeline-event-time {
-            font-size: 0.7rem;
-            color: var(--text-sub);
-        }
-        
-        .timeline-event-title {
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--text-main);
-            margin-bottom: 4px;
-        }
-        
-        .timeline-event-location {
-            font-size: 0.7rem;
-            color: var(--text-sub);
-        }
-        
-        /* Country Dashboard */
-        .country-dashboard {
-            display: none;
-            flex-direction: column;
-            gap: 12px;
-            overflow-y: auto;
-            flex: 1;
-        }
-        
-        .country-dashboard.active {
-            display: flex;
-        }
-        
-        .country-card {
-            padding: 12px;
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 8px;
-            border-left: 3px solid var(--accent-color);
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .country-card:hover {
-            background: rgba(255, 255, 255, 0.05);
-            transform: translateX(4px);
-        }
-        
-        .country-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-        
-        .country-name {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 600;
-            color: var(--text-main);
-        }
-        
-        .country-flag {
-            font-size: 1.5rem;
-        }
-        
-        .country-count {
-            font-size: 0.75rem;
-            padding: 3px 10px;
-            background: var(--accent-color);
-            color: white;
-            border-radius: 12px;
-            font-weight: 600;
-        }
-        
-        .country-stats {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-            font-size: 0.7rem;
-        }
-        
-        .country-stat {
-            text-align: center;
-            padding: 6px;
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 4px;
-        }
-        
-        .country-stat-label {
-            color: var(--text-sub);
-            margin-bottom: 2px;
-        }
-        
-        .country-stat-value {
-            font-weight: 700;
-            color: var(--text-main);
-        }
-        
-        .country-stat-value.extreme { color: var(--severity-extreme); }
-        .country-stat-value.severe { color: var(--severity-severe); }
-        .country-stat-value.high { color: var(--severity-high); }
-        
-        /* Chart Tooltip Styles */
-        .chart-tooltip {
-            position: fixed; /* 컨테이너(overflow/transform) 영향 차단: 뷰포트 기준 */
-            background: rgba(30, 41, 59, 0.95);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 12px;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.2s ease, transform 0.2s ease;
-            z-index: 10000; /* header(1000)보다 위 */
-            left: 0;
-            top: 0;
-            transform: translate3d(0, 0, 0);
-            will-change: transform, opacity;
-            contain: layout paint;
-            min-width: 180px;
-            max-width: min(340px, calc(100vw - 20px));
-            max-height: 70vh; /* 화면 높이의 70%를 넘지 않도록 */
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden; /* 내용이 넘치면 숨김 */
-        }
-        
-        /* Tooltip Row Styles */
-        .tooltip-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 4px;
-            font-size: 0.85rem;
-            gap: 15px;
-        }
-        .tooltip-value {
-            font-weight: 700;
-            color: #fff;
-        }
-        .tooltip-label {
-            color: #94a3b8;
-            font-size: 0.8rem;
-        }
-        .chart-tooltip.visible {
-            opacity: 1;
-        }
-        .chart-tooltip-date {
-            font-size: 0.85rem;
-            color: var(--text-sub);
-            margin-bottom: 0.75rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            flex-shrink: 0; /* 날짜 영역은 고정 */
-        }
-        #tooltip-content {
-            overflow-y: auto; /* 스크롤 가능 */
-            overflow-x: hidden;
-            max-height: calc(70vh - 80px); /* 날짜 영역 제외한 높이 */
-            padding-right: 4px; /* 스크롤바 공간 */
-        }
-        /* 스크롤바 스타일링 */
-        #tooltip-content::-webkit-scrollbar {
-            width: 6px;
-        }
-        #tooltip-content::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 3px;
-        }
-        #tooltip-content::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 3px;
-        }
-        #tooltip-content::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-        .chart-tooltip-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.4rem 0;
-            font-size: 0.9rem;
-            flex-shrink: 0; /* 항목이 잘리지 않도록 */
-        }
-        .chart-tooltip-currency {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .chart-tooltip-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            flex-shrink: 0; /* 도트 크기 고정 */
-        }
-        .chart-tooltip-value {
-            font-weight: 600;
-            color: var(--text-main);
-            white-space: nowrap; /* 값이 한 줄로 표시 */
-            margin-left: 0.5rem; /* 통화 코드와 간격 */
-        }
-        
-        /* Calculator UI */
-        .converter-box {
-            display: flex; gap: 1rem; align-items: center; background: rgba(255,255,255,0.03);
-            padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem;
-        }
-        .input-group { flex: 1; }
-        .input-group label { display: block; font-size: 0.8rem; color: var(--text-sub); margin-bottom: 0.5rem; }
-        .input-wrapper { display: flex; background: var(--bg-color); border: 1px solid var(--border-color); padding: 0.8rem; border-radius: 8px; align-items: center; }
-        .input-wrapper input { background: transparent; border: none; color: var(--text-main); font-size: 1.2rem; font-weight: 700; width: 100%; }
-        .currency-select { background: transparent; border: none; font-weight: 600; color: var(--accent-color); cursor: pointer; text-align: right; }
-        .currency-select option { background: var(--card-bg); color: var(--text-main); }
-        .swap-btn { width: 45px; height: 45px; border-radius: 50%; background: var(--border-color); color: var(--text-main); display: flex; align-items: center; justify-content: center; transition: var(--transition); }
-        .swap-btn:hover { background: var(--accent-color); transform: rotate(180deg); }
-
-        /* Currency Rate Table */
-        .currency-rates-table {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-        }
-        .currency-rates-header {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);
-        }
-        .currency-rates-header h3 {
-            font-size: 1.1rem; font-weight: 600; color: var(--text-main);
-        }
-        .currency-rates-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;
-        }
-        .currency-rate-item {
-            background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px;
-            padding: 1rem; transition: var(--transition);
-        }
-        .currency-rate-item:hover {
-            border-color: var(--accent-color); transform: translateY(-2px);
-        }
-        .currency-rate-header {
-            display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;
-        }
-        .currency-code {
-            font-size: 1rem; font-weight: 700; color: var(--text-main);
-        }
-        .currency-value {
-            font-size: 1.5rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.5rem;
-        }
-        .currency-change {
-            display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; font-weight: 600;
-        }
-        .currency-change.up {
-            color: #ef4444; /* Red */
-        }
-        .currency-change.down {
-            color: #22c55e; /* Green */
-        }
-        .currency-change-icon {
-            font-size: 0.8rem;
-        }
-        .currency-change-value {
-            display: flex; align-items: center; gap: 0.3rem;
-        }
-        .currency-change-percent {
-            font-size: 0.85rem; opacity: 0.8;
-        }
-
-        /* Tools Grid */
-        .tools-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
-        .tool-app-card { background: var(--card-bg); border: 1px solid var(--border-color); padding: 2.5rem; border-radius: 12px; transition: var(--transition); display: flex; flex-direction: column; justify-content: space-between; min-height: 280px; cursor: pointer; position: relative; overflow: hidden; }
-        .tool-app-card:hover { transform: translateY(-5px); border-color: var(--accent-color); box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5); }
-        .tool-icon-circle { width: 60px; height: 60px; border-radius: 50%; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: var(--text-main); margin-bottom: 2rem; transition: var(--transition); }
-        .tool-app-card:hover .tool-icon-circle { background: var(--accent-color); color: white; }
-        .tool-content h3 { font-size: 1.5rem; margin-bottom: 0.8rem; }
-        .tool-content p { color: var(--text-sub); font-size: 0.95rem; line-height: 1.5; }
-        .tool-arrow { position: absolute; bottom: 2.5rem; right: 2.5rem; font-size: 1.2rem; opacity: 0; transform: translateX(-10px); transition: var(--transition); color: var(--accent-color); }
-        .tool-app-card:hover .tool-arrow { opacity: 1; transform: translateX(0); }
-
-        /* News */
-        .news-list { display: flex; flex-direction: column; }
-        .news-item { display: grid; grid-template-columns: 150px 1fr auto; gap: 2rem; padding: 2.5rem 0; border-bottom: 1px solid var(--border-color); align-items: baseline; transition: var(--transition); color: var(--text-sub); }
-        .news-item:hover { color: var(--text-main); padding-left: 20px; border-bottom-color: var(--text-main); }
-        .news-date { font-size: 0.9rem; font-family: monospace; opacity: 0.7; }
-        .news-info h3 { font-size: 1.8rem; margin-bottom: 0.5rem; font-weight: 600; }
-        .news-tag { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; border: 1px solid var(--border-color); padding: 5px 10px; border-radius: 20px; margin-left: auto; }
-
-        /* Footer */
-        footer { padding: 4rem 5%; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; color: var(--text-sub); font-size: 0.9rem; }
-
-        @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
-        @keyframes Data { 0% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.4); } 70% { box-shadow: 0 0 0 8px rgba(74, 222, 128, 0); } 100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0); } }
-
-        @media (max-width: 1024px) {
-            .product-grid { grid-template-columns: 1fr; }
-            .product-sidebar { display: flex; overflow-x: auto; margin-bottom: 2rem; border-bottom: 1px solid var(--border-color); }
-            .product-sidebar h3 { display: none; }
-            .product-menu { display: flex; width: 100%; }
-            .product-menu li { border: none; padding: 1rem; white-space: nowrap; }
-            .chart-controls { flex-direction: column; align-items: flex-start; }
-        }
-        @media (max-width: 768px) {
-            .hero h1 { font-size: 13vw; }
-            .tools-grid { grid-template-columns: 1fr; }
-            .news-item { grid-template-columns: 1fr; gap: 1rem; }
-            .converter-box { flex-direction: column; }
-            .swap-btn { transform: rotate(90deg); }
-            nav { display: none; }
-            .logo .full-name { display: none; }
-            
-            .chart-controls {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 1rem;
-            }
-            
-            .filter-group {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 0.75rem;
-            }
-            
-            .filter-group .period-btns {
-                width: 100%;
-                justify-content: center;
-            }
-        }
-    </style>
+    <!-- External CSS Files -->
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/components/header.css">
+    <link rel="stylesheet" href="css/components/buttons.css">
+    <link rel="stylesheet" href="css/components/charts.css">
+    <link rel="stylesheet" href="css/components/cards.css">
+    <link rel="stylesheet" href="css/components/modals.css">
+    <link rel="stylesheet" href="css/sections/hero.css">
+    <link rel="stylesheet" href="css/sections/market.css">
+    <link rel="stylesheet" href="css/sections/tools.css">
+    <link rel="stylesheet" href="css/sections/war-room.css">
+    <link rel="stylesheet" href="css/sections/news.css">
     <!-- Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 </head>
@@ -2795,16 +1261,12 @@
         <div class="copyright">&copy; 2024 AllAboutLogistics.</div>
     </footer>
 
-    <!-- Scripts -->
+    <!-- External JavaScript Modules -->
+    <script src="js/config/constants.js"></script>
+    <script src="js/utils/helpers.js"></script>
+    
+    <!-- Application Scripts -->
     <script>
-        // API Configuration
-        const API_BASE = 'http://localhost:5000/api';
-        let exchangeRates = {}; // 동적 환율 데이터 저장
-        let activeCurrencies = ['USD']; // 활성화된 통화 목록 (기본값: USD만)
-        let chartData = {}; // 차트 데이터 캐시
-        let previousRates = {}; // 전일 환율 저장
-        let chartInteractivitySetup = false; // 차트 인터랙티브 기능 설정 여부
-        let yAxisRange = { min: 0, max: 0 }; // Y축 범위 저장 (실제 출력되는 값 범위)
 
         // 1. Scroll Reveal
         const revealElements = document.querySelectorAll('.reveal');
@@ -3076,17 +1538,8 @@
         }
 
         // 3. Backend API Integration
-        const CURRENCY_MAPPING = {
-            'USD': 'USD',
-            'EUR': 'EUR',
-            'JPY': 'JPY',
-            'CNY': 'CNY',
-            'GBP': 'GBP',
-            'CHF': 'CHF',
-            'HKD': 'HKD',
-            'CAD': 'CAD',
-            'RUB': 'RUB'
-        };
+        // CURRENCY_MAPPING은 js/config/constants.js에서 이미 정의되어 있음
+        // 중복 선언을 피하기 위해 window.CURRENCY_MAPPING을 사용하거나 constants.js의 것을 사용
 
         async function fetchExchangeRateData() {
             if (!validateDateRange()) return;
@@ -8223,6 +6676,38 @@
             
             // 초기 테이블 렌더링
             updateCurrencyRatesTable();
+            
+            // ============================================================
+            // 함수들을 window 객체에 노출 (테스트 및 외부 접근용)
+            // DOMContentLoaded 후 바인딩하여 모든 함수가 정의된 후 실행됨
+            // ============================================================
+            try {
+                window.switchTab = switchTab;
+                window.switchProduct = switchProduct;
+                window.toggleCurrency = toggleCurrency;
+                window.updateChart = updateChart;
+                window.initInterestRates = initInterestRates;
+                window.initInflation = initInflation;
+                window.initGDP = initGDP;
+                window.initTrade = initTrade;
+                window.initGlobalAlarmMap = initGlobalAlarmMap;
+                // loadGoogleMapsAPI는 head script에서 이미 전역으로 정의됨
+                
+                // 디버깅: 함수 바인딩 확인
+                console.log('✅ 함수 바인딩 완료:', {
+                    switchTab: typeof window.switchTab,
+                    switchProduct: typeof window.switchProduct,
+                    toggleCurrency: typeof window.toggleCurrency,
+                    updateChart: typeof window.updateChart,
+                    initInterestRates: typeof window.initInterestRates,
+                    initInflation: typeof window.initInflation,
+                    initGDP: typeof window.initGDP,
+                    initTrade: typeof window.initTrade,
+                    initGlobalAlarmMap: typeof window.initGlobalAlarmMap
+                });
+            } catch (error) {
+                console.error('❌ 함수 바인딩 실패:', error);
+            }
         });
 
         // ============================================
@@ -10709,8 +9194,8 @@
         let currentMarkers = [];
         let heatmapLayer = null;
         let alertUpdateInterval = null;
-        let isMapInitialized = false;
-        let intersectionObserver = null;
+        // isMapInitialized와 intersectionObserver는 head script에서 이미 전역으로 선언됨
+        // 여기서는 window 객체를 통해 접근
         let allAlerts = []; // 전체 알림 데이터 저장
         let currentFilters = {
             severity: 'all',
@@ -10892,9 +9377,9 @@
                     if (warRoomSection) {
                         warRoomSection.scrollIntoView({ behavior: 'smooth' });
                         // 지도가 아직 초기화되지 않았다면 초기화
-                        if (!isMapInitialized && typeof google !== 'undefined' && google.maps && typeof google.maps.Map === 'function') {
+                        if (!window.isMapInitialized && typeof google !== 'undefined' && google.maps && typeof google.maps.Map === 'function') {
                             initGlobalAlarmMap();
-                        } else if (!isMapInitialized) {
+                        } else if (!window.isMapInitialized) {
                             // API가 아직 로드되지 않았으면 checkAndInitMap 호출
                             checkAndInitMap();
                         }
@@ -10914,6 +9399,8 @@
             }
         });
 
+        // checkAndInitMap 함수 정의 (head script에서 호출됨)
+        // window 객체에도 바인딩하여 head script에서 접근 가능하도록 함
         function checkAndInitMap() {
             // Google Maps API가 완전히 로드되었는지 확인
             if (typeof google === 'undefined' || !google.maps || typeof google.maps.Map !== 'function') {
@@ -10922,38 +9409,42 @@
                 return;
             }
             
-            if (!isMapInitialized) {
+            // head script에서 선언한 전역 변수 사용
+            if (!window.isMapInitialized) {
                 // War Room 섹션이 보이는지 확인
                 const warRoomSection = document.getElementById('war-room');
                 if (warRoomSection) {
                     // 기존 observer가 있으면 정리
-                    if (intersectionObserver) {
-                        intersectionObserver.disconnect();
+                    if (window.intersectionObserver) {
+                        window.intersectionObserver.disconnect();
                     }
                     
-                    intersectionObserver = new IntersectionObserver(function(entries) {
+                    window.intersectionObserver = new IntersectionObserver(function(entries) {
                         entries.forEach(entry => {
-                            if (entry.isIntersecting && !isMapInitialized) {
+                            if (entry.isIntersecting && !window.isMapInitialized) {
                                 // API가 완전히 로드되었는지 다시 확인
                                 if (typeof google !== 'undefined' && google.maps && typeof google.maps.Map === 'function') {
                                     initGlobalAlarmMap();
                                     // 초기화 후 observer 정리
-                                    if (intersectionObserver) {
-                                        intersectionObserver.disconnect();
-                                        intersectionObserver = null;
+                                    if (window.intersectionObserver) {
+                                        window.intersectionObserver.disconnect();
+                                        window.intersectionObserver = null;
                                     }
                                 }
                             }
                         });
                     }, { threshold: 0.1 });
-                    intersectionObserver.observe(warRoomSection);
+                    window.intersectionObserver.observe(warRoomSection);
                 }
             }
         }
+        
+        // window 객체에 바인딩하여 head script에서 접근 가능하도록 함
+        window.checkAndInitMap = checkAndInitMap;
 
         // 지도 초기화 함수 (Singleton 패턴)
         function initGlobalAlarmMap() {
-            if (isMapInitialized) {
+            if (window.isMapInitialized) {
                 return;
             }
 
@@ -11078,7 +9569,7 @@
                     loadingEl.classList.add('hidden');
                 }
 
-                isMapInitialized = true;
+                window.isMapInitialized = true;
 
                 // 첫 데이터 로드
                 fetchAndApplyData();
@@ -11095,8 +9586,8 @@
                     if (alertUpdateInterval) {
                         clearInterval(alertUpdateInterval);
                     }
-                    if (intersectionObserver) {
-                        intersectionObserver.disconnect();
+                    if (window.intersectionObserver) {
+                        window.intersectionObserver.disconnect();
                     }
                 });
 
@@ -12006,6 +10497,15 @@
                 listEl.appendChild(card);
             });
         }
+        
+        // ============================================================
+        // 함수들을 window 객체에 노출
+        // 주의: 함수 바인딩은 DOMContentLoaded 핸들러에서만 수행됨
+        // 스크립트 끝에서 바인딩하지 않는 이유:
+        // - 스크립트가 매우 길어서 함수들이 아직 정의되지 않았을 수 있음
+        // - DOMContentLoaded 핸들러에서 바인딩하면 모든 함수가 정의된 후 실행됨
+        // ============================================================
+        // loadGoogleMapsAPI는 head script에서 이미 전역으로 정의됨
     </script>
 </body>
 </html>

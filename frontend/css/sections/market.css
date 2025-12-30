@@ -1,0 +1,179 @@
+/* =====================================================
+   Market Section Styles
+   ===================================================== */
+
+/* Market Controller */
+.market-controller { margin-bottom: 3rem; }
+
+.market-content { display: none; animation: fadeUp 0.6s ease; }
+.market-content.active { display: block; }
+
+.product-grid { display: grid; grid-template-columns: 280px 1fr; gap: 2rem; }
+
+/* Sidebar */
+.product-sidebar {
+    position: relative;
+}
+
+.product-sidebar h3 { 
+    font-size: 0.8rem; 
+    text-transform: uppercase; 
+    color: var(--text-sub); 
+    margin-bottom: 1.5rem; 
+    letter-spacing: 1px; 
+}
+
+.product-menu li {
+    padding: 1rem; 
+    border-bottom: 1px solid var(--border-color); 
+    color: var(--text-sub);
+    cursor: pointer; 
+    transition: var(--transition); 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+}
+
+.product-menu li:hover, .product-menu li.selected {
+    background: var(--card-bg); 
+    color: var(--text-main); 
+    padding-left: 1rem;
+    border-left: 2px solid var(--accent-color); 
+    font-weight: 600;
+}
+
+/* GDP Flyout Menu */
+#gdp-submenu {
+    position: absolute;
+    left: 100%;
+    top: 0;
+    margin-left: 0.5rem;
+    z-index: 100;
+    display: none;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1rem;
+    min-width: 250px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+#gdp-submenu.show {
+    display: block;
+}
+
+.gdp-submenu-header {
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 1.5rem;
+}
+
+.gdp-submenu-header h2 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.gdp-submenu-header h3 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-main);
+    margin: 0;
+}
+
+.gdp-submenu-header p {
+    color: var(--text-sub);
+    font-size: 0.9rem;
+}
+
+.gdp-submenu-items {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.gdp-submenu-item {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    transition: var(--transition);
+}
+
+.gdp-submenu-item:hover {
+    border-color: var(--accent-color);
+    background: rgba(59, 130, 246, 0.05);
+}
+
+.gdp-submenu-btn {
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    color: var(--text-main);
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    transition: var(--transition);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.gdp-submenu-btn:hover {
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--accent-color);
+}
+
+.submenu-item-name {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.gdp-panel-currency {
+    display: flex;
+    gap: 8px;
+}
+
+/* GDP Indicators List */
+.gdp-indicators-list { display: flex; flex-direction: column; gap: 12px; }
+.gdp-indicator-item { display: flex; align-items: center; gap: 12px; }
+.gdp-indicator-btn { flex: 1; }
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .product-grid { grid-template-columns: 1fr; }
+    .product-sidebar { 
+        display: flex; 
+        overflow-x: auto; 
+        margin-bottom: 2rem; 
+        border-bottom: 1px solid var(--border-color); 
+    }
+    .product-sidebar h3 { display: none; }
+    .product-menu { display: flex; width: 100%; }
+    .product-menu li { border: none; padding: 1rem; white-space: nowrap; }
+    .chart-controls { flex-direction: column; align-items: flex-start; }
+}
+
+@media (max-width: 768px) {
+    .chart-controls {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+    
+    .filter-group {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+    }
+    
+    .filter-group .period-btns {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .converter-box { flex-direction: column; }
+    .swap-btn { transform: rotate(90deg); }
+}
+

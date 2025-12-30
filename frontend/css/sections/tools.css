@@ -1,0 +1,83 @@
+/* =====================================================
+   Tools Section Styles
+   ===================================================== */
+
+/* Tools Grid */
+.tools-grid { 
+    display: grid; 
+    grid-template-columns: repeat(3, 1fr); 
+    gap: 1.5rem; 
+}
+
+.tool-app-card { 
+    background: var(--card-bg); 
+    border: 1px solid var(--border-color); 
+    padding: 2.5rem; 
+    border-radius: 12px; 
+    transition: var(--transition); 
+    display: flex; 
+    flex-direction: column; 
+    justify-content: space-between; 
+    min-height: 280px; 
+    cursor: pointer; 
+    position: relative; 
+    overflow: hidden; 
+}
+
+.tool-app-card:hover { 
+    transform: translateY(-5px); 
+    border-color: var(--accent-color); 
+    box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5); 
+}
+
+.tool-icon-circle { 
+    width: 60px; 
+    height: 60px; 
+    border-radius: 50%; 
+    background: rgba(255,255,255,0.05); 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    font-size: 1.5rem; 
+    color: var(--text-main); 
+    margin-bottom: 2rem; 
+    transition: var(--transition); 
+}
+
+.tool-app-card:hover .tool-icon-circle { 
+    background: var(--accent-color); 
+    color: white; 
+}
+
+.tool-content h3 { 
+    font-size: 1.5rem; 
+    margin-bottom: 0.8rem; 
+}
+
+.tool-content p { 
+    color: var(--text-sub); 
+    font-size: 0.95rem; 
+    line-height: 1.5; 
+}
+
+.tool-arrow { 
+    position: absolute; 
+    bottom: 2.5rem; 
+    right: 2.5rem; 
+    font-size: 1.2rem; 
+    opacity: 0; 
+    transform: translateX(-10px); 
+    transition: var(--transition); 
+    color: var(--accent-color); 
+}
+
+.tool-app-card:hover .tool-arrow { 
+    opacity: 1; 
+    transform: translateX(0); 
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .tools-grid { grid-template-columns: 1fr; }
+}
+

@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AAL 프론트엔드 테스트</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+        h1 {
+            margin-bottom: 1.5rem;
+            color: #3b82f6;
+        }
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .test-section {
+            background: #16213e;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .test-section h2 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #333;
+        }
+        .test-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            background: #0f3460;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        .test-item.pass { background: #064e3b; }
+        .test-item.fail { background: #7f1d1d; }
+        .test-item.pending { background: #78350f; }
+        .test-item .status {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            margin-right: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+        .test-item.pass .status { background: #10b981; }
+        .test-item.fail .status { background: #ef4444; }
+        .test-item.pending .status { background: #f59e0b; }
+        .test-item .name { flex: 1; }
+        .test-item .time { color: #888; font-size: 0.85rem; }
+        
+        .controls {
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+        button:hover { background: #2563eb; }
+        button:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+        
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .summary-card {
+            background: #16213e;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+        }
+        .summary-card .number {
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+        .summary-card.pass .number { color: #10b981; }
+        .summary-card.fail .number { color: #ef4444; }
+        .summary-card.pending .number { color: #f59e0b; }
+        .summary-card .label { color: #888; margin-top: 0.5rem; }
+        
+        .iframe-container {
+            margin-top: 1rem;
+            border-radius: 12px;
+            overflow: hidden;
+            display: none;
+        }
+        .iframe-container.visible { display: block; }
+        iframe {
+            width: 100%;
+            height: 600px;
+            border: 2px solid #333;
+            border-radius: 12px;
+        }
+        
+        .log-container {
+            background: #0d0d0d;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-top: 1.5rem;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Consolas', monospace;
+            font-size: 0.9rem;
+        }
+        .log-entry {
+            padding: 0.25rem 0;
+            border-bottom: 1px solid #222;
+        }
+        .log-entry.error { color: #f87171; }
+        .log-entry.success { color: #34d399; }
+        .log-entry.info { color: #60a5fa; }
+        
+        .css-status {
+            background: #16213e;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .css-status h2 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #333;
+        }
+        .css-file-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 0.5rem;
+        }
+        .css-file {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            background: #0f3460;
+            border-radius: 6px;
+            font-size: 0.85rem;
+        }
+        .css-file.loaded { background: #064e3b; }
+        .css-file.error { background: #7f1d1d; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 AAL 프론트엔드 테스트 (v2.0)</h1>
+        
+        <div class="controls">
+            <button onclick="runAllTests()">▶ 전체 테스트 실행</button>
+            <button onclick="runAPITests()">🔌 API 테스트만</button>
+            <button onclick="runDOMTests()">📦 DOM 테스트만</button>
+            <button onclick="runCSSTests()">🎨 CSS 파일 테스트</button>
+            <button onclick="toggleIframe()">👁 메인 페이지 미리보기</button>
+            <button onclick="clearLogs()">🗑 로그 초기화</button>
+        </div>
+        
+        <div class="summary">
+            <div class="summary-card pass">
+                <div class="number" id="passCount">0</div>
+                <div class="label">통과</div>
+            </div>
+            <div class="summary-card fail">
+                <div class="number" id="failCount">0</div>
+                <div class="label">실패</div>
+            </div>
+            <div class="summary-card pending">
+                <div class="number" id="pendingCount">0</div>
+                <div class="label">대기</div>
+            </div>
+        </div>
+        
+        <div class="iframe-container" id="iframeContainer">
+            <iframe id="mainFrame" src="about:blank"></iframe>
+        </div>
+        
+        <div class="css-status" id="cssStatus">
+            <h2>🎨 CSS 파일 로드 상태</h2>
+            <div class="css-file-list" id="cssFileList">
+                <div class="css-file">테스트를 실행하세요...</div>
+            </div>
+        </div>
+        
+        <div class="css-status" id="jsStatus">
+            <h2>📜 JS 모듈 로드 상태</h2>
+            <div class="css-file-list" id="jsFileList">
+                <div class="css-file">테스트를 실행하세요...</div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🔌 API 연결 테스트</h2>
+            <div id="apiTests"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>📦 DOM/UI 요소 테스트</h2>
+            <div id="domTests"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>⚡ JavaScript 함수 테스트</h2>
+            <div id="jsTests"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>📝 테스트 로그</h2>
+            <div class="log-container" id="logContainer"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000';
+        let mainWindow = null;
+        let testResults = { pass: 0, fail: 0, pending: 0 };
+        
+        // CSS 파일 목록 (분리된 CSS 파일들)
+        const cssFiles = [
+            'css/variables.css',
+            'css/base.css',
+            'css/components/header.css',
+            'css/components/buttons.css',
+            'css/components/charts.css',
+            'css/components/cards.css',
+            'css/components/modals.css',
+            'css/sections/hero.css',
+            'css/sections/market.css',
+            'css/sections/tools.css',
+            'css/sections/war-room.css',
+            'css/sections/news.css',
+        ];
+        
+        // JS 파일 목록 (분리된 JS 모듈들)
+        const jsFiles = [
+            'js/config/constants.js',
+            'js/utils/helpers.js',
+        ];
+        
+        // API 테스트 정의
+        const apiTestCases = [
+            { name: '메인 페이지 로드', endpoint: '/', check: (r) => r.ok },
+            { name: '카테고리 API', endpoint: '/api/market/categories', check: (r, d) => d.categories !== undefined },
+            { name: '환율 API (USD)', endpoint: '/api/market/indices?type=exchange&itemCode=USD&startDate=20241201&endDate=20241231&cycle=D', check: (r, d) => d.StatisticSearch?.row?.length > 0 },
+            { name: '금리 API (기준금리)', endpoint: '/api/market/indices?type=interest&startDate=20240101&endDate=20241231&cycle=D', check: (r, d) => !d.error },
+            { name: '물가 API', endpoint: '/api/market/indices?type=inflation&itemCode=CPI_TOTAL&startDate=20240101&endDate=20241231&cycle=M', check: (r, d) => !d.error },
+            { name: 'GDP API', endpoint: '/api/market/indices?type=gdp&itemCode=10101&startDate=20230101&endDate=20241231&cycle=A', check: (r, d) => !d.error },
+            { name: '수출입 API', endpoint: '/api/market/indices?type=trade&itemCode=EXPORT_USD&startDate=20240101&endDate=20241231&cycle=M', check: (r, d) => !d.error },
+            { name: 'Global Alerts API', endpoint: '/api/global-alerts?max_alerts=10', check: (r, d) => d.alerts !== undefined },
+            { name: '뉴스 API', endpoint: '/api/news', check: (r, d) => Array.isArray(d) && d.length > 0 },
+            { name: 'Google Maps API Key', endpoint: '/api/config/google-maps-key', check: (r, d) => d.apiKey !== undefined || r.status === 404 },
+        ];
+        
+        // DOM 테스트 정의 (업데이트됨)
+        const domTestCases = [
+            { name: 'Header 요소', selector: 'header', check: (el) => el !== null },
+            { name: 'Navigation 메뉴', selector: 'nav ul li', check: (els) => els.length >= 4 },
+            { name: 'Hero 섹션', selector: '.hero h1', check: (el) => el !== null },
+            { name: 'Market 탭 버튼', selector: '.tab-btn', check: (els) => els.length >= 2 },
+            { name: 'Product 메뉴 (7개 항목)', selector: '.product-menu li', check: (els) => els.length >= 7 },
+            { name: 'Economy 패널', selector: '#economy-panel', check: (el) => el !== null },
+            { name: '금리 패널', selector: '#interest-rates-panel', check: (el) => el !== null },
+            { name: '물가 패널', selector: '#inflation-panel', check: (el) => el !== null },
+            { name: 'GDP 패널', selector: '#gdp-panel', check: (el) => el !== null },
+            { name: '수출입 패널', selector: '#trade-panel', check: (el) => el !== null },
+            { name: '고용 패널', selector: '#employment-panel', check: (el) => el !== null },
+            { name: 'GDP Growth 패널', selector: '#gdp-growth-panel', check: (el) => el !== null },
+            { name: 'Logistics 패널', selector: '#logistics-panel', check: (el) => el !== null },
+            { name: 'War Room 섹션', selector: '#war-room', check: (el) => el !== null },
+            { name: 'Tools 섹션', selector: '#tools-apps', check: (el) => el !== null },
+            { name: 'News 섹션', selector: '#news', check: (el) => el !== null },
+            { name: 'Footer', selector: 'footer', check: (el) => el !== null },
+        ];
+        
+        // JavaScript 함수 테스트 정의 (업데이트됨)
+        const jsTestCases = [
+            { name: 'switchTab 함수', check: () => typeof mainWindow?.switchTab === 'function' },
+            { name: 'switchProduct 함수', check: () => typeof mainWindow?.switchProduct === 'function' },
+            { name: 'toggleCurrency 함수', check: () => typeof mainWindow?.toggleCurrency === 'function' },
+            { name: 'updateChart 함수', check: () => typeof mainWindow?.updateChart === 'function' },
+            { name: 'initInterestRates 함수', check: () => typeof mainWindow?.initInterestRates === 'function' },
+            { name: 'initInflation 함수', check: () => typeof mainWindow?.initInflation === 'function' },
+            { name: 'initGDP 함수', check: () => typeof mainWindow?.initGDP === 'function' },
+            { name: 'initTrade 함수', check: () => typeof mainWindow?.initTrade === 'function' },
+            { name: 'initGlobalAlarmMap 함수', check: () => typeof mainWindow?.initGlobalAlarmMap === 'function' },
+            { name: 'loadGoogleMapsAPI 함수', check: () => typeof mainWindow?.loadGoogleMapsAPI === 'function' },
+            { name: 'exchangeRates 전역 변수', check: () => mainWindow?.exchangeRates !== undefined },
+            { name: 'activeCurrencies 전역 변수', check: () => Array.isArray(mainWindow?.activeCurrencies) },
+            { name: 'API_BASE 설정', check: () => mainWindow?.API_BASE !== undefined },
+        ];
+        
+        function log(message, type = 'info') {
+            const container = document.getElementById('logContainer');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            const time = new Date().toLocaleTimeString();
+            entry.textContent = `[${time}] ${message}`;
+            container.appendChild(entry);
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        function clearLogs() {
+            document.getElementById('logContainer').innerHTML = '';
+            log('로그가 초기화되었습니다.', 'info');
+        }
+        
+        function updateSummary() {
+            document.getElementById('passCount').textContent = testResults.pass;
+            document.getElementById('failCount').textContent = testResults.fail;
+            document.getElementById('pendingCount').textContent = testResults.pending;
+        }
+        
+        function createTestItem(name, status = 'pending', time = '') {
+            const item = document.createElement('div');
+            item.className = `test-item ${status}`;
+            item.innerHTML = `
+                <div class="status">${status === 'pass' ? '✓' : status === 'fail' ? '✗' : '○'}</div>
+                <div class="name">${name}</div>
+                <div class="time">${time}</div>
+            `;
+            return item;
+        }
+        
+        function updateTestItem(container, index, status, time) {
+            const items = container.children;
+            if (items[index]) {
+                items[index].className = `test-item ${status}`;
+                items[index].querySelector('.status').textContent = status === 'pass' ? '✓' : status === 'fail' ? '✗' : '○';
+                items[index].querySelector('.time').textContent = time;
+            }
+        }
+        
+        async function runCSSTests() {
+            log('CSS 파일 로드 테스트 시작...', 'info');
+            const container = document.getElementById('cssFileList');
+            container.innerHTML = '';
+            
+            let passCount = 0;
+            let failCount = 0;
+            
+            for (const file of cssFiles) {
+                const div = document.createElement('div');
+                div.className = 'css-file';
+                
+                try {
+                    const response = await fetch(`${API_BASE}/${file}`);
+                    if (response.ok) {
+                        div.className = 'css-file loaded';
+                        div.innerHTML = `✓ ${file}`;
+                        passCount++;
+                        log(`✓ CSS 로드: ${file}`, 'success');
+                    } else {
+                        div.className = 'css-file error';
+                        div.innerHTML = `✗ ${file} (HTTP ${response.status})`;
+                        failCount++;
+                        log(`✗ CSS 로드 실패: ${file} (HTTP ${response.status})`, 'error');
+                    }
+                } catch (error) {
+                    div.className = 'css-file error';
+                    div.innerHTML = `✗ ${file} (Error)`;
+                    failCount++;
+                    log(`✗ CSS 로드 에러: ${file} - ${error.message}`, 'error');
+                }
+                
+                container.appendChild(div);
+            }
+            
+            log(`CSS 테스트 완료: ${passCount}개 로드, ${failCount}개 실패`, 
+                failCount === 0 ? 'success' : 'error');
+        }
+        
+        async function runJSTests() {
+            log('JS 모듈 로드 테스트 시작...', 'info');
+            const container = document.getElementById('jsFileList');
+            container.innerHTML = '';
+            
+            let passCount = 0;
+            let failCount = 0;
+            
+            for (const file of jsFiles) {
+                const div = document.createElement('div');
+                div.className = 'css-file';
+                
+                try {
+                    const response = await fetch(`${API_BASE}/${file}`);
+                    if (response.ok) {
+                        div.className = 'css-file loaded';
+                        div.innerHTML = `✓ ${file}`;
+                        passCount++;
+                        log(`✓ JS 로드: ${file}`, 'success');
+                    } else {
+                        div.className = 'css-file error';
+                        div.innerHTML = `✗ ${file} (HTTP ${response.status})`;
+                        failCount++;
+                        log(`✗ JS 로드 실패: ${file} (HTTP ${response.status})`, 'error');
+                    }
+                } catch (error) {
+                    div.className = 'css-file error';
+                    div.innerHTML = `✗ ${file} (Error)`;
+                    failCount++;
+                    log(`✗ JS 로드 에러: ${file} - ${error.message}`, 'error');
+                }
+                
+                container.appendChild(div);
+            }
+            
+            log(`JS 테스트 완료: ${passCount}개 로드, ${failCount}개 실패`, 
+                failCount === 0 ? 'success' : 'error');
+        }
+        
+        async function runAPITests() {
+            const container = document.getElementById('apiTests');
+            container.innerHTML = '';
+            
+            log('API 테스트 시작...', 'info');
+            
+            for (let i = 0; i < apiTestCases.length; i++) {
+                const test = apiTestCases[i];
+                container.appendChild(createTestItem(test.name));
+                testResults.pending++;
+                updateSummary();
+            }
+            
+            for (let i = 0; i < apiTestCases.length; i++) {
+                const test = apiTestCases[i];
+                const startTime = performance.now();
+                
+                try {
+                    const response = await fetch(`${API_BASE}${test.endpoint}`);
+                    let data = null;
+                    
+                    try {
+                        data = await response.json();
+                    } catch (e) {
+                        // JSON이 아닌 응답 (HTML 등)
+                    }
+                    
+                    const passed = test.check(response, data);
+                    const endTime = performance.now();
+                    const duration = `${(endTime - startTime).toFixed(0)}ms`;
+                    
+                    testResults.pending--;
+                    if (passed) {
+                        testResults.pass++;
+                        log(`✓ ${test.name} - ${duration}`, 'success');
+                    } else {
+                        testResults.fail++;
+                        log(`✗ ${test.name} - 실패`, 'error');
+                    }
+                    
+                    updateTestItem(container, i, passed ? 'pass' : 'fail', duration);
+                    updateSummary();
+                    
+                } catch (error) {
+                    testResults.pending--;
+                    testResults.fail++;
+                    log(`✗ ${test.name} - ${error.message}`, 'error');
+                    updateTestItem(container, i, 'fail', 'Error');
+                    updateSummary();
+                }
+            }
+            
+            log('API 테스트 완료!', 'info');
+        }
+        
+        async function runDOMTests() {
+            const container = document.getElementById('domTests');
+            container.innerHTML = '';
+            
+            log('DOM 테스트 시작...', 'info');
+            
+            // iframe 로드
+            const iframe = document.getElementById('mainFrame');
+            
+            if (!iframe.src.includes('localhost:5000') || iframe.src === 'about:blank') {
+                log('메인 페이지 로드 중...', 'info');
+                iframe.src = API_BASE;
+                
+                await new Promise((resolve) => {
+                    iframe.onload = () => {
+                        // DOMContentLoaded가 발생할 때까지 대기
+                        const doc = iframe.contentDocument || iframe.contentWindow.document;
+                        if (doc.readyState === 'complete') {
+                            // 이미 로드 완료되었으면 즉시 resolve
+                            resolve();
+                        } else {
+                            // DOMContentLoaded 이벤트 대기
+                            doc.addEventListener('DOMContentLoaded', resolve, { once: true });
+                        }
+                    };
+                    setTimeout(resolve, 8000); // 8초 타임아웃
+                });
+                
+                await new Promise(resolve => setTimeout(resolve, 2000)); // 추가 대기
+            }
+            
+            try {
+                mainWindow = iframe.contentWindow;
+            } catch (e) {
+                log('iframe 접근 실패 (CORS)', 'error');
+            }
+            
+            for (let i = 0; i < domTestCases.length; i++) {
+                const test = domTestCases[i];
+                container.appendChild(createTestItem(test.name));
+                testResults.pending++;
+                updateSummary();
+            }
+            
+            // 테스트 실행
+            for (let i = 0; i < domTestCases.length; i++) {
+                const test = domTestCases[i];
+                
+                try {
+                    const doc = iframe.contentDocument || iframe.contentWindow.document;
+                    const elements = doc.querySelectorAll(test.selector);
+                    const element = elements.length === 0 ? null : (elements.length === 1 ? elements[0] : elements);
+                    
+                    const passed = test.check(element);
+                    
+                    testResults.pending--;
+                    if (passed) {
+                        testResults.pass++;
+                        log(`✓ ${test.name}`, 'success');
+                    } else {
+                        testResults.fail++;
+                        log(`✗ ${test.name} - 요소를 찾을 수 없음`, 'error');
+                    }
+                    
+                    updateTestItem(container, i, passed ? 'pass' : 'fail', '');
+                    updateSummary();
+                    
+                } catch (error) {
+                    testResults.pending--;
+                    testResults.fail++;
+                    log(`✗ ${test.name} - ${error.message}`, 'error');
+                    updateTestItem(container, i, 'fail', 'Error');
+                    updateSummary();
+                }
+            }
+            
+            log('DOM 테스트 완료!', 'info');
+        }
+        
+        async function runJSFuncTests() {
+            const container = document.getElementById('jsTests');
+            container.innerHTML = '';
+            
+            log('JavaScript 함수 테스트 시작...', 'info');
+            
+            const iframe = document.getElementById('mainFrame');
+            
+            // iframe이 로드되지 않았으면 먼저 로드
+            if (!iframe.src.includes('localhost:5000') || iframe.src === 'about:blank') {
+                log('메인 페이지 로드 중 (JS 테스트용)...', 'info');
+                iframe.src = API_BASE;
+                
+                await new Promise((resolve) => {
+                    iframe.onload = () => {
+                        const doc = iframe.contentDocument || iframe.contentWindow.document;
+                        
+                        // 이미 로드 완료된 경우
+                        if (doc.readyState === 'complete') {
+                            log('페이지 이미 로드 완료됨', 'info');
+                            // DOMContentLoaded가 이미 발생했을 수 있으므로 약간 대기 후 resolve
+                            setTimeout(resolve, 500);
+                        } else {
+                            // DOMContentLoaded 이벤트 대기
+                            log('DOMContentLoaded 대기 중...', 'info');
+                            doc.addEventListener('DOMContentLoaded', () => {
+                                log('DOMContentLoaded 발생', 'success');
+                                resolve();
+                            }, { once: true });
+                        }
+                    };
+                    setTimeout(() => {
+                        log('페이지 로드 타임아웃', 'error');
+                        resolve();
+                    }, 8000); // 8초 타임아웃
+                });
+                
+                // DOMContentLoaded 후 추가 대기 (함수 바인딩 완료 대기)
+                log('함수 바인딩 대기 시작...', 'info');
+                await new Promise(resolve => setTimeout(resolve, 2000));
+            }
+            
+            try {
+                mainWindow = iframe.contentWindow;
+            } catch (e) {
+                log('iframe 접근 실패 - JS 테스트 스킵', 'error');
+                return;
+            }
+            
+            for (let i = 0; i < jsTestCases.length; i++) {
+                const test = jsTestCases[i];
+                container.appendChild(createTestItem(test.name));
+                testResults.pending++;
+                updateSummary();
+            }
+            
+            // 함수 바인딩 완료까지 대기 (폴링 방식)
+            log('함수 바인딩 대기 중...', 'info');
+            let bindCheckCount = 0;
+            const maxBindChecks = 50; // 최대 5초 대기 (50 * 100ms)
+            
+            while (bindCheckCount < maxBindChecks) {
+                // 주요 함수들이 바인딩되었는지 확인
+                if (mainWindow?.switchTab && 
+                    mainWindow?.switchProduct && 
+                    mainWindow?.toggleCurrency && 
+                    mainWindow?.updateChart &&
+                    mainWindow?.initInterestRates &&
+                    mainWindow?.initInflation &&
+                    mainWindow?.initGDP &&
+                    mainWindow?.initTrade &&
+                    mainWindow?.initGlobalAlarmMap) {
+                    log(`함수 바인딩 완료 (${bindCheckCount * 100}ms 후)`, 'success');
+                    break;
+                }
+                await new Promise(resolve => setTimeout(resolve, 100));
+                bindCheckCount++;
+            }
+            
+            if (bindCheckCount >= maxBindChecks) {
+                log('⚠ 함수 바인딩 타임아웃 - 일부 함수가 바인딩되지 않았을 수 있습니다', 'error');
+                // 디버깅 정보 출력
+                log(`디버깅: switchTab=${typeof mainWindow?.switchTab}, switchProduct=${typeof mainWindow?.switchProduct}`, 'info');
+            }
+            
+            for (let i = 0; i < jsTestCases.length; i++) {
+                const test = jsTestCases[i];
+                
+                try {
+                    const passed = test.check();
+                    
+                    testResults.pending--;
+                    if (passed) {
+                        testResults.pass++;
+                        log(`✓ ${test.name}`, 'success');
+                    } else {
+                        testResults.fail++;
+                        // 실패한 함수의 상세 정보 출력
+                        const funcName = test.name.replace(' 함수', '').replace(' 전역 변수', '').replace(' 설정', '');
+                        log(`✗ ${test.name} - typeof: ${typeof mainWindow?.[funcName]}`, 'error');
+                    }
+                    
+                    updateTestItem(container, i, passed ? 'pass' : 'fail', '');
+                    updateSummary();
+                    
+                } catch (error) {
+                    testResults.pending--;
+                    testResults.fail++;
+                    log(`✗ ${test.name} - ${error.message}`, 'error');
+                    updateTestItem(container, i, 'fail', 'Error');
+                    updateSummary();
+                }
+            }
+            
+            log('JavaScript 함수 테스트 완료!', 'info');
+        }
+        
+        async function runAllTests() {
+            testResults = { pass: 0, fail: 0, pending: 0 };
+            updateSummary();
+            
+            log('========== 전체 테스트 시작 ==========', 'info');
+            
+            await runCSSTests();
+            await runJSModuleFileTests();
+            await runAPITests();
+            await runDOMTests();
+            await runJSFunctionTests();
+            
+            log('========== 전체 테스트 완료 ==========', 'info');
+            log(`결과: 통과 ${testResults.pass}, 실패 ${testResults.fail}`, 
+                testResults.fail === 0 ? 'success' : 'error');
+        }
+        
+        // runJSTests가 JS 모듈 파일 테스트, runJSFunctionTests가 함수 테스트
+        async function runJSModuleFileTests() {
+            await runJSTests();
+        }
+        
+        async function runJSFunctionTests() {
+            await runJSFuncTests();
+        }
+        
+        function toggleIframe() {
+            const container = document.getElementById('iframeContainer');
+            const iframe = document.getElementById('mainFrame');
+            
+            if (container.classList.contains('visible')) {
+                container.classList.remove('visible');
+            } else {
+                container.classList.add('visible');
+                if (iframe.src === 'about:blank') {
+                    iframe.src = API_BASE;
+                }
+            }
+        }
+        
+        // 초기 로그
+        log('테스트 페이지가 로드되었습니다. "전체 테스트 실행" 버튼을 클릭하세요.', 'info');
+    </script>
+</body>
+</html>
