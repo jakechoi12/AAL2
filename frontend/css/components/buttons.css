@@ -1,0 +1,156 @@
+/* =====================================================
+   Button & Tab Component Styles
+   ===================================================== */
+
+/* Tab Buttons */
+.tab-container { display: flex; gap: 1rem; }
+.tab-btn {
+    color: var(--text-sub); border: 1px solid var(--border-color); padding: 0.8rem 2rem;
+    border-radius: 50px; font-size: 1rem; font-weight: 600; transition: var(--transition);
+}
+.tab-btn:hover { border-color: var(--text-main); color: var(--text-main); }
+.tab-btn.active { background: var(--accent-color); border-color: var(--accent-color); color: #fff; }
+
+/* Period Buttons */
+.period-btns { 
+    display: flex; 
+    background: rgba(255,255,255,0.05); 
+    border-radius: 6px; 
+    padding: 4px; 
+    flex-wrap: nowrap;
+    gap: 4px;
+    flex-shrink: 0;
+}
+.period-btn {
+    padding: 6px 12px; font-size: 0.8rem; color: var(--text-sub); border-radius: 4px; font-weight: 600;
+}
+.period-btn.active { background: var(--text-main); color: var(--bg-color); }
+
+/* Currency Buttons */
+.currency-buttons { display: flex; gap: 4px; }
+.currency-btn {
+    padding: 4px 12px; border-radius: 16px; font-size: 0.75rem; font-weight: 600;
+    border: 1px solid var(--border-color); color: var(--text-sub); 
+    background: transparent; transition: var(--transition);
+    cursor: pointer;
+}
+.currency-btn:hover { border-color: var(--text-main); color: var(--text-main); }
+.currency-btn.active {
+    background: rgba(59, 130, 246, 0.2); border-color: var(--c-gdp-total); 
+    color: var(--c-gdp-total);
+}
+
+/* Chips (Currency & Country Toggles) */
+.currency-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.country-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.chip {
+    padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;
+    border: 1px solid var(--border-color); color: var(--text-sub); transition: var(--transition);
+    display: flex; align-items: center; gap: 6px;
+}
+.chip:hover { border-color: var(--text-main); color: var(--text-main); }
+.chip-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+
+/* Chip Active States (Dynamic Colors) */
+.chip.active[data-curr="USD"] { background: rgba(59, 130, 246, 0.2); border-color: var(--c-usd); color: var(--c-usd); }
+.chip.active[data-curr="JPY"] { background: rgba(236, 72, 153, 0.2); border-color: var(--c-jpy); color: var(--c-jpy); }
+.chip.active[data-curr="CNY"] { background: rgba(234, 179, 8, 0.2); border-color: var(--c-cny); color: var(--c-cny); }
+.chip.active[data-curr="EUR"] { background: rgba(34, 197, 94, 0.2); border-color: var(--c-eur); color: var(--c-eur); }
+.chip.active[data-curr="GBP"] { background: rgba(6, 182, 212, 0.2); border-color: var(--c-gbp); color: var(--c-gbp); }
+.chip.active[data-curr="CHF"] { background: rgba(245, 158, 11, 0.2); border-color: var(--c-chf); color: var(--c-chf); }
+.chip.active[data-curr="HKD"] { background: rgba(168, 85, 247, 0.2); border-color: var(--c-hkd); color: var(--c-hkd); }
+.chip.active[data-curr="CAD"] { background: rgba(16, 185, 129, 0.2); border-color: var(--c-cad); color: var(--c-cad); }
+.chip.active[data-curr="RUB"] { background: rgba(239, 68, 68, 0.2); border-color: var(--c-rub); color: var(--c-rub); }
+
+/* Trade Indicator Chip Active States */
+.chip.active[data-indicator="EXPORT"] { 
+    background: rgba(59, 130, 246, 0.2); 
+    border-color: var(--c-trade-export); 
+    color: var(--c-trade-export); 
+}
+.chip.active[data-indicator="IMPORT"] { 
+    background: rgba(239, 68, 68, 0.2); 
+    border-color: var(--c-trade-import); 
+    color: var(--c-trade-import); 
+}
+.chip.active[data-indicator="TRADE_BALANCE"] { 
+    background: rgba(34, 197, 94, 0.2); 
+    border-color: var(--c-trade-balance); 
+    color: var(--c-trade-balance); 
+}
+.chip.active[data-indicator="BALANCE"] { 
+    background: rgba(34, 197, 94, 0.2); 
+    border-color: var(--c-trade-balance-surplus); 
+    color: var(--c-trade-balance-surplus); 
+}
+
+/* View Toggle Buttons */
+.view-toggle {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.view-btn {
+    flex: 1;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-color);
+    color: var(--text-sub);
+    border-radius: 6px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 600;
+}
+
+.view-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.view-btn.active {
+    background: var(--accent-color);
+    color: white;
+    border-color: var(--accent-color);
+}
+
+/* Filter Buttons */
+.filter-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.filter-btn {
+    padding: 6px 12px;
+    border: 1px solid var(--border-color);
+    background: transparent;
+    color: var(--text-sub);
+    border-radius: 6px;
+    font-size: 0.7rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 600;
+}
+
+.filter-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-main);
+}
+
+.filter-btn.active {
+    background: var(--accent-color);
+    color: white;
+    border-color: var(--accent-color);
+}
+
+/* Swap Button */
+.swap-btn { 
+    width: 45px; height: 45px; border-radius: 50%; 
+    background: var(--border-color); color: var(--text-main); 
+    display: flex; align-items: center; justify-content: center; 
+    transition: var(--transition); 
+}
+.swap-btn:hover { background: var(--accent-color); transform: rotate(180deg); }
+

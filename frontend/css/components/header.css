@@ -1,0 +1,33 @@
+/* =====================================================
+   Header Component Styles
+   ===================================================== */
+
+header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 1.5rem 5%; position: fixed; width: 100%; top: 0; z-index: 1000;
+    background: rgba(11, 11, 13, 0.85); backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.logo { font-size: 2rem; font-weight: 900; letter-spacing: -0.05em; display: flex; align-items: center; }
+.logo span { color: var(--accent-color); }
+.logo .full-name {
+    font-size: 0.75rem; font-weight: 500; color: var(--text-sub); margin-left: 12px;
+    letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.8;
+    border-left: 1px solid var(--border-color); padding-left: 12px; line-height: 1;
+}
+
+nav ul { display: flex; gap: 2.5rem; }
+nav li a { font-size: 0.95rem; color: var(--text-sub); transition: var(--transition); font-weight: 500; }
+nav li a:hover, nav li a.active { color: var(--text-main); }
+.nav-highlight { color: var(--accent-color) !important; }
+
+/* Footer */
+footer { padding: 4rem 5%; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; color: var(--text-sub); font-size: 0.9rem; }
+
+/* Responsive */
+@media (max-width: 768px) {
+    nav { display: none; }
+    .logo .full-name { display: none; }
+}
+

@@ -1,0 +1,86 @@
+/* =====================================================
+   CSS Variables - AAL (All About Logistics)
+   ===================================================== */
+
+:root {
+    /* Base Colors */
+    --bg-color: #0b0b0d;
+    --text-main: #ffffff;
+    --text-sub: #949494;
+    --accent-color: #3b82f6; /* Blue */
+    --card-bg: #141416;
+    --border-color: rgba(255, 255, 255, 0.08);
+    --font-main: 'Inter', 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    --transition: all 0.3s ease;
+
+    /* Currency Colors for Graph */
+    --c-usd: #3b82f6; /* Blue */
+    --c-jpy: #ec4899; /* Pink */
+    --c-cny: #eab308; /* Yellow */
+    --c-eur: #22c55e; /* Green */
+    --c-hkd: #a855f7; /* Purple */
+    --c-gbp: #06b6d4; /* Cyan */
+    --c-chf: #f59e0b; /* Amber */
+    --c-cad: #10b981; /* Emerald */
+    --c-rub: #ef4444; /* Red */
+
+    /* Trade Statistics Colors */
+    --c-trade-export: #3b82f6; /* Blue for Export */
+    --c-trade-import: #ef4444; /* Red for Import */
+    --c-trade-balance: #22c55e; /* Green for Trade Balance */
+    --c-trade-balance-surplus: #22c55e; /* Green for Surplus */
+    --c-trade-balance-deficit: #f97316; /* Orange for Deficit */
+    --c-trade-growth-export: #a855f7; /* Purple for Export Growth Rate */
+    --c-trade-growth-import: #14b8a6; /* Teal for Import Growth Rate */
+    --c-trade-growth-line: #a855f7; /* Purple for Growth Rate Line (unified) */
+    
+    /* Employment Statistics Colors */
+    --c-employment-unemployment: #ef4444; /* Red for Unemployment Rate */
+    --c-employment-employment: #22c55e; /* Green for Employment Rate */
+    --c-employment-employed: #3b82f6; /* Blue for Employed */
+    
+    /* International Interest Rates Colors */
+    --c-interest-kor: #3b82f6;  /* Blue - 한국 */
+    --c-interest-usa: #ef4444;  /* Red - 미국 */
+    --c-interest-jpn: #ec4899;  /* Pink - 일본 */
+    --c-interest-chn: #eab308;  /* Yellow - 중국 */
+    --c-interest-gbr: #06b6d4;  /* Cyan - 영국 */
+    --c-interest-deu: #22c55e;  /* Green - 독일 */
+    --c-interest-fra: #a855f7;  /* Purple - 프랑스 */
+    --c-interest-ita: #f59e0b;  /* Amber - 이탈리아 */
+    --c-interest-esp: #10b981;  /* Emerald - 스페인 */
+    --c-interest-can: #14b8a6;  /* Teal - 캐나다 */
+    --c-interest-aus: #f97316;  /* Orange - 호주 */
+    --c-interest-nzl: #84cc16;  /* Lime - 뉴질랜드 */
+    --c-interest-bra: #22c55e;  /* Green - 브라질 */
+    --c-interest-ind: #8b5cf6;  /* Violet - 인도 */
+    --c-interest-rus: #ef4444;  /* Red - 러시아 */
+
+    /* Inflation Colors */
+    --c-cpi-total: #3b82f6;      /* Blue - 총지수 */
+    --c-cpi-fresh: #22c55e;      /* Green - 신선식품 */
+    --c-cpi-industrial: #f59e0b;  /* Amber - 공업제품 */
+
+    /* GDP Colors */
+    --c-gdp-total: #3b82f6;      /* Blue - GDP 총액 */
+    --c-gdp-consumption: #22c55e; /* Green - 소비 */
+    --c-gdp-investment: #f59e0b;  /* Amber - 투자 */
+    
+    /* Global Alarm Colors */
+    --c-alert-critical: #ef4444; /* Red for Critical Alerts */
+    --c-alert-warning: #f59e0b;  /* Amber for Warning */
+    --c-alert-info: #3b82f6;     /* Blue for Info */
+    
+    /* Severity Colors */
+    --severity-extreme: #991b1b;
+    --severity-extreme-bg: #7f1d1d;
+    --severity-severe: #dc2626;
+    --severity-severe-bg: #991b1b;
+    --severity-high: #ea580c;
+    --severity-high-bg: #c2410c;
+    --severity-moderate: #f59e0b;
+    --severity-moderate-bg: #d97706;
+    --severity-low: #3b82f6;
+    --severity-low-bg: #2563eb;
+}
+
