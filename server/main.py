@@ -4,6 +4,10 @@ import requests
 import os
 from dotenv import load_dotenv
 from pathlib import Path
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.interval import IntervalTrigger
+import atexit
+import logging
 import bok_backend  # Import the BOK backend module
 import gdelt_backend  # Import the GDELT backend module
 
@@ -18,7 +22,12 @@ BASE_DIR = Path(__file__).parent.parent
 app = Flask(__name__)
 CORS(app) # Enable CORS for all routes (for development)
 
+# 로깅 설정
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 ECOS_API_KEY = os.getenv("ECOS_API_KEY")
+GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
 API_BASE_URL = "http://ecos.bok.or.kr/api"
 
 # API Routes (must be defined before static file routes)
@@ -269,6 +278,16 @@ def get_logistics_indices():
         "BDI": {"value": "1500.00", "change": "-5.0", "trend": "down"}
     })
 
+@app.route('/api/config/google-maps-key', methods=['GET'])
+def get_google_maps_key():
+    """
+    Google Maps API 키를 반환합니다.
+    클라이언트에서 환경 변수로부터 안전하게 API 키를 가져올 수 있도록 합니다.
+    """
+    if not GOOGLE_MAPS_API_KEY:
+        return jsonify({"error": "Google Maps API key is not configured"}), 500
+    return jsonify({"apiKey": GOOGLE_MAPS_API_KEY})
+
 
 # API Proxy Endpoint (Legacy - keeping for now, but BOK logic is preferred via bok_backend)
 @app.route('/api/exchange-rates', methods=['GET'])
@@ -303,10 +322,53 @@ def serve_index():
     else:
         return "File not found: frontend/ai_studio_code_F2.html", 404
 
+# GDELT 데이터 자동 업데이트 스케줄러
+scheduler = BackgroundScheduler(daemon=True)
+
+def update_gdelt_data_job():
+    """15분마다 실행되는 GDELT 데이터 업데이트 작업"""
+    try:
+        logger.info("Starting GDELT data update...")
+        result = gdelt_backend.update_gdelt_data()
+        if result.get('error'):
+            logger.error(f"GDELT update error: {result['error']}")
+        else:
+            if result.get('downloaded'):
+                logger.info(f"GDELT file downloaded: {result.get('file_path')}")
+            if result.get('cleaned_dirs', 0) > 0:
+                logger.info(f"Cleaned up {result['cleaned_dirs']} old directories")
+    except Exception as e:
+        logger.error(f"Error in GDELT update job: {e}", exc_info=True)
+
+# 서버 시작 시 즉시 한 번 실행 (초기 데이터 다운로드)
+# 그리고 15분마다 실행
+scheduler.add_job(
+    func=update_gdelt_data_job,
+    trigger=IntervalTrigger(minutes=15),
+    id='gdelt_update_job',
+    name='Update GDELT data every 15 minutes',
+    replace_existing=True
+)
+
+# 스케줄러 시작
+scheduler.start()
+
+# 애플리케이션 종료 시 스케줄러 종료
+atexit.register(lambda: scheduler.shutdown())
+
 if __name__ == '__main__':
     print("="*50)
     print("Starting Flask Server on http://localhost:5000")
     print(f"BASE_DIR: {BASE_DIR.resolve()}")
     print(f"HTML file exists: {(BASE_DIR / 'frontend' / 'ai_studio_code_F2.html').exists()}")
+    print("GDELT auto-update: Every 15 minutes")
+    print("GDELT data path:", gdelt_backend.get_gdelt_base_path())
     print("="*50)
+    
+    # 서버 시작 시 즉시 GDELT 데이터 업데이트 시도
+    try:
+        update_gdelt_data_job()
+    except Exception as e:
+        logger.warning(f"Initial GDELT update failed: {e}")
+    
     app.run(port=5000, debug=True)

@@ -11,10 +11,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
     <!-- Google Maps API -->
-    <!-- API 키는 환경 변수나 설정에서 로드하세요 -->
+    <!-- API 키는 환경 변수에서 로드합니다 -->
     <script>
-        // Google Maps API 키 설정 (실제 사용 시 환경 변수에서 로드)
-        window.GOOGLE_MAPS_API_KEY = 'AIzaSyC1e4B8-yeTWPCN1Gy_31QCt8XRg4fdXXc';
+        // Google Maps API 키를 백엔드에서 가져옵니다
+        let googleMapsApiKey = null;
         
         // Google Maps API 로드 완료 콜백
         function initMapsAPI() {
@@ -22,8 +22,33 @@
                 checkAndInitMap();
             }
         }
+        
+        // API 키를 가져와서 Google Maps API를 로드합니다
+        async function loadGoogleMapsAPI() {
+            try {
+                const response = await fetch('/api/config/google-maps-key');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch Google Maps API key');
+                }
+                const data = await response.json();
+                googleMapsApiKey = data.apiKey;
+                window.GOOGLE_MAPS_API_KEY = googleMapsApiKey;
+                
+                // API 키를 가져온 후 Google Maps API 스크립트 로드
+                const script = document.createElement('script');
+                script.src = `https://maps.googleapis.com/maps/api/js?key=${googleMapsApiKey}&libraries=visualization&callback=initMapsAPI&loading=async`;
+                script.async = true;
+                script.defer = true;
+                script.onerror = () => console.error('Failed to load Google Maps API');
+                document.head.appendChild(script);
+            } catch (error) {
+                console.error('Error loading Google Maps API key:', error);
+            }
+        }
+        
+        // 페이지 로드 시 API 키 가져오기
+        loadGoogleMapsAPI();
     </script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC1e4B8-yeTWPCN1Gy_31QCt8XRg4fdXXc&libraries=visualization&callback=initMapsAPI&loading=async" async defer onerror="console.error('Failed to load Google Maps API')"></script>
     <style>
         /* --- RESET & VARIABLES --- */
         :root {

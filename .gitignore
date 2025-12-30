@@ -42,3 +42,6 @@ test_results/
 # Cursor
 .cursor/debug.log
 
+# GDELT Data (자동 다운로드되는 데이터)
+data/gdelt/
+

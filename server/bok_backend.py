@@ -12,9 +12,8 @@ logger = logging.getLogger(__name__)
 
 ECOS_API_KEY = os.getenv("ECOS_API_KEY")
 if not ECOS_API_KEY:
-    # Fallback to the key in the user provided JS if env var not set
-    ECOS_API_KEY = "QC05D99HP8DZ9W23YBNI"
-    logger.warning("Using fallback API key. Please set ECOS_API_KEY in .env file.")
+    logger.error("ECOS_API_KEY is not set in .env file. Please set it in .env file.")
+    raise ValueError("ECOS_API_KEY is required. Please set it in .env file.")
 
 API_BASE_URL = "http://ecos.bok.or.kr/api"
 API_TIMEOUT = 30  # 30초 타임아웃
