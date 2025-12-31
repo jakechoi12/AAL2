@@ -376,6 +376,126 @@ def submit_quote_request(
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 
+@app.put("/api/quote/update/{bidding_no}", response_model=QuoteSubmitResponse, tags=["Quote"])
+def update_quote_request(
+    bidding_no: str,
+    request_data: QuoteRequestCreate,
+    db: Session = Depends(get_db)
+):
+    """
+    Update an existing quote request by bidding number
+    
+    This endpoint updates the quote request associated with the given bidding number
+    and regenerates the PDF.
+    """
+    try:
+        # Find the bidding record
+        bidding = db.query(Bidding).filter(Bidding.bidding_no == bidding_no).first()
+        
+        if not bidding:
+            raise HTTPException(status_code=404, detail=f"Bidding number {bidding_no} not found")
+        
+        # Get the associated quote request
+        quote_request = db.query(QuoteRequest).filter(QuoteRequest.id == bidding.quote_request_id).first()
+        
+        if not quote_request:
+            raise HTTPException(status_code=404, detail="Quote request not found")
+        
+        # Update customer info
+        customer = quote_request.customer
+        customer.company = request_data.customer.company
+        customer.job_title = request_data.customer.job_title
+        customer.name = request_data.customer.name
+        customer.phone = request_data.customer.phone
+        
+        # Parse dates
+        etd = parse_datetime(request_data.etd)
+        eta = parse_datetime(request_data.eta)
+        
+        # Update quote request fields
+        quote_request.trade_mode = request_data.trade_mode
+        quote_request.shipping_type = request_data.shipping_type
+        quote_request.load_type = request_data.load_type
+        quote_request.incoterms = request_data.incoterms
+        quote_request.pol = request_data.pol
+        quote_request.pod = request_data.pod
+        quote_request.etd = etd
+        quote_request.eta = eta
+        quote_request.is_dg = request_data.is_dg
+        quote_request.dg_class = request_data.dg_class
+        quote_request.dg_un = request_data.dg_un
+        quote_request.export_cc = request_data.export_cc
+        quote_request.import_cc = request_data.import_cc
+        quote_request.shipping_insurance = request_data.shipping_insurance
+        quote_request.pickup_required = request_data.pickup_required
+        quote_request.pickup_address = request_data.pickup_address
+        quote_request.delivery_required = request_data.delivery_required
+        quote_request.delivery_address = request_data.delivery_address
+        quote_request.invoice_value = request_data.invoice_value
+        quote_request.remark = request_data.remark
+        quote_request.updated_at = datetime.now()
+        
+        # Delete old cargo details and create new ones
+        db.query(CargoDetail).filter(CargoDetail.quote_request_id == quote_request.id).delete()
+        
+        for idx, cargo_data in enumerate(request_data.cargo):
+            cargo = CargoDetail(
+                quote_request_id=quote_request.id,
+                row_index=idx,
+                container_type=cargo_data.container_type,
+                truck_type=cargo_data.truck_type,
+                length=cargo_data.length,
+                width=cargo_data.width,
+                height=cargo_data.height,
+                qty=cargo_data.qty,
+                gross_weight=cargo_data.gross_weight,
+                cbm=cargo_data.cbm,
+                volume_weight=cargo_data.volume_weight,
+                chargeable_weight=cargo_data.chargeable_weight
+            )
+            db.add(cargo)
+        
+        db.flush()
+        
+        # Recalculate deadline
+        deadline = calculate_deadline(etd, request_data.shipping_type)
+        bidding.deadline = deadline
+        bidding.updated_at = datetime.now()
+        
+        # Regenerate PDF
+        pdf_dir = Path(__file__).parent / "generated_pdfs"
+        pdf_path = str(pdf_dir / f"RFQ_{bidding_no}.pdf")
+        
+        try:
+            db.refresh(quote_request)
+            pdf_generator = RFQPDFGenerator(bidding_no, quote_request, deadline)
+            pdf_generator.generate(pdf_path)
+            bidding.pdf_path = pdf_path
+        except Exception as pdf_error:
+            print(f"PDF regeneration error: {pdf_error}")
+        
+        db.commit()
+        
+        return QuoteSubmitResponse(
+            success=True,
+            message="Quote request updated successfully. RFQ regenerated.",
+            request_number=quote_request.request_number,
+            quote_request_id=quote_request.id,
+            bidding_no=bidding_no,
+            pdf_url=f"/api/quote/rfq/{bidding_no}/pdf" if bidding.pdf_path else None,
+            deadline=deadline.strftime("%Y-%m-%d %H:%M") if deadline else None
+        )
+        
+    except HTTPException:
+        raise
+    except ValueError as e:
+        db.rollback()
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
 @app.get("/api/quote/requests", tags=["Quote"])
 def get_quote_requests(
     status: Optional[str] = None,

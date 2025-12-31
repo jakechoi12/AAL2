@@ -64,6 +64,7 @@ class Port(Base):
 class ContainerType(Base):
     """
     Container Types for FCL shipments
+    Extended with ISO standards, dimensions, and weight specifications
     """
     __tablename__ = "container_types"
     
@@ -71,9 +72,31 @@ class ContainerType(Base):
     code = Column(String(20), unique=True, nullable=False)  # e.g., 20DC, 40DC, 40HC
     name = Column(String(50), nullable=False)  # e.g., 20 Dry Container
     description = Column(String(200), nullable=True)
+    
+    # Size and Category
+    size = Column(String(10), nullable=True)  # 20, 40, 4H (40HC)
+    category = Column(String(10), nullable=True)  # FR, DC, OT, RF, TK
     size_teu = Column(DECIMAL(3, 1), nullable=True)  # TEU size (1.0, 2.0)
-    max_weight_kg = Column(Integer, nullable=True)  # Max cargo weight
+    
+    # Standard Codes
+    iso_standard = Column(String(20), nullable=True)  # ISO code: 22P1, 22G0, 42P1 etc
+    customs_port_standard = Column(String(20), nullable=True)  # Customs/Port code: 22PC, 22GP etc
+    china_send_standard = Column(String(20), nullable=True)  # China send code: 22PF, GP20 etc
+    china_receive = Column(String(20), nullable=True)  # China receive code: 22PF, 22GP etc
+    
+    # Weight Specifications (kg)
+    tare_weight = Column(DECIMAL(10, 2), nullable=True)  # Container self weight
+    max_weight_kg = Column(Integer, nullable=True)  # Max cargo weight (max_payload)
+    
+    # Internal Dimensions (mm)
+    length_mm = Column(Integer, nullable=True)  # Internal length
+    width_mm = Column(Integer, nullable=True)  # Internal width
+    height_mm = Column(Integer, nullable=True)  # Internal height
+    
+    # Volume
     max_cbm = Column(DECIMAL(5, 2), nullable=True)  # Max CBM
+    cbm_limit = Column(Boolean, default=False)  # CBM limit flag (O=True, X=False)
+    
     is_active = Column(Boolean, default=True)
     sort_order = Column(Integer, default=0)
     created_at = Column(DateTime, server_default=func.now())

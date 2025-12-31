@@ -33,9 +33,31 @@ class ContainerTypeBase(BaseModel):
     code: str
     name: str
     description: Optional[str] = None
+    
+    # Size and Category
+    size: Optional[str] = None  # 20, 40, 4H
+    category: Optional[str] = None  # FR, DC, OT, RF, TK
     size_teu: Optional[float] = None
-    max_weight_kg: Optional[int] = None
+    
+    # Standard Codes
+    iso_standard: Optional[str] = None
+    customs_port_standard: Optional[str] = None
+    china_send_standard: Optional[str] = None
+    china_receive: Optional[str] = None
+    
+    # Weight Specifications (kg)
+    tare_weight: Optional[float] = None
+    max_weight_kg: Optional[int] = None  # max_payload
+    
+    # Internal Dimensions (mm)
+    length_mm: Optional[int] = None
+    width_mm: Optional[int] = None
+    height_mm: Optional[int] = None
+    
+    # Volume
     max_cbm: Optional[float] = None
+    cbm_limit: Optional[bool] = False
+    
     is_active: bool = True
     sort_order: int = 0
 

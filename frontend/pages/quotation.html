@@ -171,6 +171,23 @@
         .time-fields {
             display: none;
         }
+        
+        /* Date Validation Error */
+        .date-input-group.error {
+            border-color: #ef4444 !important;
+            background: rgba(239, 68, 68, 0.08);
+        }
+        .date-error-message {
+            color: #ef4444;
+            font-size: 0.75rem;
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .date-error-message i {
+            font-size: 0.7rem;
+        }
 
         /* Incoterms */
         .incoterm-card {
@@ -323,6 +340,124 @@
             background: rgba(239, 68, 68, 0.05);
         }
         
+        /* Weight Exceeded Warning - Fixed Position Tooltip */
+        .input-group {
+            position: relative;
+        }
+        .weight-warning {
+            position: absolute;
+            top: 0;
+            right: 0;
+            transform: translateY(-100%);
+            background: rgba(231, 76, 60, 0.95);
+            color: white;
+            font-size: 0.7rem;
+            padding: 6px 10px;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+            z-index: 100;
+            white-space: nowrap;
+            animation: tooltipFadeIn 0.2s ease;
+        }
+        .weight-warning::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            right: 12px;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 6px solid rgba(231, 76, 60, 0.95);
+        }
+        .weight-warning-line {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .weight-warning i {
+            font-size: 0.75rem;
+        }
+        .fcl-weight.exceeded {
+            border-color: #e74c3c !important;
+            background: rgba(231, 76, 60, 0.08) !important;
+        }
+        @keyframes tooltipFadeIn {
+            from { opacity: 0; transform: translateY(-90%); }
+            to { opacity: 1; transform: translateY(-100%); }
+        }
+        
+        /* Reefer Temperature Input - Matching DG Class Style */
+        .reefer-temp-section {
+            display: none;
+            margin-top: 12px;
+        }
+        .reefer-temp-section.show {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+        .reefer-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .reefer-input-group label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .reefer-input-group label i {
+            color: #00bcd4;
+        }
+        .temp-input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .temp-input {
+            flex: 1;
+            padding: 12px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            background: var(--input-bg);
+            color: var(--text-color);
+            font-size: 0.95rem;
+            text-align: center;
+        }
+        .temp-input:focus {
+            border-color: var(--accent-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(233, 30, 99, 0.1);
+        }
+        .temp-separator {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+        .temp-unit-toggle {
+            display: flex;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .temp-unit-btn {
+            padding: 12px 14px;
+            border: none;
+            background: var(--input-bg);
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .temp-unit-btn.active {
+            background: #00bcd4;
+            color: white;
+            font-weight: 500;
+        }
+        .temp-unit-btn:hover:not(.active) {
+            background: rgba(0, 188, 212, 0.1);
+        }
+        
         /* Loading Overlay */
         .loading-overlay {
             position: fixed;
@@ -397,6 +532,7 @@
             align-items: center;
             z-index: 10000;
             animation: fadeIn 0.3s ease;
+            padding: 20px;
         }
         .success-modal.show {
             display: flex;
@@ -405,96 +541,275 @@
             from { opacity: 0; }
             to { opacity: 1; }
         }
-        .success-modal-content {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 40px;
-            text-align: center;
-            max-width: 450px;
-            width: 90%;
+        
+        /* New RFQ Modal Styles */
+        .rfq-modal-content {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 30px 40px;
+            max-width: 720px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
             animation: scaleIn 0.3s ease;
+            color: #1f2937;
         }
         @keyframes scaleIn {
             from { transform: scale(0.9); opacity: 0; }
             to { transform: scale(1); opacity: 1; }
         }
-        .success-icon {
-            font-size: 60px;
-            color: #10b981;
-            margin-bottom: 20px;
-        }
-        .success-modal h3 {
-            color: var(--text-main);
-            font-size: 1.5rem;
-            margin-bottom: 25px;
-        }
-        .success-details {
-            background: rgba(59, 130, 246, 0.1);
-            border: 1px solid var(--accent-color);
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 25px;
-        }
-        .success-details .detail-item {
+        
+        .rfq-modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 8px 0;
-            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e5e7eb;
         }
-        .success-details .detail-item:last-child {
-            border-bottom: none;
-        }
-        .success-details .label {
-            color: var(--text-sub);
-            font-size: 0.9rem;
-        }
-        .success-details .value {
-            color: var(--accent-color);
-            font-weight: 700;
-            font-size: 1rem;
-        }
-        .success-actions {
+        .rfq-header-info {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 4px;
         }
-        .btn-pdf {
-            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-            color: white;
-            padding: 14px 24px;
+        .rfq-bidding-no {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #1f2937;
+        }
+        .rfq-deadline {
+            font-size: 0.85rem;
+            color: #6b7280;
+        }
+        .rfq-close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #9ca3af;
+            cursor: pointer;
+            padding: 5px;
+            transition: color 0.2s;
+        }
+        .rfq-close-btn:hover {
+            color: #1f2937;
+        }
+        
+        .rfq-modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #3b82f6;
+            margin-bottom: 25px;
+            text-align: left;
+        }
+        
+        .rfq-section {
+            margin-bottom: 20px;
+        }
+        .rfq-section-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .rfq-grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+        .rfq-field {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .rfq-field-label {
+            font-size: 0.75rem;
+            color: #9ca3af;
+            text-transform: uppercase;
+        }
+        .rfq-field-value {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #1f2937;
+        }
+        
+        .rfq-details-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .rfq-detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .rfq-detail-label {
+            font-size: 0.75rem;
+            color: #9ca3af;
+        }
+        .rfq-detail-value {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #1f2937;
+        }
+        
+        .rfq-schedule-grid {
+            display: grid;
+            grid-template-columns: auto 1fr auto 1fr;
+            gap: 15px;
+            align-items: center;
+        }
+        .rfq-schedule-item {
+            display: contents;
+        }
+        .rfq-schedule-label {
+            font-size: 0.8rem;
+            color: #9ca3af;
+            font-weight: 500;
+        }
+        .rfq-schedule-value {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #1f2937;
+        }
+        
+        .rfq-service-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .rfq-service-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .rfq-service-name {
+            font-size: 0.85rem;
+            color: #4b5563;
+            min-width: 180px;
+        }
+        .rfq-service-check {
+            font-size: 1rem;
+            width: 20px;
+            height: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .rfq-service-check.checked {
+            color: #10b981;
+        }
+        .rfq-service-check.unchecked {
+            color: #ef4444;
+        }
+        .rfq-service-address {
+            font-size: 0.85rem;
+            color: #3b82f6;
+            flex: 1;
+        }
+        .rfq-service-value {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #1f2937;
+        }
+        
+        .rfq-cargo-summary {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #1f2937;
+            padding: 10px 0;
+        }
+        
+        .rfq-info-messages {
+            background: #f9fafb;
             border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .rfq-info-messages p {
+            font-size: 0.8rem;
+            color: #6b7280;
+            margin: 5px 0;
+            line-height: 1.5;
+        }
+        
+        .rfq-action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: nowrap;
+        }
+        .rfq-btn {
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-size: 0.8rem;
             font-weight: 600;
             cursor: pointer;
+            transition: all 0.2s;
             border: none;
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 10px;
-            font-size: 1rem;
-            transition: all 0.2s;
+            gap: 6px;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
-        .btn-pdf:hover {
-            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
-            transform: translateY(-2px);
+        .rfq-btn-edit {
+            background: #eff6ff;
+            color: #3b82f6;
+            border: 1px solid #bfdbfe;
         }
-        .btn-pdf i {
-            font-size: 1.2rem;
+        .rfq-btn-edit:hover {
+            background: #dbeafe;
         }
-        .btn-close-modal {
-            background: transparent;
-            border: 1px solid var(--border-color);
-            color: var(--text-sub);
-            padding: 12px 24px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: all 0.2s;
+        .rfq-btn-support {
+            background: #ffffff;
+            color: #3b82f6;
+            border: 1px solid #3b82f6;
         }
-        .btn-close-modal:hover {
-            border-color: var(--text-main);
-            color: var(--text-main);
+        .rfq-btn-support:hover {
+            background: #eff6ff;
+        }
+        .rfq-btn-pdf {
+            background: #ef4444;
+            color: white;
+        }
+        .rfq-btn-pdf:hover {
+            background: #dc2626;
+        }
+        .rfq-btn-booking {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+        }
+        .rfq-btn-booking:hover:not(:disabled) {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        }
+        .rfq-btn-booking:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        
+        @media (max-width: 768px) {
+            .rfq-modal-content {
+                padding: 20px;
+            }
+            .rfq-grid-4 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .rfq-schedule-grid {
+                grid-template-columns: auto 1fr;
+            }
+            .rfq-action-buttons {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .rfq-btn {
+                flex: 1 1 45%;
+                justify-content: center;
+                min-width: 140px;
+            }
         }
 
         /* Autocomplete Styles */
@@ -610,26 +925,121 @@
     
     <!-- Success Modal -->
     <div class="success-modal" id="success-modal">
-        <div class="success-modal-content">
-            <div class="success-icon">
-                <i class="fas fa-check-circle"></i>
-            </div>
-            <h3>RFQ Submitted Successfully!</h3>
-            <div class="success-details">
-                <div class="detail-item">
-                    <span class="label">Bidding No</span>
-                    <span class="value" id="modal-bidding-no">-</span>
+        <div class="rfq-modal-content">
+            <!-- Header -->
+            <div class="rfq-modal-header">
+                <div class="rfq-header-info">
+                    <span class="rfq-bidding-no">Bidding No(<span id="modal-bidding-no">-</span>)</span>
+                    <span class="rfq-deadline">Deadline: <span id="modal-deadline">-</span></span>
                 </div>
-                <div class="detail-item">
-                    <span class="label">Deadline</span>
-                    <span class="value" id="modal-deadline">-</span>
-                </div>
-            </div>
-            <div class="success-actions">
-                <button class="btn btn-pdf" id="btn-download-pdf" onclick="downloadPDF()">
-                    <i class="fas fa-file-pdf"></i> Download RFQ PDF
+                <button class="rfq-close-btn" onclick="closeSuccessModal()">
+                    <i class="fas fa-times"></i>
                 </button>
-                <button class="btn btn-close-modal" onclick="closeSuccessModal()">Close</button>
+            </div>
+            
+            <!-- Title -->
+            <h2 class="rfq-modal-title">Thank you for your quotation request!</h2>
+            
+            <!-- Customer Section -->
+            <div class="rfq-section">
+                <div class="rfq-grid-4">
+                    <div class="rfq-field">
+                        <div class="rfq-field-label">Customer</div>
+                        <div class="rfq-field-value" id="modal-customer">-</div>
+                    </div>
+                    <div class="rfq-field">
+                        <div class="rfq-field-label">Name</div>
+                        <div class="rfq-field-value" id="modal-name">-</div>
+                    </div>
+                    <div class="rfq-field">
+                        <div class="rfq-field-label">E-mail</div>
+                        <div class="rfq-field-value" id="modal-email">-</div>
+                    </div>
+                    <div class="rfq-field">
+                        <div class="rfq-field-label">Phone</div>
+                        <div class="rfq-field-value" id="modal-phone">-</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quotation Details Section -->
+            <div class="rfq-section">
+                <div class="rfq-section-title">Quotation Details</div>
+                <div class="rfq-details-row">
+                    <div class="rfq-detail-item">
+                        <span class="rfq-detail-label">Trade Type</span>
+                        <span class="rfq-detail-value" id="modal-trade-type">-</span>
+                    </div>
+                    <div class="rfq-detail-item">
+                        <span class="rfq-detail-label">Shipping Mode</span>
+                        <span class="rfq-detail-value" id="modal-shipping-mode">-</span>
+                    </div>
+                    <div class="rfq-detail-item">
+                        <span class="rfq-detail-label">Incoterms</span>
+                        <span class="rfq-detail-value" id="modal-incoterms">-</span>
+                    </div>
+                    <div class="rfq-detail-item">
+                        <span class="rfq-detail-label">Load Type</span>
+                        <span class="rfq-detail-value" id="modal-load-type">-</span>
+                    </div>
+                    <div class="rfq-detail-item">
+                        <span class="rfq-detail-label">DG</span>
+                        <span class="rfq-detail-value" id="modal-dg">N</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Shipping Schedule Section -->
+            <div class="rfq-section">
+                <div class="rfq-section-title">Shipping Schedule</div>
+                <div class="rfq-schedule-grid">
+                    <div class="rfq-schedule-item">
+                        <span class="rfq-schedule-label">POL</span>
+                        <span class="rfq-schedule-value" id="modal-pol">-</span>
+                    </div>
+                    <div class="rfq-schedule-item">
+                        <span class="rfq-schedule-label">ETD</span>
+                        <span class="rfq-schedule-value" id="modal-etd">-</span>
+                    </div>
+                    <div class="rfq-schedule-item">
+                        <span class="rfq-schedule-label">POD</span>
+                        <span class="rfq-schedule-value" id="modal-pod">-</span>
+                    </div>
+                    <div class="rfq-schedule-item">
+                        <span class="rfq-schedule-label">ETA</span>
+                        <span class="rfq-schedule-value" id="modal-eta">-</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Additional Details Section -->
+            <div class="rfq-section">
+                <div class="rfq-section-title">Additional Details</div>
+                <div class="rfq-service-grid" id="modal-additional-details">
+                    <!-- Dynamically populated based on form visibility -->
+                </div>
+            </div>
+            
+            <!-- Cargo Details Section -->
+            <div class="rfq-section">
+                <div class="rfq-section-title">Cargo Details</div>
+                <div class="rfq-cargo-summary" id="modal-cargo-details">-</div>
+            </div>
+            
+            <!-- Info Messages -->
+            <div class="rfq-info-messages">
+                <p>※ Your quotation will be provided in real time, and you'll be notified once it's ready</p>
+                <p>※ For urgent or detailed inquiries, contact our representative below for real-time support.</p>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="rfq-action-buttons">
+                <button class="rfq-btn rfq-btn-edit" onclick="closeSuccessModal()">Edit</button>
+                <button class="rfq-btn rfq-btn-support">Connect to Support</button>
+                <button class="rfq-btn rfq-btn-pdf" id="btn-download-pdf" onclick="downloadPDF()">
+                    <i class="fas fa-file-pdf"></i> Download PDF
+                </button>
+                <button class="rfq-btn rfq-btn-booking">Go to Bidding List</button>
             </div>
         </div>
     </div>
@@ -709,7 +1119,7 @@
                 <div class="section-header" id="schedules-header">Shipping Schedules <i class="far fa-question-circle info-icon"></i></div>
                 <div class="grid-2" style="margin-bottom: 1rem;">
                     <div class="input-group">
-                        <label id="label-pol">Port of Loading</label>
+                        <label id="label-pol">Port of Loading <span class="text-red">*</span></label>
                         <div class="autocomplete-wrapper">
                             <div class="icon-input-wrapper">
                                 <i class="fas fa-map-marker-alt"></i>
@@ -720,7 +1130,7 @@
                         <div style="font-size: 0.75rem; color: var(--text-sub); margin-top:4px;">From</div>
                     </div>
                     <div class="input-group">
-                        <label id="label-pod">Port of Discharging</label>
+                        <label id="label-pod">Port of Discharging <span class="text-red">*</span></label>
                         <div class="autocomplete-wrapper">
                             <div class="icon-input-wrapper">
                                 <i class="fas fa-map-marker-alt"></i>
@@ -733,10 +1143,10 @@
                 </div>
                 <div class="grid-2">
                     <div class="input-group">
-                        <label>Estimated Departure</label>
+                        <label>Estimated Departure <span class="text-red">*</span></label>
                         <div class="icon-input-wrapper">
                             <i class="far fa-calendar"></i>
-                            <div class="date-input-group">
+                            <div class="date-input-group" id="etd-input-group">
                                 <input type="text" class="date-year" id="etd-year" placeholder="YYYY" maxlength="4" inputmode="numeric">
                                 <span class="date-separator">/</span>
                                 <input type="text" class="date-month" id="etd-month" placeholder="MM" maxlength="2" inputmode="numeric">
@@ -752,12 +1162,13 @@
                             <input type="hidden" id="input-etd">
                         </div>
                         <div style="font-size: 0.75rem; color: var(--text-sub); margin-top:4px;">ETD</div>
+                        <div class="date-error-message" id="etd-error" style="display:none;"><i class="fas fa-exclamation-circle"></i><span></span></div>
                     </div>
                     <div class="input-group">
-                        <label>Estimated Arrival</label>
+                        <label>Estimated Arrival <span class="text-red">*</span></label>
                         <div class="icon-input-wrapper">
                             <i class="far fa-calendar"></i>
-                            <div class="date-input-group">
+                            <div class="date-input-group" id="eta-input-group">
                                 <input type="text" class="date-year" id="eta-year" placeholder="YYYY" maxlength="4" inputmode="numeric">
                                 <span class="date-separator">/</span>
                                 <input type="text" class="date-month" id="eta-month" placeholder="MM" maxlength="2" inputmode="numeric">
@@ -773,6 +1184,7 @@
                             <input type="hidden" id="input-eta">
                         </div>
                         <div style="font-size: 0.75rem; color: var(--text-sub); margin-top:4px;">ETA</div>
+                        <div class="date-error-message" id="eta-error" style="display:none;"><i class="fas fa-exclamation-circle"></i><span></span></div>
                     </div>
                 </div>
             </div>
@@ -805,7 +1217,7 @@
                     <div id="fcl-view">
                         <div id="fcl-rows">
                             <div class="cargo-row" data-row-index="0">
-                                <div class="input-group"><label>Container Type</label><select class="form-input fcl-type"><option>20 Dry Container</option><option>40 Dry Container</option><option>40 HC Container</option></select></div>
+                                <div class="input-group"><label>Container Type</label><select class="form-input fcl-type"></select></div>
                                 <div class="input-group"><label>Gross Weight(KG) <span class="text-red">*</span></label><input type="text" class="form-input number-format fcl-weight" placeholder="0.00" inputmode="decimal" maxlength="10"></div>
                                 <div class="input-group"><label>Measures(CBM)</label><input type="text" class="form-input number-format fcl-cbm" placeholder="0.00" inputmode="decimal" maxlength="10"></div>
                                 <div class="input-group"><label>Qty</label><input type="text" class="form-input number-format fcl-qty" value="1" inputmode="numeric" maxlength="10"></div>
@@ -819,19 +1231,19 @@
                         <div id="lcl-rows">
                             <div class="cargo-row" data-row-index="0" style="grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 40px; align-items: end;">
                                 <div class="input-group">
-                                    <label>Length<br><span style="font-size:0.75rem; color:#888;">(CM)</span></label>
+                                    <label>Length <span class="text-red">*</span><br><span style="font-size:0.75rem; color:#888;">(CM)</span></label>
                                     <input type="text" class="form-input lcl-calc-trigger number-format lcl-l" placeholder="0" inputmode="numeric" maxlength="3">
                                 </div>
                                 <div class="input-group">
-                                    <label>Width<br><span style="font-size:0.75rem; color:#888;">(CM)</span></label>
+                                    <label>Width <span class="text-red">*</span><br><span style="font-size:0.75rem; color:#888;">(CM)</span></label>
                                     <input type="text" class="form-input lcl-calc-trigger number-format lcl-w" placeholder="0" inputmode="numeric" maxlength="3">
                                 </div>
                                 <div class="input-group">
-                                    <label>Height<br><span style="font-size:0.75rem; color:#888;">(CM)</span></label>
+                                    <label>Height <span class="text-red">*</span><br><span style="font-size:0.75rem; color:#888;">(CM)</span></label>
                                     <input type="text" class="form-input lcl-calc-trigger number-format lcl-h" placeholder="0" inputmode="numeric" maxlength="3">
                                 </div>
                                 <div class="input-group">
-                                    <label>Pkg Qty<br><span style="font-size:0.75rem; color:#888;">(PCS)</span></label>
+                                    <label>Pkg Qty <span class="text-red">*</span><br><span style="font-size:0.75rem; color:#888;">(PCS)</span></label>
                                     <input type="text" class="form-input lcl-calc-trigger number-format lcl-qty" value="1" inputmode="numeric" maxlength="10">
                                 </div>
                                 <div class="input-group">
@@ -852,19 +1264,19 @@
                         <div id="air-rows">
                             <div class="cargo-row" data-row-index="0" style="grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 40px; align-items: end;">
                                 <div class="input-group">
-                                    <label>Length<br><span style="font-size:0.75rem; color:#888;">(CM)</span></label>
+                                    <label>Length <span class="text-red">*</span><br><span style="font-size:0.75rem; color:#888;">(CM)</span></label>
                                     <input type="text" class="form-input air-calc-trigger number-format air-l" placeholder="0" inputmode="numeric" maxlength="3">
                                 </div>
                                 <div class="input-group">
-                                    <label>Width<br><span style="font-size:0.75rem; color:#888;">(CM)</span></label>
+                                    <label>Width <span class="text-red">*</span><br><span style="font-size:0.75rem; color:#888;">(CM)</span></label>
                                     <input type="text" class="form-input air-calc-trigger number-format air-w" placeholder="0" inputmode="numeric" maxlength="3">
                                 </div>
                                 <div class="input-group">
-                                    <label>Height<br><span style="font-size:0.75rem; color:#888;">(CM)</span></label>
+                                    <label>Height <span class="text-red">*</span><br><span style="font-size:0.75rem; color:#888;">(CM)</span></label>
                                     <input type="text" class="form-input air-calc-trigger number-format air-h" placeholder="0" inputmode="numeric" maxlength="3">
                                 </div>
                                 <div class="input-group">
-                                    <label>Pkg Qty<br><span style="font-size:0.75rem; color:#888;">(PCS)</span></label>
+                                    <label>Pkg Qty <span class="text-red">*</span><br><span style="font-size:0.75rem; color:#888;">(PCS)</span></label>
                                     <input type="text" class="form-input air-calc-trigger number-format air-qty" value="1" inputmode="numeric" maxlength="10">
                                 </div>
                                 <div class="input-group">
@@ -917,6 +1329,25 @@
                     <div class="input-group"><label>DG Class</label><input type="text" class="form-input" id="dg-class" placeholder="e.g. 3" maxlength="1"></div>
                     <div class="input-group"><label>UN Number</label><input type="text" class="form-input" id="dg-un" placeholder="e.g. 1203" maxlength="4"></div>
                 </div>
+
+                <!-- Reefer Temperature Section -->
+                <div class="reefer-temp-section" id="reefer-temp-section">
+                    <div class="reefer-input-group">
+                        <label><i class="fas fa-thermometer-half"></i> Storage Temperature</label>
+                        <div class="temp-input-wrapper">
+                            <input type="text" class="form-input temp-input" id="temp-min" placeholder="Min" maxlength="5">
+                            <span class="temp-separator">~</span>
+                            <input type="text" class="form-input temp-input" id="temp-max" placeholder="Max" maxlength="5">
+                        </div>
+                    </div>
+                    <div class="reefer-input-group">
+                        <label>Unit</label>
+                        <div class="temp-unit-toggle">
+                            <button type="button" class="temp-unit-btn active" data-unit="C" onclick="setTempUnit('C')">°C</button>
+                            <button type="button" class="temp-unit-btn" data-unit="F" onclick="setTempUnit('F')">°F</button>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Additional Details -->
@@ -953,7 +1384,7 @@
                             <label class="radio-label checked"><input type="radio" name="pickup" value="no" checked onchange="toggleAddr('pickup-addr', false)"> No</label>
                         </div>
                         <div class="input-group" id="pickup-addr-group" style="display:none;">
-                            <label>Address</label>
+                            <label>Address <span class="text-red">*</span></label>
                             <input type="text" class="form-input" id="pickup-addr" placeholder="Full Pickup Address" maxlength="100">
                         </div>
                     </div>
@@ -967,14 +1398,14 @@
                             <label class="radio-label checked"><input type="radio" name="delivery" value="no" checked onchange="toggleAddr('delivery-addr', false)"> No</label>
                         </div>
                         <div class="input-group" id="delivery-addr-group" style="display:none;">
-                            <label>Address</label>
+                            <label>Address <span class="text-red">*</span></label>
                             <input type="text" class="form-input" id="delivery-addr" placeholder="Full Delivery Address" maxlength="100">
                         </div>
                     </div>
                 </div>
 
                 <div class="detail-row" id="row-invoice">
-                    <label>Invoice Value(USD)</label>
+                    <label>Invoice Value(USD) <span class="text-red">*</span></label>
                     <div class="input-group" style="width: 200px;">
                         <input type="text" class="form-input number-format" id="invoice-val" placeholder="0" inputmode="numeric" maxlength="20">
                     </div>
@@ -1001,7 +1432,7 @@
                 <div id="remark-helper" class="remark-helper" style="display:none;"></div>
                 <textarea class="form-input" id="remark-textarea" style="height: 100px; resize: none;" placeholder="Any special instructions..." maxlength="500"></textarea>
                 <div id="all-notice" class="remark-helper" style="display:none; margin-top:10px; background:rgba(234, 179, 8, 0.1); border-color:#eab308; color:#eab308;">
-                    ※ A quotation is required for FCL, LCL, and Air freight
+                    ※ A quotation is required for FCL, LCL, BULK, and Air freight
                 </div>
             </div>
 
@@ -1069,8 +1500,263 @@
             trade: 'export',
             ship: 'ocean',
             incoterms: 'FOB',
-            load: 'FCL'
+            load: 'FCL',
+            containerTypes: []  // Container types from API
         };
+
+        // ==========================================
+        // CONTAINER TYPE FUNCTIONS
+        // ==========================================
+        
+        /**
+         * Fetch container types from API
+         */
+        async function fetchContainerTypes() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/container-types`);
+                if (!response.ok) throw new Error('Failed to fetch container types');
+                
+                const data = await response.json();
+                state.containerTypes = data;
+                populateContainerTypeDropdowns();
+                console.log(`[OK] Loaded ${data.length} container types`);
+            } catch (error) {
+                console.error('[ERROR] Failed to fetch container types:', error);
+                // Fallback to default options if API fails
+                state.containerTypes = [
+                    { code: '20DC', name: '20 Dry Container' },
+                    { code: '40DC', name: '40 Dry Container' },
+                    { code: '4HDC', name: '40 HC Dry Container' }
+                ];
+                populateContainerTypeDropdowns();
+            }
+        }
+        
+        /**
+         * Populate all container type dropdowns with fetched data
+         */
+        function populateContainerTypeDropdowns() {
+            const dropdowns = document.querySelectorAll('.fcl-type');
+            dropdowns.forEach(dropdown => {
+                const currentValue = dropdown.value;
+                dropdown.innerHTML = '';
+                
+                state.containerTypes.forEach(ct => {
+                    const option = document.createElement('option');
+                    option.value = ct.name;
+                    option.textContent = ct.name;
+                    option.dataset.code = ct.code;
+                    option.dataset.maxWeight = ct.max_weight_kg || 0;
+                    dropdown.appendChild(option);
+                });
+                
+                // Restore previous selection if exists
+                if (currentValue) {
+                    const matchingOption = Array.from(dropdown.options).find(opt => opt.value === currentValue);
+                    if (matchingOption) {
+                        dropdown.value = currentValue;
+                    }
+                }
+            });
+        }
+
+        // ==========================================
+        // FCL WEIGHT VALIDATION FUNCTIONS
+        // ==========================================
+        
+        /**
+         * Validate FCL weight against container max payload
+         */
+        function validateFclWeight(row) {
+            const select = row.querySelector('.fcl-type');
+            const weightInput = row.querySelector('.fcl-weight');
+            
+            if (!select || !weightInput) return true;
+            
+            const selectedOption = select.options[select.selectedIndex];
+            const containerCode = selectedOption?.dataset?.code;
+            const maxPayload = parseInt(selectedOption?.dataset?.maxWeight) || 0;
+            const inputWeight = parseFloat(weightInput.value.replace(/,/g, '')) || 0;
+            
+            // Show/hide warning based on weight comparison
+            if (maxPayload > 0 && inputWeight > maxPayload) {
+                showWeightWarning(row, containerCode, maxPayload, inputWeight);
+                weightInput.classList.add('exceeded');
+                return false;
+            } else {
+                hideWeightWarning(row);
+                weightInput.classList.remove('exceeded');
+                return true;
+            }
+        }
+        
+        /**
+         * Show weight exceeded warning tooltip
+         */
+        function showWeightWarning(row, containerCode, maxPayload, inputWeight) {
+            // Remove existing warning if any
+            hideWeightWarning(row);
+            
+            const weightInputGroup = row.querySelector('.fcl-weight')?.closest('.input-group');
+            if (!weightInputGroup) return;
+            
+            const warningDiv = document.createElement('div');
+            warningDiv.className = 'weight-warning';
+            warningDiv.innerHTML = `
+                <div class="weight-warning-line">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>Max payload exceeded!</span>
+                </div>
+                <div class="weight-warning-line">
+                    <span>${containerCode} limit: ${maxPayload.toLocaleString()} KG</span>
+                </div>
+            `;
+            
+            weightInputGroup.appendChild(warningDiv);
+        }
+        
+        /**
+         * Hide weight exceeded warning tooltip
+         */
+        function hideWeightWarning(row) {
+            const existingWarning = row.querySelector('.weight-warning');
+            if (existingWarning) {
+                existingWarning.remove();
+            }
+        }
+        
+        /**
+         * Validate all FCL rows and return list of exceeded rows
+         */
+        function validateAllFclWeights() {
+            const exceededRows = [];
+            const fclRows = document.querySelectorAll('#fcl-rows .cargo-row');
+            
+            fclRows.forEach((row, idx) => {
+                const select = row.querySelector('.fcl-type');
+                const weightInput = row.querySelector('.fcl-weight');
+                
+                if (!select || !weightInput) return;
+                
+                const selectedOption = select.options[select.selectedIndex];
+                const containerCode = selectedOption?.dataset?.code;
+                const containerName = selectedOption?.value;
+                const maxPayload = parseInt(selectedOption?.dataset?.maxWeight) || 0;
+                const inputWeight = parseFloat(weightInput.value.replace(/,/g, '')) || 0;
+                
+                if (maxPayload > 0 && inputWeight > maxPayload) {
+                    exceededRows.push({
+                        rowIndex: idx + 1,
+                        containerCode,
+                        containerName,
+                        maxPayload,
+                        inputWeight
+                    });
+                }
+            });
+            
+            return exceededRows;
+        }
+        
+        /**
+         * Show confirmation modal for weight exceeded
+         */
+        function showWeightExceededModal(exceededRows) {
+            return new Promise((resolve) => {
+                // Create modal overlay
+                const overlay = document.createElement('div');
+                overlay.className = 'weight-exceeded-modal-overlay';
+                overlay.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: rgba(0, 0, 0, 0.6);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 10000;
+                `;
+                
+                // Build exceeded items list
+                const itemsList = exceededRows.map(item => `
+                    <li>
+                        <strong>Row ${item.rowIndex}:</strong> ${item.containerCode} 
+                        (${item.inputWeight.toLocaleString()} KG / Max: ${item.maxPayload.toLocaleString()} KG)
+                    </li>
+                `).join('');
+                
+                // Create modal content
+                const modal = document.createElement('div');
+                modal.style.cssText = `
+                    background: white;
+                    border-radius: 12px;
+                    padding: 24px;
+                    max-width: 450px;
+                    width: 90%;
+                    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+                `;
+                modal.innerHTML = `
+                    <div style="text-align: center; margin-bottom: 16px;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #f59e0b;"></i>
+                    </div>
+                    <h3 style="margin: 0 0 12px 0; text-align: center; color: #1f2937;">Weight Limit Exceeded</h3>
+                    <p style="color: #6b7280; margin-bottom: 16px; text-align: center;">
+                        The following cargo rows exceed the container's maximum payload:
+                    </p>
+                    <ul style="background: #fef3c7; padding: 12px 12px 12px 32px; border-radius: 8px; margin-bottom: 20px; color: #92400e; font-size: 0.9rem;">
+                        ${itemsList}
+                    </ul>
+                    <p style="color: #6b7280; margin-bottom: 20px; text-align: center; font-size: 0.9rem;">
+                        Do you want to continue anyway?
+                    </p>
+                    <div style="display: flex; gap: 12px; justify-content: center;">
+                        <button id="weight-modal-cancel" style="
+                            padding: 10px 24px;
+                            border: 1px solid #d1d5db;
+                            background: white;
+                            border-radius: 8px;
+                            cursor: pointer;
+                            font-size: 0.9rem;
+                            color: #374151;
+                        ">Cancel</button>
+                        <button id="weight-modal-continue" style="
+                            padding: 10px 24px;
+                            border: none;
+                            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+                            color: white;
+                            border-radius: 8px;
+                            cursor: pointer;
+                            font-size: 0.9rem;
+                            font-weight: 500;
+                        ">Continue Anyway</button>
+                    </div>
+                `;
+                
+                overlay.appendChild(modal);
+                document.body.appendChild(overlay);
+                
+                // Button event handlers
+                document.getElementById('weight-modal-cancel').onclick = () => {
+                    overlay.remove();
+                    resolve(false);
+                };
+                
+                document.getElementById('weight-modal-continue').onclick = () => {
+                    overlay.remove();
+                    resolve(true);
+                };
+                
+                // Close on overlay click
+                overlay.onclick = (e) => {
+                    if (e.target === overlay) {
+                        overlay.remove();
+                        resolve(false);
+                    }
+                };
+            });
+        }
 
         // ==========================================
         // PORT AUTOCOMPLETE FUNCTIONS
@@ -1312,6 +1998,9 @@
             setTrade('export'); // Init Trade Mode (Export as default)
             setShip('ocean'); // Init Load Types
             
+            // Fetch container types from API
+            fetchContainerTypes();
+            
             const inputs = ['input-pol', 'input-pod', 'fcl-type', 'c-company', 'c-name', 'c-email', 'c-phone'];
             inputs.forEach(id => {
                 const el = document.getElementById(id);
@@ -1334,6 +2023,25 @@
                     formatNumberInput(this);
                 });
             });
+            
+            // FCL Weight Validation Listeners
+            document.querySelectorAll('.fcl-weight').forEach(el => {
+                el.addEventListener('input', function() {
+                    const row = this.closest('.cargo-row');
+                    if (row) validateFclWeight(row);
+                });
+            });
+            document.querySelectorAll('.fcl-type').forEach(el => {
+                el.addEventListener('change', function() {
+                    const row = this.closest('.cargo-row');
+                    if (row) validateFclWeight(row);
+                    checkReeferContainer(); // Check for Reefer container
+                });
+            });
+            
+            // Reefer Temperature Input Listeners
+            document.getElementById('temp-min')?.addEventListener('input', updateSummary);
+            document.getElementById('temp-max')?.addEventListener('input', updateSummary);
             
             // Integer-only Number Format Listeners
             document.querySelectorAll('.number-format-int').forEach(el => {
@@ -1360,6 +2068,20 @@
             // Initialize date input auto-focus
             initDateInputAutoFocus('etd');
             initDateInputAutoFocus('eta');
+            
+            // Date validation listeners
+            ['etd-year', 'etd-month', 'etd-day', 'eta-year', 'eta-month', 'eta-day'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.addEventListener('blur', validateDates);
+                    el.addEventListener('input', function() {
+                        // Only validate when field is complete
+                        if (this.value.length === parseInt(this.maxLength)) {
+                            validateDates();
+                        }
+                    });
+                }
+            });
 
             // Initialize Additional Details visibility based on default Trade Mode + Incoterms
             updateAdditionalDetails();
@@ -1416,6 +2138,120 @@
             if (!el) return 0;
             const value = el.value.replace(/,/g, '');
             return parseFloat(value) || 0;
+        }
+
+        // ==========================================
+        // DATE VALIDATION FUNCTIONS
+        // ==========================================
+        
+        /**
+         * Get date from individual input fields
+         */
+        function getDateFromInputs(prefix) {
+            const year = document.getElementById(`${prefix}-year`)?.value;
+            const month = document.getElementById(`${prefix}-month`)?.value;
+            const day = document.getElementById(`${prefix}-day`)?.value;
+            
+            if (!year || !month || !day || year.length !== 4) return null;
+            
+            return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+        }
+        
+        /**
+         * Get today's date at midnight
+         */
+        function getTodayDate() {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            return today;
+        }
+        
+        /**
+         * Show date error message
+         */
+        function showDateError(prefix, message) {
+            const errorDiv = document.getElementById(`${prefix}-error`);
+            const inputGroup = document.getElementById(`${prefix}-input-group`);
+            
+            if (errorDiv) {
+                errorDiv.querySelector('span').textContent = message;
+                errorDiv.style.display = 'flex';
+            }
+            if (inputGroup) {
+                inputGroup.classList.add('error');
+            }
+        }
+        
+        /**
+         * Hide date error message
+         */
+        function hideDateError(prefix) {
+            const errorDiv = document.getElementById(`${prefix}-error`);
+            const inputGroup = document.getElementById(`${prefix}-input-group`);
+            
+            if (errorDiv) {
+                errorDiv.style.display = 'none';
+            }
+            if (inputGroup) {
+                inputGroup.classList.remove('error');
+            }
+        }
+        
+        /**
+         * Validate ETD and ETA dates
+         * Returns true if valid, false if invalid
+         */
+        function validateDates() {
+            // Skip validation for domestic mode
+            if (state.trade === 'domestic') {
+                hideDateError('etd');
+                hideDateError('eta');
+                return true;
+            }
+            
+            const today = getTodayDate();
+            const etdDate = getDateFromInputs('etd');
+            const etaDate = getDateFromInputs('eta');
+            
+            let isValid = true;
+            
+            // Validate ETD
+            if (etdDate) {
+                // ETD cannot be in the past
+                if (etdDate < today) {
+                    showDateError('etd', 'ETD cannot be in the past.');
+                    isValid = false;
+                }
+                // For Ocean/Air, ETD cannot be today
+                else if (etdDate.getTime() === today.getTime() && (state.ship === 'ocean' || state.ship === 'air')) {
+                    showDateError('etd', 'Please check ETD.');
+                    isValid = false;
+                } else {
+                    hideDateError('etd');
+                }
+            } else {
+                hideDateError('etd');
+            }
+            
+            // Validate ETA
+            if (etaDate) {
+                // ETA cannot be in the past
+                if (etaDate < today) {
+                    showDateError('eta', 'ETA cannot be in the past.');
+                    isValid = false;
+                }
+                // ETA cannot be earlier than ETD
+                else if (etdDate && etaDate < etdDate) {
+                    showDateError('eta', 'ETA cannot be earlier than ETD.');
+                    isValid = false;
+                } else {
+                    hideDateError('eta');
+                }
+            } else {
+                hideDateError('eta');
+            }
+            
+            return isValid;
         }
 
         // Date Input Auto-Focus Function
@@ -1675,6 +2511,7 @@
             }
             
             updateAdditionalDetails();
+            validateDates(); // Re-validate dates when trade mode changes
         }
 
         function setShip(val) {
@@ -1693,8 +2530,8 @@
                 truck: ["Pickup Address", "Delivery Address", "Weight/CBM"]
             };
             const current = labels[val] || labels.ocean;
-            document.getElementById('label-pol').innerText = current[0];
-            document.getElementById('label-pod').innerText = current[1];
+            document.getElementById('label-pol').innerHTML = current[0] + ' <span class="text-red">*</span>';
+            document.getElementById('label-pod').innerHTML = current[1] + ' <span class="text-red">*</span>';
             if(document.getElementById('label-rton')) document.getElementById('label-rton').innerText = current[2];
 
             // Clear POL/POD values when shipping type changes
@@ -1725,6 +2562,8 @@
             }
             
             updateSummary();
+            checkReeferContainer(); // Check for Reefer container on ship type change
+            validateDates(); // Re-validate dates when ship mode changes (Ocean/Air have different rules)
         }
 
         function renderLoadTypes(type) {
@@ -1735,7 +2574,7 @@
             if (type === 'ocean') opts = [
                 {code: 'FCL', label: 'FCL', sub: '(Full Container Load)', icon: 'fa-container-storage'}, 
                 {code: 'LCL', label: 'LCL', sub: '(Less-than-Container)', icon: 'fa-boxes'}, 
-                {code: 'Bulk', label: 'Ocean Express', sub: '(Fast Ship)', icon: 'fa-shipping-fast'}
+                {code: 'Bulk', label: 'BULK', sub: '(Bulk Cargo)', icon: 'fa-cubes'}
             ];
             else if (type === 'air') opts = [
                 {code: 'Express', label: 'Express', sub: '(Courier)', icon: 'fa-plane-departure'},
@@ -1764,6 +2603,7 @@
                     toggleCargoInput(opt.code);
                     updateAdditionalDetails();
                     updateSummary();
+                    checkReeferContainer(); // Check for Reefer container on load type change
                 };
                 container.appendChild(div);
             });
@@ -1885,6 +2725,21 @@
                 el.addEventListener('blur', function() { formatIntegerInput(this); });
             });
             
+            // FCL Weight Validation Listeners for new row
+            newRow.querySelectorAll('.fcl-weight').forEach(el => {
+                el.addEventListener('input', function() {
+                    const row = this.closest('.cargo-row');
+                    if (row) validateFclWeight(row);
+                });
+            });
+            newRow.querySelectorAll('.fcl-type').forEach(el => {
+                el.addEventListener('change', function() {
+                    const row = this.closest('.cargo-row');
+                    if (row) validateFclWeight(row);
+                    checkReeferContainer(); // Check for Reefer container
+                });
+            });
+            
             container.appendChild(newRow);
             updateRowCounter();
             updateSummary();
@@ -1907,11 +2762,57 @@
             calculateAllLCL();
             calculateAllAir();
             updateSummary();
+            checkReeferContainer(); // Re-check for Reefer container
         }
 
         function toggleDG(checked) {
             document.getElementById('dg-inputs').style.display = checked ? 'grid' : 'none';
         }
+
+        // Reefer Temperature Functions
+        let tempUnit = 'C'; // Default to Celsius
+        
+        function setTempUnit(unit) {
+            tempUnit = unit;
+            document.querySelectorAll('.temp-unit-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.unit === unit);
+            });
+            updateSummary(); // Update summary when unit changes
+        }
+        
+        function checkReeferContainer() {
+            const reeferSection = document.getElementById('reefer-temp-section');
+            if (!reeferSection) return;
+            
+            // Check if any FCL row has a Reefer container selected
+            let hasReefer = false;
+            
+            if (state.load === 'FCL') {
+                const fclRows = document.querySelectorAll('#fcl-rows .cargo-row');
+                fclRows.forEach(row => {
+                    const select = row.querySelector('.fcl-type');
+                    if (select) {
+                        const selectedOption = select.options[select.selectedIndex];
+                        const code = selectedOption?.dataset?.code || '';
+                        // Check if it's a Reefer container (RF category)
+                        if (code.includes('RF') || code === '20RF' || code === '4HRF') {
+                            hasReefer = true;
+                        }
+                    }
+                });
+            }
+            
+            // Show/hide reefer section
+            if (hasReefer) {
+                reeferSection.classList.add('show');
+            } else {
+                reeferSection.classList.remove('show');
+                // Clear inputs when hidden
+                document.getElementById('temp-min').value = '';
+                document.getElementById('temp-max').value = '';
+            }
+        }
+        
 
         function toggleAddr(id, show) {
             document.getElementById(id + '-group').style.display = show ? 'flex' : 'none';
@@ -2047,6 +2948,22 @@
                         cargoTxt = rowSummaries[0].replace('#1: ', '');
                     } else {
                         cargoTxt = rowSummaries.join('<br>') + `<br><span style="color:#888;">───</span><br><b>Total: ${totalQty} containers</b>`;
+                    }
+                    
+                    // Add Reefer Temperature if active
+                    const reeferSection = document.getElementById('reefer-temp-section');
+                    if (reeferSection && reeferSection.classList.contains('show')) {
+                        const tempMin = document.getElementById('temp-min')?.value.trim() || '';
+                        const tempMax = document.getElementById('temp-max')?.value.trim() || '';
+                        if (tempMin || tempMax) {
+                            const unitSymbol = tempUnit === 'C' ? '°C' : '°F';
+                            const tempRange = tempMin && tempMax 
+                                ? `${tempMin} ~ ${tempMax}${unitSymbol}`
+                                : tempMin 
+                                    ? `${tempMin}${unitSymbol}`
+                                    : `${tempMax}${unitSymbol}`;
+                            cargoTxt += `<br><span style="color: #00bcd4;"><i class="fas fa-thermometer-half"></i> ${tempRange}</span>`;
+                        }
                     }
                 } else {
                     cargoTxt = '-';
@@ -2225,6 +3142,12 @@
                 dg_class: document.getElementById('dg-class')?.value.trim() || '',
                 dg_un: document.getElementById('dg-un')?.value.trim() || '',
                 
+                // Reefer Temperature
+                is_reefer: document.getElementById('reefer-temp-section')?.classList.contains('show') || false,
+                temp_min: document.getElementById('temp-min')?.value.trim() || '',
+                temp_max: document.getElementById('temp-max')?.value.trim() || '',
+                temp_unit: tempUnit,
+                
                 // Additional Details
                 export_cc: document.querySelector('input[name="export-cc"]:checked')?.value === 'yes',
                 import_cc: document.querySelector('input[name="import-cc"]:checked')?.value === 'yes',
@@ -2343,18 +3266,47 @@
             const etdYear = document.getElementById('etd-year');
             const etdMonth = document.getElementById('etd-month');
             const etdDay = document.getElementById('etd-day');
+            const etdInputGroup = document.getElementById('etd-input-group');
             if (!etdYear.value || !etdMonth.value || !etdDay.value) {
                 errors.push('Estimated Departure Date (ETD) is required');
-                if (!etdYear.value) etdYear.parentElement.classList.add('error');
+                if (etdInputGroup) etdInputGroup.classList.add('error');
+            } else if (state.trade !== 'domestic') {
+                // Date validation for non-domestic
+                const today = getTodayDate();
+                const etdDate = getDateFromInputs('etd');
+                if (etdDate) {
+                    if (etdDate < today) {
+                        errors.push('ETD cannot be in the past');
+                        showDateError('etd', 'ETD cannot be in the past.');
+                    } else if (etdDate.getTime() === today.getTime() && (state.ship === 'ocean' || state.ship === 'air')) {
+                        errors.push('Please check ETD (cannot be today for Ocean/Air)');
+                        showDateError('etd', 'Please check ETD.');
+                    }
+                }
             }
             
             // ETA validation
             const etaYear = document.getElementById('eta-year');
             const etaMonth = document.getElementById('eta-month');
             const etaDay = document.getElementById('eta-day');
+            const etaInputGroup = document.getElementById('eta-input-group');
             if (!etaYear.value || !etaMonth.value || !etaDay.value) {
                 errors.push('Estimated Arrival Date (ETA) is required');
-                if (!etaYear.value) etaYear.parentElement.classList.add('error');
+                if (etaInputGroup) etaInputGroup.classList.add('error');
+            } else if (state.trade !== 'domestic') {
+                // Date validation for non-domestic
+                const today = getTodayDate();
+                const etdDate = getDateFromInputs('etd');
+                const etaDate = getDateFromInputs('eta');
+                if (etaDate) {
+                    if (etaDate < today) {
+                        errors.push('ETA cannot be in the past');
+                        showDateError('eta', 'ETA cannot be in the past.');
+                    } else if (etdDate && etaDate < etdDate) {
+                        errors.push('ETA cannot be earlier than ETD');
+                        showDateError('eta', 'ETA cannot be earlier than ETD.');
+                    }
+                }
             }
             
             // Invoice Value validation
@@ -2376,45 +3328,82 @@
                 });
             }
             
-            // LCL/Air cargo validation - at least one complete row
+            // LCL/Bulk cargo validation - all rows must have required fields
             if (['LCL', 'LTL', 'Bulk', 'All'].includes(state.load)) {
                 const rows = document.querySelectorAll('#lcl-rows .cargo-row');
-                let hasCompleteRow = false;
-                rows.forEach(row => {
-                    const l = row.querySelector('.lcl-l')?.value;
-                    const w = row.querySelector('.lcl-w')?.value;
-                    const h = row.querySelector('.lcl-h')?.value;
-                    const qty = row.querySelector('.lcl-qty')?.value;
-                    const gw = row.querySelector('.lcl-gross-weight')?.value;
-                    if (l && w && h && qty && gw && 
-                        parseFloat(l) > 0 && parseFloat(w) > 0 && parseFloat(h) > 0 && 
-                        parseInt(qty) > 0 && parseInt(gw.replace(/,/g, '')) > 0) {
-                        hasCompleteRow = true;
+                rows.forEach((row, idx) => {
+                    const lInput = row.querySelector('.lcl-l');
+                    const wInput = row.querySelector('.lcl-w');
+                    const hInput = row.querySelector('.lcl-h');
+                    const qtyInput = row.querySelector('.lcl-qty');
+                    const gwInput = row.querySelector('.lcl-gross-weight');
+                    
+                    const l = lInput?.value;
+                    const w = wInput?.value;
+                    const h = hInput?.value;
+                    const qty = qtyInput?.value;
+                    const gw = gwInput?.value;
+                    
+                    if (!l || parseFloat(l) <= 0) {
+                        errors.push(`Cargo Row ${idx + 1}: Length is required`);
+                        if (lInput) lInput.classList.add('error');
+                    }
+                    if (!w || parseFloat(w) <= 0) {
+                        errors.push(`Cargo Row ${idx + 1}: Width is required`);
+                        if (wInput) wInput.classList.add('error');
+                    }
+                    if (!h || parseFloat(h) <= 0) {
+                        errors.push(`Cargo Row ${idx + 1}: Height is required`);
+                        if (hInput) hInput.classList.add('error');
+                    }
+                    if (!qty || parseInt(qty) <= 0) {
+                        errors.push(`Cargo Row ${idx + 1}: Pkg Qty is required`);
+                        if (qtyInput) qtyInput.classList.add('error');
+                    }
+                    if (!gw || parseInt(gw.replace(/,/g, '')) <= 0) {
+                        errors.push(`Cargo Row ${idx + 1}: Gross Weight is required`);
+                        if (gwInput) gwInput.classList.add('error');
                     }
                 });
-                if (!hasCompleteRow) {
-                    errors.push('At least one complete cargo row is required (L, W, H, Qty, Gross Weight)');
-                }
             }
             
+            // Air cargo validation - all rows must have required fields
             if (state.load === 'Air') {
                 const rows = document.querySelectorAll('#air-rows .cargo-row');
-                let hasCompleteRow = false;
-                rows.forEach(row => {
-                    const l = row.querySelector('.air-l')?.value;
-                    const w = row.querySelector('.air-w')?.value;
-                    const h = row.querySelector('.air-h')?.value;
-                    const qty = row.querySelector('.air-qty')?.value;
-                    const gw = row.querySelector('.air-gross-weight')?.value;
-                    if (l && w && h && qty && gw && 
-                        parseFloat(l) > 0 && parseFloat(w) > 0 && parseFloat(h) > 0 && 
-                        parseInt(qty) > 0 && parseInt(gw.replace(/,/g, '')) > 0) {
-                        hasCompleteRow = true;
+                rows.forEach((row, idx) => {
+                    const lInput = row.querySelector('.air-l');
+                    const wInput = row.querySelector('.air-w');
+                    const hInput = row.querySelector('.air-h');
+                    const qtyInput = row.querySelector('.air-qty');
+                    const gwInput = row.querySelector('.air-gross-weight');
+                    
+                    const l = lInput?.value;
+                    const w = wInput?.value;
+                    const h = hInput?.value;
+                    const qty = qtyInput?.value;
+                    const gw = gwInput?.value;
+                    
+                    if (!l || parseFloat(l) <= 0) {
+                        errors.push(`Cargo Row ${idx + 1}: Length is required`);
+                        if (lInput) lInput.classList.add('error');
+                    }
+                    if (!w || parseFloat(w) <= 0) {
+                        errors.push(`Cargo Row ${idx + 1}: Width is required`);
+                        if (wInput) wInput.classList.add('error');
+                    }
+                    if (!h || parseFloat(h) <= 0) {
+                        errors.push(`Cargo Row ${idx + 1}: Height is required`);
+                        if (hInput) hInput.classList.add('error');
+                    }
+                    if (!qty || parseInt(qty) <= 0) {
+                        errors.push(`Cargo Row ${idx + 1}: Pkg Qty is required`);
+                        if (qtyInput) qtyInput.classList.add('error');
+                    }
+                    if (!gw || parseInt(gw.replace(/,/g, '')) <= 0) {
+                        errors.push(`Cargo Row ${idx + 1}: Gross Weight is required`);
+                        if (gwInput) gwInput.classList.add('error');
                     }
                 });
-                if (!hasCompleteRow) {
-                    errors.push('At least one complete cargo row is required (L, W, H, Qty, Gross Weight)');
-                }
             }
             
             // DG validation
@@ -2429,6 +3418,26 @@
                 if (!dgUn.value.trim()) {
                     errors.push('UN Number is required when Dangerous Goods is checked');
                     dgUn.classList.add('error');
+                }
+            }
+            
+            // Pickup Address validation
+            const pickupRequired = document.querySelector('input[name="pickup"]:checked')?.value === 'yes';
+            if (pickupRequired) {
+                const pickupAddr = document.getElementById('pickup-addr');
+                if (!pickupAddr.value.trim()) {
+                    errors.push('Pickup Address is required when Pickup is selected');
+                    pickupAddr.classList.add('error');
+                }
+            }
+            
+            // Delivery Address validation
+            const deliveryRequired = document.querySelector('input[name="delivery"]:checked')?.value === 'yes';
+            if (deliveryRequired) {
+                const deliveryAddr = document.getElementById('delivery-addr');
+                if (!deliveryAddr.value.trim()) {
+                    errors.push('Delivery Address is required when Delivery is selected');
+                    deliveryAddr.classList.add('error');
                 }
             }
             
@@ -2492,6 +3501,10 @@
             document.querySelectorAll('.date-input-group.error').forEach(el => {
                 el.classList.remove('error');
             });
+            
+            // Hide date error messages
+            hideDateError('etd');
+            hideDateError('eta');
         }
         
         function showValidationErrors(errors) {
@@ -2509,24 +3522,47 @@
         // FORM SUBMISSION
         // ==========================================
         
-        function submitQuote() {
+        async function submitQuote() {
             // Validate form
             if (!validateForm()) {
                 return;
             }
             
+            // Check for FCL weight exceeded (soft block)
+            if (state.load === 'FCL') {
+                const exceededRows = validateAllFclWeights();
+                if (exceededRows.length > 0) {
+                    const shouldContinue = await showWeightExceededModal(exceededRows);
+                    if (!shouldContinue) {
+                        return; // User cancelled
+                    }
+                }
+            }
+            
             // Collect form data
             const formData = collectFormData();
+            
+            // If editing an existing quote, include the bidding_no for update
+            if (currentBiddingNo) {
+                formData.bidding_no = currentBiddingNo;
+            }
             
             // Show loading
             showLoading(true);
             
             // Log for debugging
             console.log('Form Data to Submit:', JSON.stringify(formData, null, 2));
+            console.log('Mode:', currentBiddingNo ? 'UPDATE' : 'CREATE');
+            
+            // Determine API endpoint and method
+            const apiUrl = currentBiddingNo 
+                ? `${API_BASE_URL}/api/quote/update/${currentBiddingNo}`
+                : `${API_BASE_URL}/api/quote/request`;
+            const apiMethod = currentBiddingNo ? 'PUT' : 'POST';
             
             // API call
-            fetch(`${API_BASE_URL}/api/quote/request`, {
-                method: 'POST',
+            fetch(apiUrl, {
+                method: apiMethod,
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -2534,7 +3570,10 @@
             })
             .then(response => {
                 if (!response.ok) {
-                    return response.json().then(err => Promise.reject(err));
+                    return response.json().then(err => {
+                        err.status = response.status;
+                        return Promise.reject(err);
+                    });
                 }
                 return response.json();
             })
@@ -2550,9 +3589,17 @@
             })
             .catch(error => {
                 showLoading(false);
-                const errorMsg = error.detail || error.message || 'Network error. Please try again.';
-                showToast(errorMsg, 'error');
                 console.error('Submit error:', error);
+                
+                // If update failed with 404, reset bidding number and allow new submission
+                if (currentBiddingNo && (error.detail?.includes('not found') || error.status === 404)) {
+                    console.log('Bidding number not found, resetting for new submission');
+                    currentBiddingNo = null;
+                    showToast('Previous quote not found. Please submit as new quote.', 'error');
+                } else {
+                    const errorMsg = error.detail || error.message || 'Network error. Please try again.';
+                    showToast(errorMsg, 'error');
+                }
             });
         }
         
@@ -2580,15 +3627,17 @@
         // ==========================================
         
         let currentPdfUrl = null;
+        let currentBiddingNo = null;
         
         function showSuccessModal(data) {
             const modal = document.getElementById('success-modal');
             
-            // Set modal data
+            // Set Bidding No and Deadline (from API response)
             document.getElementById('modal-bidding-no').textContent = data.bidding_no || '-';
             document.getElementById('modal-deadline').textContent = data.deadline ? `${data.deadline} (KST)` : '-';
             
-            // Store PDF URL for download
+            // Store Bidding No and PDF URL
+            currentBiddingNo = data.bidding_no;
             currentPdfUrl = data.pdf_url;
             
             // Show/hide PDF button based on availability
@@ -2599,14 +3648,240 @@
                 pdfBtn.style.display = 'none';
             }
             
+            // Populate modal with form data
+            populateModalWithFormData();
+            
             // Show modal
             modal.classList.add('show');
+        }
+        
+        function populateModalWithFormData() {
+            // Customer Information
+            document.getElementById('modal-customer').textContent = document.getElementById('c-company').value || '-';
+            document.getElementById('modal-name').textContent = document.getElementById('c-name').value || '-';
+            document.getElementById('modal-email').textContent = document.getElementById('c-email').value || '-';
+            document.getElementById('modal-phone').textContent = document.getElementById('c-phone').value || '-';
+            
+            // Quotation Details
+            document.getElementById('modal-trade-type').textContent = state.trade.charAt(0).toUpperCase() + state.trade.slice(1);
+            document.getElementById('modal-shipping-mode').textContent = state.ship === 'ocean' ? 'Sea' : state.ship.charAt(0).toUpperCase() + state.ship.slice(1);
+            document.getElementById('modal-incoterms').textContent = state.incoterms;
+            document.getElementById('modal-load-type').textContent = state.load;
+            document.getElementById('modal-dg').textContent = document.getElementById('dg-check').checked ? 'Y' : 'N';
+            
+            // Shipping Schedule
+            const polValue = document.getElementById('input-pol').value;
+            const podValue = document.getElementById('input-pod').value;
+            document.getElementById('modal-pol').textContent = polValue ? polValue.split(' - ')[0] : '-';
+            document.getElementById('modal-pod').textContent = podValue ? podValue.split(' - ')[0] : '-';
+            
+            // Format ETD
+            const etdYear = document.getElementById('etd-year').value;
+            const etdMonth = document.getElementById('etd-month').value;
+            const etdDay = document.getElementById('etd-day').value;
+            if (etdYear && etdMonth && etdDay) {
+                document.getElementById('modal-etd').textContent = `${etdYear.slice(-2)}/${etdMonth.padStart(2, '0')}/${etdDay.padStart(2, '0')}`;
+            } else {
+                document.getElementById('modal-etd').textContent = '-';
+            }
+            
+            // Format ETA
+            const etaYear = document.getElementById('eta-year').value;
+            const etaMonth = document.getElementById('eta-month').value;
+            const etaDay = document.getElementById('eta-day').value;
+            if (etaYear && etaMonth && etaDay) {
+                document.getElementById('modal-eta').textContent = `${etaYear.slice(-2)}/${etaMonth.padStart(2, '0')}/${etaDay.padStart(2, '0')}`;
+            } else {
+                document.getElementById('modal-eta').textContent = '-';
+            }
+            
+            // Additional Details - Dynamic based on visibility rules
+            populateAdditionalDetails();
+            
+            // Cargo Details
+            document.getElementById('modal-cargo-details').innerHTML = getCargoSummaryForModal();
+        }
+        
+        function populateAdditionalDetails() {
+            const container = document.getElementById('modal-additional-details');
+            container.innerHTML = '';
+            
+            // Get visibility rules for current trade mode + incoterms
+            const rules = VISIBILITY_RULES[state.trade]?.[state.incoterms];
+            if (!rules) return;
+            
+            const showFields = rules.showFields || [];
+            
+            // Field definitions
+            const fieldConfig = {
+                'export-cc': {
+                    name: 'Export Customs Clearance',
+                    radioName: 'export-cc',
+                    type: 'checkbox'
+                },
+                'import-cc': {
+                    name: 'Import Customs Clearance',
+                    radioName: 'import-cc',
+                    type: 'checkbox'
+                },
+                'shipping-insurance': {
+                    name: 'Shipping Insurance',
+                    radioName: 'ship-insurance',
+                    type: 'checkbox'
+                },
+                'pickup': {
+                    name: 'Pickup',
+                    radioName: 'pickup',
+                    type: 'checkbox-address',
+                    addressId: 'pickup-addr'
+                },
+                'delivery': {
+                    name: 'Delivery',
+                    radioName: 'delivery',
+                    type: 'checkbox-address',
+                    addressId: 'delivery-addr'
+                }
+            };
+            
+            // Build rows for visible fields
+            showFields.forEach(fieldKey => {
+                if (fieldKey === 'invoice') return; // Invoice handled separately
+                
+                const config = fieldConfig[fieldKey];
+                if (!config) return;
+                
+                const isChecked = document.querySelector(`input[name="${config.radioName}"]:checked`)?.value === 'yes';
+                const row = document.createElement('div');
+                row.className = 'rfq-service-row';
+                
+                if (config.type === 'checkbox') {
+                    row.innerHTML = `
+                        <span class="rfq-service-name">${config.name}</span>
+                        <span class="rfq-service-check ${isChecked ? 'checked' : 'unchecked'}">
+                            <i class="fas ${isChecked ? 'fa-check-square' : 'fa-times'}"></i>
+                        </span>
+                    `;
+                } else if (config.type === 'checkbox-address') {
+                    const address = document.getElementById(config.addressId)?.value || '';
+                    // Only show address if checked and has value
+                    const addressHtml = isChecked && address 
+                        ? `<span class="rfq-service-address">${address}</span>` 
+                        : '';
+                    row.innerHTML = `
+                        <span class="rfq-service-name">${config.name}</span>
+                        <span class="rfq-service-check ${isChecked ? 'checked' : 'unchecked'}">
+                            <i class="fas ${isChecked ? 'fa-check-square' : 'fa-times'}"></i>
+                        </span>
+                        ${addressHtml}
+                    `;
+                }
+                
+                container.appendChild(row);
+            });
+            
+            // Always add Invoice Value at the end if 'invoice' is in showFields
+            if (showFields.includes('invoice')) {
+                const invoiceValue = document.getElementById('invoice-val')?.value || '0';
+                const invoiceRow = document.createElement('div');
+                invoiceRow.className = 'rfq-service-row';
+                invoiceRow.innerHTML = `
+                    <span class="rfq-service-name">Invoice Value (USD)</span>
+                    <span class="rfq-service-value">$ ${invoiceValue}</span>
+                `;
+                container.appendChild(invoiceRow);
+            }
+        }
+        
+        function getCargoSummaryForModal() {
+            let summary = '';
+            
+            if (state.load === 'FCL') {
+                const rows = document.querySelectorAll('#fcl-rows .cargo-row');
+                const items = [];
+                rows.forEach(row => {
+                    const select = row.querySelector('.fcl-type');
+                    const type = select?.value || '';
+                    const qty = row.querySelector('.fcl-qty')?.value.replace(/,/g, '') || '0';
+                    if (type && parseInt(qty) > 0) {
+                        // Get container code from selected option's data attribute or lookup from state
+                        const selectedOption = select?.options[select.selectedIndex];
+                        let shortType = selectedOption?.dataset?.code || 
+                            state.containerTypes.find(ct => ct.name === type)?.code || type;
+                        items.push(`${shortType} X ${qty}`);
+                    }
+                });
+                summary = items.length > 0 ? items.join(', ') : '-';
+                
+                // Add Reefer Temperature if active
+                const reeferSection = document.getElementById('reefer-temp-section');
+                if (reeferSection && reeferSection.classList.contains('show')) {
+                    const tempMin = document.getElementById('temp-min')?.value.trim() || '';
+                    const tempMax = document.getElementById('temp-max')?.value.trim() || '';
+                    if (tempMin || tempMax) {
+                        const unitSymbol = tempUnit === 'C' ? '°C' : '°F';
+                        const tempRange = tempMin && tempMax 
+                            ? `${tempMin} ~ ${tempMax}${unitSymbol}`
+                            : tempMin 
+                                ? `${tempMin}${unitSymbol}`
+                                : `${tempMax}${unitSymbol}`;
+                        summary += `<br><span style="color: #00bcd4;"><i class="fas fa-thermometer-half"></i> Temp: ${tempRange}</span>`;
+                    }
+                }
+            } else if (state.load === 'FTL') {
+                const rows = document.querySelectorAll('#ftl-rows .cargo-row');
+                const items = [];
+                rows.forEach(row => {
+                    const type = row.querySelector('.ftl-type')?.value || '';
+                    const qty = row.querySelector('.ftl-qty')?.value.replace(/,/g, '') || '0';
+                    if (type && parseInt(qty) > 0) {
+                        items.push(`${type} X ${qty}`);
+                    }
+                });
+                summary = items.length > 0 ? items.join(', ') : '-';
+            } else if (state.load === 'Air') {
+                const rows = document.querySelectorAll('#air-rows .cargo-row');
+                let totalGW = 0, totalCW = 0, totalPcs = 0;
+                rows.forEach(row => {
+                    const qty = parseInt(row.querySelector('.air-qty')?.value.replace(/,/g, '') || 0);
+                    const gw = parseInt(row.querySelector('.air-gross-weight')?.value.replace(/,/g, '') || 0);
+                    const cw = parseInt(row.querySelector('.air-chargeable-weight')?.value.replace(/,/g, '') || 0);
+                    totalPcs += qty;
+                    totalGW += gw * qty;
+                    totalCW += cw * qty;
+                });
+                if (totalPcs > 0) {
+                    summary = `${totalPcs} PCS / G.W: ${totalGW.toLocaleString()} KG / C.W: ${totalCW.toLocaleString()} KG`;
+                } else {
+                    summary = '-';
+                }
+            } else {
+                // LCL, LTL, Bulk, All
+                const rows = document.querySelectorAll('#lcl-rows .cargo-row');
+                let totalGW = 0, totalCBM = 0, totalPcs = 0;
+                rows.forEach(row => {
+                    const qty = parseInt(row.querySelector('.lcl-qty')?.value.replace(/,/g, '') || 0);
+                    const gw = parseInt(row.querySelector('.lcl-gross-weight')?.value.replace(/,/g, '') || 0);
+                    const cbm = parseFloat(row.querySelector('.lcl-cbm')?.value || 0);
+                    totalPcs += qty;
+                    totalGW += gw * qty;
+                    totalCBM += cbm * qty;
+                });
+                totalCBM = Math.round(totalCBM * 10) / 10;
+                if (totalPcs > 0) {
+                    summary = `${totalPcs} PCS / G.W: ${totalGW.toLocaleString()} KG / CBM: ${totalCBM.toFixed(1)} M³`;
+                } else {
+                    summary = '-';
+                }
+            }
+            
+            return summary;
         }
         
         function closeSuccessModal() {
             const modal = document.getElementById('success-modal');
             modal.classList.remove('show');
             currentPdfUrl = null;
+            // Note: currentBiddingNo is NOT reset here to allow updating the same quote on re-submit
         }
         
         function downloadPDF() {

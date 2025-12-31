@@ -87,25 +87,128 @@ def seed_ports(db):
 
 
 def seed_container_types(db):
-    """Seed Container Types data"""
+    """Seed Container Types data with extended specifications"""
     container_types = [
-        {"code": "20DC", "name": "20 Dry Container", "description": "20ft Standard Dry Container", "size_teu": 1.0, "max_weight_kg": 21770, "max_cbm": 33.2, "sort_order": 1},
-        {"code": "40DC", "name": "40 Dry Container", "description": "40ft Standard Dry Container", "size_teu": 2.0, "max_weight_kg": 26680, "max_cbm": 67.7, "sort_order": 2},
-        {"code": "40HC", "name": "40 HC Container", "description": "40ft High Cube Container", "size_teu": 2.0, "max_weight_kg": 26460, "max_cbm": 76.3, "sort_order": 3},
-        {"code": "20RF", "name": "20 Reefer Container", "description": "20ft Refrigerated Container", "size_teu": 1.0, "max_weight_kg": 20000, "max_cbm": 28.3, "sort_order": 4},
-        {"code": "40RF", "name": "40 Reefer Container", "description": "40ft Refrigerated Container", "size_teu": 2.0, "max_weight_kg": 24500, "max_cbm": 59.3, "sort_order": 5},
-        {"code": "40RFHC", "name": "40 Reefer HC Container", "description": "40ft High Cube Refrigerated Container", "size_teu": 2.0, "max_weight_kg": 24500, "max_cbm": 67.5, "sort_order": 6},
-        {"code": "20OT", "name": "20 Open Top", "description": "20ft Open Top Container", "size_teu": 1.0, "max_weight_kg": 21800, "max_cbm": 32.5, "sort_order": 7},
-        {"code": "40OT", "name": "40 Open Top", "description": "40ft Open Top Container", "size_teu": 2.0, "max_weight_kg": 26630, "max_cbm": 65.9, "sort_order": 8},
-        {"code": "20FR", "name": "20 Flat Rack", "description": "20ft Flat Rack Container", "size_teu": 1.0, "max_weight_kg": 21750, "max_cbm": None, "sort_order": 9},
-        {"code": "40FR", "name": "40 Flat Rack", "description": "40ft Flat Rack Container", "size_teu": 2.0, "max_weight_kg": 26000, "max_cbm": None, "sort_order": 10},
-        {"code": "20TK", "name": "20 Tank Container", "description": "20ft Tank Container for liquids", "size_teu": 1.0, "max_weight_kg": 21000, "max_cbm": 24.0, "sort_order": 11},
-        {"code": "45HC", "name": "45 HC Container", "description": "45ft High Cube Container", "size_teu": 2.25, "max_weight_kg": 25600, "max_cbm": 86.0, "sort_order": 12},
+        # 20ft Containers
+        {
+            "code": "20FR", "name": "20 Flat Rack Container", "description": "20ft Flat Rack Container",
+            "size": "20", "category": "FR", "size_teu": 1.0,
+            "iso_standard": "22P1", "customs_port_standard": "22PC",
+            "china_send_standard": "22PF", "china_receive": "22PF",
+            "tare_weight": 2800.00, "max_weight_kg": 31200, "max_cbm": 38.27,
+            "length_mm": 6058, "width_mm": 2438, "height_mm": 2591,
+            "cbm_limit": False, "sort_order": 1
+        },
+        {
+            "code": "20DC", "name": "20 Dry Container", "description": "20ft Standard Dry Container",
+            "size": "20", "category": "DC", "size_teu": 1.0,
+            "iso_standard": "22G0", "customs_port_standard": "22GP",
+            "china_send_standard": "GP20", "china_receive": "22GP",
+            "tare_weight": 2200.00, "max_weight_kg": 28280, "max_cbm": 33.20,
+            "length_mm": 5898, "width_mm": 2352, "height_mm": 2393,
+            "cbm_limit": True, "sort_order": 2
+        },
+        {
+            "code": "20OT", "name": "20 Open Top Container", "description": "20ft Open Top Container",
+            "size": "20", "category": "OT", "size_teu": 1.0,
+            "iso_standard": "22U0", "customs_port_standard": "22UT",
+            "china_send_standard": "OT20", "china_receive": "22UT",
+            "tare_weight": 2100.00, "max_weight_kg": 28380, "max_cbm": 32.57,
+            "length_mm": 5898, "width_mm": 2352, "height_mm": 2348,
+            "cbm_limit": False, "sort_order": 3
+        },
+        {
+            "code": "20RF", "name": "20 Reefer Container", "description": "20ft Refrigerated Container",
+            "size": "20", "category": "RF", "size_teu": 1.0,
+            "iso_standard": "22R0", "customs_port_standard": "22RE",
+            "china_send_standard": "RF20", "china_receive": "22RT",
+            "tare_weight": 2910.00, "max_weight_kg": 27570, "max_cbm": 28.45,
+            "length_mm": 5456, "width_mm": 2294, "height_mm": 2273,
+            "cbm_limit": True, "sort_order": 4
+        },
+        {
+            "code": "20TK", "name": "20 Tank Container", "description": "20ft Tank Container",
+            "size": "20", "category": "TK", "size_teu": 1.0,
+            "iso_standard": "22K0", "customs_port_standard": "22TN",
+            "china_send_standard": "22TN", "china_receive": "22TN",
+            "tare_weight": 4190.00, "max_weight_kg": 31810, "max_cbm": 38.27,
+            "length_mm": 6058, "width_mm": 2438, "height_mm": 2591,
+            "cbm_limit": False, "sort_order": 5
+        },
+        # 40ft Containers
+        {
+            "code": "40FR", "name": "40 Flat Rack Container", "description": "40ft Flat Rack Container",
+            "size": "40", "category": "FR", "size_teu": 2.0,
+            "iso_standard": "42P1", "customs_port_standard": "42PC",
+            "china_send_standard": "42PF", "china_receive": "42PF",
+            "tare_weight": 5600.00, "max_weight_kg": 39400, "max_cbm": 77.02,
+            "length_mm": 12192, "width_mm": 2438, "height_mm": 2591,
+            "cbm_limit": False, "sort_order": 6
+        },
+        {
+            "code": "40DC", "name": "40 Dry Container", "description": "40ft Standard Dry Container",
+            "size": "40", "category": "DC", "size_teu": 2.0,
+            "iso_standard": "42G0", "customs_port_standard": "42GP",
+            "china_send_standard": "GP40", "china_receive": "42GP",
+            "tare_weight": 3500.00, "max_weight_kg": 26980, "max_cbm": 67.64,
+            "length_mm": 12032, "width_mm": 2352, "height_mm": 2390,
+            "cbm_limit": True, "sort_order": 7
+        },
+        {
+            "code": "4HDC", "name": "40 HC Dry Container", "description": "40ft High Cube Dry Container",
+            "size": "4H", "category": "DC", "size_teu": 2.0,
+            "iso_standard": "45G0", "customs_port_standard": "45GP",
+            "china_send_standard": "HC45", "china_receive": "45GP",
+            "tare_weight": 4000.00, "max_weight_kg": 28500, "max_cbm": 76.35,
+            "length_mm": 12032, "width_mm": 2352, "height_mm": 2698,
+            "cbm_limit": True, "sort_order": 8
+        },
+        {
+            "code": "40OT", "name": "40 Open Top Container", "description": "40ft Open Top Container",
+            "size": "40", "category": "OT", "size_teu": 2.0,
+            "iso_standard": "42U0", "customs_port_standard": "42UT",
+            "china_send_standard": "42UT", "china_receive": "42UT",
+            "tare_weight": 4000.00, "max_weight_kg": 26480, "max_cbm": 66.45,
+            "length_mm": 12032, "width_mm": 2352, "height_mm": 2348,
+            "cbm_limit": False, "sort_order": 9
+        },
+        {
+            "code": "40TK", "name": "40 Tank Container", "description": "40ft Tank Container",
+            "size": "40", "category": "TK", "size_teu": 2.0,
+            "iso_standard": "42K0", "customs_port_standard": "42TN",
+            "china_send_standard": "42TN", "china_receive": "42TN",
+            "tare_weight": 5000.00, "max_weight_kg": 31000, "max_cbm": 77.02,
+            "length_mm": 12192, "width_mm": 2438, "height_mm": 2591,
+            "cbm_limit": False, "sort_order": 10
+        },
+        # 40ft High Cube Containers
+        {
+            "code": "4HFR", "name": "40 HC Flat Rack Container", "description": "40ft High Cube Flat Rack Container",
+            "size": "4H", "category": "FR", "size_teu": 2.0,
+            "iso_standard": "45P1", "customs_port_standard": "45PC",
+            "china_send_standard": "45PF", "china_receive": "45PF",
+            "tare_weight": 5600.00, "max_weight_kg": 44400, "max_cbm": 86.08,
+            "length_mm": 12192, "width_mm": 2438, "height_mm": 2896,
+            "cbm_limit": False, "sort_order": 11
+        },
+        {
+            "code": "4HRF", "name": "40 HC Reefer Container", "description": "40ft High Cube Refrigerated Container",
+            "size": "4H", "category": "RF", "size_teu": 2.0,
+            "iso_standard": "45R0", "customs_port_standard": "45RE",
+            "china_send_standard": "RF45", "china_receive": "45RT",
+            "tare_weight": 4670.00, "max_weight_kg": 29330, "max_cbm": 67.95,
+            "length_mm": 11584, "width_mm": 2294, "height_mm": 2557,
+            "cbm_limit": True, "sort_order": 12
+        },
     ]
     
     for ct_data in container_types:
         existing = db.query(ContainerType).filter(ContainerType.code == ct_data["code"]).first()
-        if not existing:
+        if existing:
+            # Update existing record with new fields
+            for key, value in ct_data.items():
+                setattr(existing, key, value)
+        else:
             db.add(ContainerType(**ct_data))
     
     db.commit()
