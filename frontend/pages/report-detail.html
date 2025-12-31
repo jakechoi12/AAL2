@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AAL - Report Detail</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚚</text></svg>">
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <!-- Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- CSS -->
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/base.css">
+    <link rel="stylesheet" href="../css/components/header.css">
+    <link rel="stylesheet" href="../css/sections/report-insight.css">
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <a href="../ai_studio_code_F2.html" class="logo">
+            AAL<span>.</span>
+            <div class="full-name">All About Logistics</div>
+        </a>
+        <nav>
+            <ul>
+                <li><a href="../ai_studio_code_F2.html#quotation">Quotation</a></li>
+                <li><a href="../ai_studio_code_F2.html#market">Market Data</a></li>
+                <li><a href="../ai_studio_code_F2.html#war-room">War Room</a></li>
+                <li><a href="../ai_studio_code_F2.html#tools-apps">Tools</a></li>
+                <li><a href="../ai_studio_code_F2.html#news">Logistics News</a></li>
+                <li><a href="report-insight.html" class="active">Report & Insight</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <div class="report-detail-container">
+        <!-- Header Section -->
+        <div class="report-detail-header">
+            <a href="report-insight.html" class="back-link">
+                <i class="fas fa-arrow-left"></i>
+                Back to Reports
+            </a>
+            
+            <div class="report-detail-meta">
+                <span class="report-card-category" id="detailCategory">Loading...</span>
+            </div>
+            
+            <h1 class="report-detail-title" id="detailTitle">Loading...</h1>
+            
+            <div class="report-detail-info">
+                <span>
+                    <i class="fas fa-building"></i>
+                    <span id="detailOrg">-</span>
+                </span>
+                <span>
+                    <i class="fas fa-calendar"></i>
+                    <span id="detailDate">-</span>
+                </span>
+                <span>
+                    <i class="fas fa-tags"></i>
+                    <span id="detailTags">-</span>
+                </span>
+            </div>
+        </div>
+
+        <!-- Content Grid -->
+        <div class="report-detail-content">
+            <!-- Main Content -->
+            <div class="report-detail-main">
+                <h2><i class="fas fa-file-alt"></i> Summary</h2>
+                <p id="detailSummary">Loading report details...</p>
+                
+                <h2 style="margin-top: 2rem;"><i class="fas fa-lightbulb"></i> Key Insights</h2>
+                <div id="detailInsights">
+                    <ul style="color: var(--text-sub); line-height: 2; padding-left: 1.5rem;">
+                        <li>Loading key insights...</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Sidebar Actions -->
+            <aside class="report-detail-sidebar">
+                <div class="detail-action-card">
+                    <h3><i class="fas fa-download"></i> Download Report</h3>
+                    <button class="download-btn" id="downloadBtn" onclick="downloadReport()">
+                        <i class="fas fa-file-pdf"></i>
+                        Download PDF
+                    </button>
+                    <button class="bookmark-btn-large" id="bookmarkBtn" onclick="toggleBookmarkDetail()">
+                        <i class="far fa-bookmark"></i>
+                        Add to Bookmarks
+                    </button>
+                </div>
+                
+                <div class="detail-action-card">
+                    <h3><i class="fas fa-info-circle"></i> Report Information</h3>
+                    <div style="display: flex; flex-direction: column; gap: 12px; font-size: 0.9rem;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="color: var(--text-sub);">Category</span>
+                            <span id="infoCategory" style="font-weight: 600;">-</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="color: var(--text-sub);">Organization</span>
+                            <span id="infoOrg" style="font-weight: 600;">-</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="color: var(--text-sub);">Published</span>
+                            <span id="infoDate" style="font-weight: 600;">-</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="color: var(--text-sub);">Report ID</span>
+                            <span id="infoId" style="font-weight: 600; font-size: 0.75rem; font-family: monospace;">-</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-action-card">
+                    <h3><i class="fas fa-share-alt"></i> Share</h3>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="action-btn" onclick="shareReport('linkedin')" style="flex: 1; width: auto; height: 40px; background: var(--card-bg); border: 1px solid var(--border-color);">
+                            <i class="fab fa-linkedin"></i>
+                        </button>
+                        <button class="action-btn" onclick="shareReport('twitter')" style="flex: 1; width: auto; height: 40px; background: var(--card-bg); border: 1px solid var(--border-color);">
+                            <i class="fab fa-twitter"></i>
+                        </button>
+                        <button class="action-btn" onclick="shareReport('email')" style="flex: 1; width: auto; height: 40px; background: var(--card-bg); border: 1px solid var(--border-color);">
+                            <i class="fas fa-envelope"></i>
+                        </button>
+                        <button class="action-btn" onclick="copyLink()" style="flex: 1; width: auto; height: 40px; background: var(--card-bg); border: 1px solid var(--border-color);">
+                            <i class="fas fa-link"></i>
+                        </button>
+                    </div>
+                </div>
+            </aside>
+        </div>
+
+        <!-- Related Reports -->
+        <section class="related-reports">
+            <h2><i class="fas fa-layer-group"></i> Related Reports</h2>
+            <div class="related-grid" id="relatedGrid">
+                <!-- Dynamically populated -->
+            </div>
+        </section>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast" style="display: none;">
+        <i class="fas fa-check-circle"></i>
+        <span id="toastMessage">Action completed</span>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="../js/features/report-insight/report-insight.js"></script>
+    <script>
+        // Get report ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const reportId = urlParams.get('id');
+        
+        if (reportId) {
+            loadReportDetail(reportId);
+        } else {
+            document.getElementById('detailTitle').textContent = 'Report not found';
+            document.getElementById('detailSummary').textContent = 'Please select a report from the list.';
+        }
+    </script>
+</body>
+</html>

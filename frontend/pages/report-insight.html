@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AAL - Report & Insight</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚚</text></svg>">
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <!-- Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- CSS -->
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/base.css">
+    <link rel="stylesheet" href="../css/components/header.css">
+    <link rel="stylesheet" href="../css/sections/report-insight.css">
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <a href="../ai_studio_code_F2.html" class="logo">
+            AAL<span>.</span>
+            <div class="full-name">All About Logistics</div>
+        </a>
+        <nav>
+            <ul>
+                <li><a href="../ai_studio_code_F2.html#quotation">Quotation</a></li>
+                <li><a href="../ai_studio_code_F2.html#market">Market Data</a></li>
+                <li><a href="../ai_studio_code_F2.html#war-room">War Room</a></li>
+                <li><a href="../ai_studio_code_F2.html#tools-apps">Tools</a></li>
+                <li><a href="../ai_studio_code_F2.html#news">Logistics News</a></li>
+                <li><a href="report-insight.html" class="active">Report & Insight</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="report-hero">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <i class="fas fa-globe"></i>
+                Global Intelligence Platform
+            </div>
+            <h1>Global <span>Insights</span><br>For Your Business Growth</h1>
+            <p>전 세계 주요 기관과 기업의 최신 리포트를 한 곳에서.<br>글로벌 인사이트로 비즈니스 혜안을 얻으세요.</p>
+            
+            <div class="hero-search">
+                <input type="text" id="searchInput" placeholder="Search reports by keyword, organization, or topic...">
+                <button onclick="searchReports()">
+                    <i class="fas fa-search"></i>
+                    Search
+                </button>
+            </div>
+            
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <div class="hero-stat-value" id="totalReports">0</div>
+                    <div class="hero-stat-label">Total Reports</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-value" id="totalOrgs">0</div>
+                    <div class="hero-stat-label">Organizations</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-value" id="thisMonth">0</div>
+                    <div class="hero-stat-label">This Month</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Category Tabs -->
+    <div class="category-tabs">
+        <button class="category-tab active" data-category="all" onclick="filterByCategory('all')">
+            <i class="fas fa-layer-group"></i>
+            All Reports
+            <span class="tab-count" id="count-all">0</span>
+        </button>
+        <button class="category-tab" data-category="global_research" onclick="filterByCategory('global_research')">
+            <i class="fas fa-microscope"></i>
+            Global Research
+            <span class="tab-count" id="count-global_research">0</span>
+        </button>
+        <button class="category-tab" data-category="government" onclick="filterByCategory('government')">
+            <i class="fas fa-landmark"></i>
+            Government
+            <span class="tab-count" id="count-government">0</span>
+        </button>
+        <button class="category-tab" data-category="company" onclick="filterByCategory('company')">
+            <i class="fas fa-building"></i>
+            Company
+            <span class="tab-count" id="count-company">0</span>
+        </button>
+    </div>
+
+    <!-- Main Content -->
+    <div class="report-content">
+        <!-- Sidebar Filters -->
+        <aside class="report-sidebar">
+            <div class="filter-section">
+                <h3><i class="fas fa-building"></i> Organizations</h3>
+                <div class="filter-options" id="orgFilters">
+                    <!-- Dynamically populated -->
+                </div>
+            </div>
+            
+            <div class="filter-section">
+                <h3><i class="fas fa-tags"></i> Tags</h3>
+                <div class="filter-options" id="tagFilters">
+                    <!-- Dynamically populated -->
+                </div>
+            </div>
+            
+            <div class="filter-section">
+                <h3><i class="fas fa-calendar"></i> Published Date</h3>
+                <div class="date-filter">
+                    <input type="date" id="dateFrom" placeholder="From">
+                    <input type="date" id="dateTo" placeholder="To">
+                </div>
+            </div>
+            
+            <button class="clear-filters" onclick="clearFilters()">
+                <i class="fas fa-times"></i>
+                Clear All Filters
+            </button>
+        </aside>
+
+        <!-- Main Report Area -->
+        <main class="report-main">
+            <!-- Featured Section -->
+            <section class="featured-section" id="featuredSection">
+                <div class="featured-header">
+                    <h2><i class="fas fa-star"></i> Featured Reports</h2>
+                </div>
+                <div class="featured-grid" id="featuredGrid">
+                    <!-- Dynamically populated -->
+                </div>
+            </section>
+
+            <!-- Report Grid -->
+            <section class="report-list-section">
+                <div class="report-grid-header">
+                    <span class="report-count">
+                        Showing <strong id="showingCount">0</strong> of <strong id="totalCount">0</strong> reports
+                    </span>
+                    <select class="sort-select" id="sortSelect" onchange="sortReports()">
+                        <option value="newest">Newest First</option>
+                        <option value="oldest">Oldest First</option>
+                        <option value="title">Title A-Z</option>
+                    </select>
+                </div>
+                
+                <div class="report-grid" id="reportGrid">
+                    <!-- Dynamically populated -->
+                </div>
+
+                <!-- Empty State -->
+                <div class="empty-state" id="emptyState" style="display: none;">
+                    <i class="fas fa-search"></i>
+                    <h3>No reports found</h3>
+                    <p>Try adjusting your search or filters</p>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination" id="pagination">
+                    <!-- Dynamically populated -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast" style="display: none;">
+        <i class="fas fa-check-circle"></i>
+        <span id="toastMessage">Action completed</span>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="../js/features/report-insight/report-insight.js"></script>
+</body>
+</html>

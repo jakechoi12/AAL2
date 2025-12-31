@@ -10,6 +10,7 @@ import atexit
 import logging
 import bok_backend  # Import the BOK backend module
 import gdelt_backend  # Import the GDELT backend module
+from report_backend import report_bp  # Import the Report backend module
 
 # Load environment variables
 load_dotenv()
@@ -21,6 +22,9 @@ BASE_DIR = Path(__file__).parent.parent
 # static_folder를 설정하지 않아서 기본 라우트와 충돌하지 않도록 함
 app = Flask(__name__)
 CORS(app) # Enable CORS for all routes (for development)
+
+# Register Report Blueprint
+app.register_blueprint(report_bp)
 
 # Disable caching for development
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
