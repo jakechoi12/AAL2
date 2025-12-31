@@ -78,8 +78,9 @@ function validateDateRange() {
 /**
  * 날짜 범위 설정
  * @param {number} days - 기간 (일)
+ * @param {string} periodKey - 기간 키 ('1W', '1M', '3M', '1Y')
  */
-function setDateRange(days) {
+function setDateRange(days, periodKey = null) {
     // Exchange Rate 패널의 날짜 입력 필드만 선택
     const economyPanel = document.getElementById('economy-panel');
     if (!economyPanel) return;
@@ -88,8 +89,16 @@ function setDateRange(days) {
     if (dateInputs.length < 2) return;
     
     const end = new Date();
-    const start = new Date();
-    start.setDate(start.getDate() - days);
+    let start;
+    
+    // 1Y의 경우: 현재 월 포함 12개월의 첫날을 시작일로 설정
+    if (periodKey === '1Y') {
+        // 현재 월에서 11개월 전의 1일
+        start = new Date(end.getFullYear(), end.getMonth() - 11, 1);
+    } else {
+        start = new Date();
+        start.setDate(start.getDate() - days);
+    }
     
     const startDateStr = start.toISOString().split('T')[0];
     const endDateStr = end.toISOString().split('T')[0];
@@ -121,7 +130,7 @@ function handlePeriodClick(period) {
     };
     
     if (days[period]) {
-        setDateRange(days[period]);
+        setDateRange(days[period], period);
     }
 }
 
@@ -307,6 +316,19 @@ function processExchangeRateData(results) {
     // chartData 초기화
     chartData = {};
     
+    // 조회 기간 가져오기
+    const economyPanel = document.getElementById('economy-panel');
+    let startDateStr = '';
+    let endDateStr = '';
+    
+    if (economyPanel) {
+        const dateInputs = economyPanel.querySelectorAll('.date-input');
+        if (dateInputs.length >= 2) {
+            startDateStr = dateInputs[0].value; // YYYY-MM-DD
+            endDateStr = dateInputs[1].value;   // YYYY-MM-DD
+        }
+    }
+    
     results.forEach(result => {
         const { currency, data } = result;
         
@@ -319,17 +341,24 @@ function processExchangeRateData(results) {
             const rows = data.StatisticSearch.row;
             
             // 날짜별 환율 데이터 정리
-            const values = rows.map(row => ({
+            const rawValues = rows.map(row => ({
                 date: row.TIME, // YYYYMMDD 형식
                 value: parseFloat(row.DATA_VALUE)
             }));
             
+            // 주말/공휴일 등 빠진 날짜를 이전 영업일 데이터로 채우기
+            let values = rawValues;
+            if (startDateStr && endDateStr && typeof fillMissingDates === 'function') {
+                values = fillMissingDates(rawValues, startDateStr, endDateStr);
+            }
+            
             chartData[currency] = values;
             
-            // 최신 환율 저장 (계산기용)
-            if (values.length > 0) {
-                const latest = values[values.length - 1];
-                const previous = values.length > 1 ? values[values.length - 2] : null;
+            // 최신 환율 저장 (계산기용) - 실제 데이터만 사용
+            const actualValues = values.filter(v => v.isActual !== false);
+            if (actualValues.length > 0) {
+                const latest = actualValues[actualValues.length - 1];
+                const previous = actualValues.length > 1 ? actualValues[actualValues.length - 2] : null;
                 
                 // 전일 환율 저장
                 if (previous) {
@@ -359,7 +388,6 @@ function processExchangeRateData(results) {
     // 첫 번째 활성 통화의 통계 정보 표시
     if (activeCurrencies.length > 0) {
         const primaryCurrency = activeCurrencies[0];
-        const economyPanel = document.getElementById('economy-panel');
         if (economyPanel) {
             const dateInputs = economyPanel.querySelectorAll('.date-input');
             if (dateInputs.length >= 2) {
@@ -448,33 +476,46 @@ function generateSVGPath(currency, data) {
 
 /**
  * 입력된 날짜 범위에서 기간 키 추론
- * @returns {string} - 기간 키 ('1W', '1M', '3M', '1Y')
+ * 커스텀 범위의 경우 null을 반환하여 buildXAxisTargets가 실제 기간에 따라 처리하도록 함
+ * @returns {string|null} - 기간 키 ('1W', '1M', '3M', '1Y') 또는 null
  */
 function inferRangeKeyFromInputs() {
-    const inputs = document.querySelectorAll('.date-input');
-    if (!inputs || inputs.length < 2) return '3M';
+    const economyPanel = document.getElementById('economy-panel');
+    if (!economyPanel) return null;
+    
+    const inputs = economyPanel.querySelectorAll('.date-input');
+    if (!inputs || inputs.length < 2) return null;
     const a = new Date(inputs[0].value);
     const b = new Date(inputs[1].value);
-    if (isNaN(a.getTime()) || isNaN(b.getTime())) return '3M';
+    if (isNaN(a.getTime()) || isNaN(b.getTime())) return null;
     const diffDays = Math.abs(Math.round((b.getTime() - a.getTime()) / (1000 * 60 * 60 * 24)));
-    if (diffDays <= 8) return '1W';
-    if (diffDays <= 45) return '1M';
-    if (diffDays <= 120) return '3M';
-    return '1Y';
+    
+    // 정확한 기간 버튼에 매칭되는 경우만 키 반환
+    // 그 외에는 null을 반환하여 buildXAxisTargets가 diffDays 기준으로 처리
+    if (diffDays <= 7) return '1W';
+    if (diffDays > 7 && diffDays <= 31) return '1M';
+    if (diffDays > 31 && diffDays <= 93) return '3M';
+    if (diffDays > 93 && diffDays <= 365) return '1Y';
+    
+    // 1년 초과는 null 반환 (buildXAxisTargets가 자동으로 처리)
+    return null;
 }
 
 /**
  * 활성 기간 키 가져오기
- * @returns {string} - 기간 키
+ * @returns {string|null} - 기간 키 또는 null (커스텀 범위)
  */
 function getActiveRangeKey() {
     if (window.currentRangeKey === '1W' || window.currentRangeKey === '1M' || 
         window.currentRangeKey === '3M' || window.currentRangeKey === '1Y') {
         return window.currentRangeKey;
     }
-    const btn = document.querySelector('.period-btn.active');
+    const economyPanel = document.getElementById('economy-panel');
+    const btn = economyPanel ? economyPanel.querySelector('.period-btn.active') : null;
     const key = btn ? btn.textContent.trim() : null;
     if (key === '1W' || key === '1M' || key === '3M' || key === '1Y') return key;
+    
+    // 커스텀 범위의 경우 inferRangeKeyFromInputs가 null을 반환할 수 있음
     return inferRangeKeyFromInputs();
 }
 
@@ -767,7 +808,26 @@ function showTooltip(event, date) {
     // 날짜 표시
     const formattedDate = formatDate(date);
     const dateObj = parseYYYYMMDD(date);
-    tooltipDate.textContent = dateObj ? `${formattedDate} (${weekdayKoShort(dateObj)})` : formattedDate;
+    
+    // 주말/공휴일 여부 확인 (첫 번째 활성 통화의 데이터로 확인)
+    let isNonTrading = false;
+    if (activeCurrencies.length > 0) {
+        const firstCurrency = activeCurrencies[0];
+        const data = chartData[firstCurrency];
+        if (data) {
+            const item = data.find(d => d.date === date);
+            if (item && item.isActual === false) {
+                isNonTrading = true;
+            }
+        }
+    }
+    
+    // 날짜 표시 (주말/공휴일인 경우 표시)
+    let dateLabel = dateObj ? `${formattedDate} (${weekdayKoShort(dateObj)})` : formattedDate;
+    if (isNonTrading) {
+        dateLabel += ' <span style="color: var(--text-sub); font-size: 0.75rem;">휴장일</span>';
+    }
+    tooltipDate.innerHTML = dateLabel;
     
     // 활성화된 통화들의 환율 표시
     const tooltipCache = window.tooltipCache;
@@ -786,13 +846,16 @@ function showTooltip(event, date) {
                 const color = getComputedStyle(document.documentElement)
                     .getPropertyValue(`--c-${currency.toLowerCase()}`).trim();
                 
+                // 휴장일인 경우 전일 종가 표시
+                const noteText = item.isActual === false ? ' <span style="color: var(--text-sub); font-size: 0.7rem;">(전일)</span>' : '';
+                
                 content += `
                     <div class="chart-tooltip-item">
                         <div class="chart-tooltip-currency">
                             <div class="chart-tooltip-dot" style="background: ${color}"></div>
                             <span>${currency}</span>
                         </div>
-                        <span class="chart-tooltip-value">${parseFloat(item.value).toLocaleString('ko-KR')} 원</span>
+                        <span class="chart-tooltip-value">${parseFloat(item.value).toLocaleString('ko-KR')} 원${noteText}</span>
                     </div>
                 `;
             }

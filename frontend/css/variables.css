@@ -39,22 +39,37 @@
     --c-employment-employment: #22c55e; /* Green for Employment Rate */
     --c-employment-employed: #3b82f6; /* Blue for Employed */
     
-    /* International Interest Rates Colors */
-    --c-interest-kor: #3b82f6;  /* Blue - 한국 */
-    --c-interest-usa: #ef4444;  /* Red - 미국 */
-    --c-interest-jpn: #ec4899;  /* Pink - 일본 */
-    --c-interest-chn: #eab308;  /* Yellow - 중국 */
-    --c-interest-gbr: #06b6d4;  /* Cyan - 영국 */
-    --c-interest-deu: #22c55e;  /* Green - 독일 */
-    --c-interest-fra: #a855f7;  /* Purple - 프랑스 */
-    --c-interest-ita: #f59e0b;  /* Amber - 이탈리아 */
-    --c-interest-esp: #10b981;  /* Emerald - 스페인 */
-    --c-interest-can: #14b8a6;  /* Teal - 캐나다 */
-    --c-interest-aus: #f97316;  /* Orange - 호주 */
-    --c-interest-nzl: #84cc16;  /* Lime - 뉴질랜드 */
-    --c-interest-bra: #22c55e;  /* Green - 브라질 */
-    --c-interest-ind: #8b5cf6;  /* Violet - 인도 */
-    --c-interest-rus: #ef4444;  /* Red - 러시아 */
+    /* International Interest Rates Colors - 26 Countries */
+    --c-interest-aus: #f97316;  /* Orange - Australia */
+    --c-interest-bra: #16a34a;  /* Green-600 - Brazil */
+    --c-interest-can: #dc2626;  /* Red-600 - Canada */
+    --c-interest-che: #e11d48;  /* Rose-600 - Switzerland */
+    --c-interest-chl: #7c3aed;  /* Violet-600 - Chile */
+    --c-interest-chn: #eab308;  /* Yellow - China */
+    --c-interest-cze: #0891b2;  /* Cyan-600 - Czech Republic */
+    --c-interest-dnk: #be185d;  /* Pink-700 - Denmark */
+    --c-interest-gbr: #1d4ed8;  /* Blue-700 - UK */
+    --c-interest-hun: #059669;  /* Emerald-600 - Hungary */
+    --c-interest-idn: #b91c1c;  /* Red-700 - Indonesia */
+    --c-interest-isr: #4f46e5;  /* Indigo-600 - Israel */
+    --c-interest-ind: #8b5cf6;  /* Violet - India */
+    --c-interest-isl: #0d9488;  /* Teal-600 - Iceland */
+    --c-interest-jpn: #ec4899;  /* Pink - Japan */
+    --c-interest-kor: #3b82f6;  /* Blue - Korea */
+    --c-interest-mex: #65a30d;  /* Lime-600 - Mexico */
+    --c-interest-nor: #2563eb;  /* Blue-600 - Norway */
+    --c-interest-nzl: #84cc16;  /* Lime - New Zealand */
+    --c-interest-pol: #db2777;  /* Pink-600 - Poland */
+    --c-interest-rus: #ef4444;  /* Red - Russia */
+    --c-interest-swe: #0284c7;  /* Sky-600 - Sweden */
+    --c-interest-tur: #ea580c;  /* Orange-600 - Turkey */
+    --c-interest-usa: #dc2626;  /* Red-600 - USA */
+    --c-interest-eur: #6366f1;  /* Indigo - Eurozone */
+    --c-interest-zaf: #ca8a04;  /* Yellow-600 - South Africa */
+    --c-interest-deu: #22c55e;  /* Green - Germany */
+    --c-interest-fra: #a855f7;  /* Purple - France */
+    --c-interest-ita: #f59e0b;  /* Amber - Italy */
+    --c-interest-esp: #10b981;  /* Emerald - Spain */
 
     /* Inflation Colors */
     --c-cpi-total: #3b82f6;      /* Blue - 총지수 */

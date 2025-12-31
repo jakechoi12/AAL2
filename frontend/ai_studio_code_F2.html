@@ -129,8 +129,8 @@
                         <i class="fas fa-file-invoice-dollar"></i>
                     </div>
                     <h3>Quick Quote Request</h3>
-                    <p>수출입 운임 견적을 빠르게 요청하세요.<br>
-                    Ocean, Air, Trucking 모든 운송 모드를 지원합니다.</p>
+                    <p>Request a quick freight quote.<br>
+                    Ocean, Air, Trucking all transportation modes are supported.</p>
                     <a href="pages/quotation.html" class="quotation-btn">
                         <i class="fas fa-rocket"></i>
                         Start Quote Request
@@ -164,15 +164,16 @@
                     <aside class="product-sidebar">
                         <h3>Financial Products</h3>
                         <ul class="product-menu">
-                            <li class="selected" onclick="switchProduct('exchange-rate')">Exchange Rate <i class="fas fa-chevron-right" style="font-size:0.7rem"></i></li>
+                            <li class="selected" onclick="switchProduct('exchange-rate')">Exchange Rate</li>
                             <li onclick="switchProduct('interest-rates')">Interest Rates</li>
-                            <li onclick="switchProduct('inflation')">Inflation (물가)</li>
-                            <li onclick="switchProduct('gdp')">주요 지표</li>
-                            <li onclick="switchProduct('trade')">수출입 통계</li>
+                            <li onclick="switchProduct('inflation')">Inflation</li>
+                            <li onclick="switchProduct('gdp-indicator')">GDP</li>
+                            <li onclick="switchProduct('gdp-per-capita')">GDP per Capita</li>
+                            <li onclick="switchProduct('gni')">GNI</li>
+                            <li onclick="switchProduct('trade')">Export x Import</li>
                             <li onclick="switchProduct('gdp-growth')">Economy Growth Rate</li>
-                            <li onclick="switchProduct('employment')">고용 통계</li>
-                            <li>Commodities</li>
-                            <li>Global Stocks</li>
+                            <li onclick="switchProduct('employment')">Employment</li>
+                            <li onclick="switchProduct('global-stocks')">Global Stocks</li>
                         </ul>
                     </aside>
 
@@ -181,7 +182,7 @@
                             <div>
                                 <span style="font-size: 0.8rem; font-weight: 600; color: var(--accent-color); text-transform: uppercase;">Economy / Exchange Rate</span>
                                 <h2>Exchange Rate</h2>
-                                <p>주요 통화 실시간 환율 및 변동성 분석</p>
+                                <p>Exchange rates and volatility analysis</p>
                             </div>
                             <div class="live-badge"><div class="live-dot"></div> Live Market</div>
                         </div>
@@ -348,15 +349,16 @@
                     <aside class="product-sidebar">
                         <h3>Financial Products</h3>
                         <ul class="product-menu">
-                            <li onclick="switchProduct('exchange-rate')">Exchange Rate <i class="fas fa-chevron-right" style="font-size:0.7rem"></i></li>
+                            <li onclick="switchProduct('exchange-rate')">Exchange Rate</li>
                             <li onclick="switchProduct('interest-rates')">Interest Rates</li>
-                            <li class="selected" onclick="switchProduct('inflation')">Inflation (물가) <i class="fas fa-chevron-right" style="font-size:0.7rem"></i></li>
-                            <li onclick="switchProduct('gdp')">주요 지표</li>
-                            <li onclick="switchProduct('trade')">수출입 통계</li>
+                            <li class="selected" onclick="switchProduct('inflation')">Inflation</li>
+                            <li onclick="switchProduct('gdp-indicator')">GDP</li>
+                            <li onclick="switchProduct('gdp-per-capita')">GDP per Capita</li>
+                            <li onclick="switchProduct('gni')">GNI</li>
+                            <li onclick="switchProduct('trade')">Export x Import</li>
                             <li onclick="switchProduct('gdp-growth')">Economy Growth Rate</li>
-                            <li onclick="switchProduct('employment')">고용 통계</li>
-                            <li>Commodities</li>
-                            <li>Global Stocks</li>
+                            <li onclick="switchProduct('employment')">Employment</li>
+                            <li onclick="switchProduct('global-stocks')">Global Stocks</li>
                         </ul>
                     </aside>
 
@@ -364,8 +366,8 @@
                         <div class="tool-header">
                             <div>
                                 <span style="font-size: 0.8rem; font-weight: 600; color: var(--accent-color); text-transform: uppercase;">Economy / Inflation</span>
-                                <h2>Inflation (물가)</h2>
-                                <p>소비자물가지수(CPI) 추이 및 인플레이션율 분석</p>
+                                <h2>Inflation</h2>
+                                <p>Consumer Price Index (CPI) Trends</p>
                             </div>
                             <div class="live-badge"><div class="live-dot"></div> Live Market</div>
                         </div>
@@ -382,21 +384,7 @@
                                 </div>
                             </div>
                             <div class="filter-group">
-                                <span class="filter-label">항목</span>
-                                <div class="currency-chips">
-                                    <button class="chip active" data-item="CPI_TOTAL" onclick="toggleInflationItem('CPI_TOTAL')">
-                                        <div class="chip-dot"></div>총지수
-                                    </button>
-                                    <button class="chip" data-item="CPI_FRESH" onclick="toggleInflationItem('CPI_FRESH')">
-                                        <div class="chip-dot"></div>신선식품
-                                    </button>
-                                    <button class="chip" data-item="CPI_INDUSTRIAL" onclick="toggleInflationItem('CPI_INDUSTRIAL')">
-                                        <div class="chip-dot"></div>공업제품
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="filter-group">
-                                <span class="filter-label">국가 비교</span>
+                                <span class="filter-label">Country</span>
                                 <div class="country-chips" id="inflation-country-chips">
                                     <!-- 동적으로 생성 -->
                                 </div>
@@ -452,59 +440,31 @@
                 </div>
             </div>
 
-            <!-- GDP Panel -->
-            <div id="gdp-panel" class="market-content reveal" style="display: none;">
+            <!-- GDP Indicator Panel (국제 주요국 GDP) -->
+            <div id="gdp-indicator-panel" class="market-content reveal" style="display: none;">
                 <div class="product-grid">
-                    <aside class="product-sidebar" style="position: relative;">
+                    <aside class="product-sidebar">
                         <h3>Financial Products</h3>
                         <ul class="product-menu">
-                            <li onclick="switchProduct('exchange-rate')">Exchange Rate <i class="fas fa-chevron-right" style="font-size:0.7rem"></i></li>
+                            <li onclick="switchProduct('exchange-rate')">Exchange Rate</li>
                             <li onclick="switchProduct('interest-rates')">Interest Rates</li>
-                            <li onclick="switchProduct('inflation')">Inflation (물가)</li>
-                            <li class="selected" onclick="switchProduct('gdp')">주요 지표 <i class="fas fa-chevron-right" style="font-size:0.7rem"></i></li>
-                            <li onclick="switchProduct('trade')">수출입 통계</li>
+                            <li onclick="switchProduct('inflation')">Inflation</li>
+                            <li class="selected" onclick="switchProduct('gdp-indicator')">GDP</li>
+                            <li onclick="switchProduct('gdp-per-capita')">GDP per Capita</li>
+                            <li onclick="switchProduct('gni')">GNI</li>
+                            <li onclick="switchProduct('trade')">Export x Import</li>
                             <li onclick="switchProduct('gdp-growth')">Economy Growth Rate</li>
-                            <li onclick="switchProduct('employment')">고용 통계</li>
-                            <li>Commodities</li>
-                            <li>Global Stocks</li>
+                            <li onclick="switchProduct('employment')">Employment</li>
+                            <li onclick="switchProduct('global-stocks')">Global Stocks</li>
                         </ul>
-                        
-                        <!-- Flyout 서브메뉴 -->
-                        <div id="gdp-submenu" class="gdp-flyout-menu">
-                            <div class="gdp-submenu-header">
-                                <h3>주요 지표</h3>
-                            </div>
-                            <div class="gdp-submenu-items">
-                                <div class="gdp-submenu-item">
-                                    <button class="gdp-submenu-btn" data-indicator="10101" onclick="selectGDPFromSubmenu('10101')">
-                                        <span class="submenu-item-name">국내총생산</span>
-                                    </button>
-                                </div>
-                                <div class="gdp-submenu-item">
-                                    <button class="gdp-submenu-btn" data-indicator="10102" onclick="selectGDPFromSubmenu('10102')">
-                                        <span class="submenu-item-name">국민총소득</span>
-                                    </button>
-                                </div>
-                                <div class="gdp-submenu-item">
-                                    <button class="gdp-submenu-btn" data-indicator="10106" onclick="selectGDPFromSubmenu('10106')">
-                                        <span class="submenu-item-name">1인당 국민총소득</span>
-                                    </button>
-                                </div>
-                                <div class="gdp-submenu-item">
-                                    <button class="gdp-submenu-btn" data-indicator="10107" onclick="selectGDPFromSubmenu('10107')">
-                                        <span class="submenu-item-name">1인당 국내총생산</span>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
                     </aside>
 
                     <main class="tool-workspace">
                         <div class="tool-header">
                             <div>
-                                <span style="font-size: 0.8rem; font-weight: 600; color: var(--accent-color); text-transform: uppercase;">Economy / 주요 지표</span>
-                                <h2>주요 지표</h2>
-                                <p>국민계정 주요 지표 추이 분석</p>
+                                <span style="font-size: 0.8rem; font-weight: 600; color: var(--accent-color); text-transform: uppercase;">Economy / GDP</span>
+                                <h2>GDP</h2>
+                                <p>Trend Analysis of Gross Domestic Product (GDP)</p>
                             </div>
                             <div class="live-badge"><div class="live-dot"></div> Live Market</div>
                         </div>
@@ -512,48 +472,224 @@
                         <div class="chart-controls">
                             <div class="filter-group">
                                 <span class="filter-label">Period</span>
-                                <input type="number" class="date-input gdp-date-input" id="gdp-start-date" placeholder="시작 연도" inputmode="numeric">
+                                <input type="number" class="date-input gdp-indicator-date-input" id="gdp-indicator-start-date" placeholder="시작 연도" inputmode="numeric">
                                 <span style="color:var(--text-sub)">~</span>
-                                <input type="number" class="date-input gdp-date-input" id="gdp-end-date" placeholder="종료 연도" inputmode="numeric">
+                                <input type="number" class="date-input gdp-indicator-date-input" id="gdp-indicator-end-date" placeholder="종료 연도" inputmode="numeric">
                             </div>
                             <div class="filter-group">
-                                <span class="filter-label">Currency</span>
-                                <div class="currency-buttons gdp-panel-currency">
-                                    <button class="currency-btn active" id="gdp-currency-krw" data-currency="KRW" onclick="switchGDPCurrencyInPanel('KRW')">KRW</button>
-                                    <button class="currency-btn" id="gdp-currency-usd" data-currency="USD" onclick="switchGDPCurrencyInPanel('USD')">USD</button>
+                                <span class="filter-label">Country</span>
+                                <div class="country-chips" id="gdp-indicator-country-chips">
+                                    <!-- 동적으로 생성 -->
                                 </div>
                             </div>
                         </div>
 
-                        <div class="chart-header" id="gdp-chart-header">
+                        <div class="chart-header" id="gdp-indicator-chart-header">
                             <div class="chart-title-section">
-                                <h2 class="chart-main-title" id="gdp-chart-main-title">주요 지표</h2>
-                                <div class="chart-main-value" id="gdp-chart-main-value">-</div>
-                                <div class="chart-change" id="gdp-chart-change">
-                                    <span class="change-value" id="gdp-change-value">-</span>
-                                    <span class="change-percent" id="gdp-change-percent">(-)</span>
+                                <h2 class="chart-main-title" id="gdp-indicator-chart-main-title">GDP</h2>
+                                <div class="chart-main-value" id="gdp-indicator-chart-main-value">-</div>
+                            </div>
+                            <div class="chart-stats" id="gdp-indicator-chart-stats">
+                                <div class="stat-item">
+                                    <span class="stat-label">High</span>
+                                    <span class="stat-value" id="gdp-indicator-stat-high">-</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Low</span>
+                                    <span class="stat-value" id="gdp-indicator-stat-low">-</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Average</span>
+                                    <span class="stat-value" id="gdp-indicator-stat-average">-</span>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="chart-area" id="gdp-chart-container">
-                            <svg class="chart-svg" id="gdp-chart-svg" viewBox="0 0 1200 400" preserveAspectRatio="none">
+                        <div class="chart-area" id="gdp-indicator-chart-container">
+                            <svg class="chart-svg" id="gdp-indicator-chart-svg" viewBox="0 0 1200 400" preserveAspectRatio="none">
                                 <line x1="0" y1="350" x2="1200" y2="350" class="chart-grid-line" />
                                 <line x1="0" y1="280" x2="1200" y2="280" class="chart-grid-line" />
                                 <line x1="0" y1="210" x2="1200" y2="210" class="chart-grid-line" />
                                 <line x1="0" y1="140" x2="1200" y2="140" class="chart-grid-line" />
                                 <line x1="0" y1="70" x2="1200" y2="70" class="chart-grid-line" />
-                                <g id="gdp-y-axis-labels"></g>
-                                <!-- GDP(200Y101) is rendered as annual bars; line paths are unused -->
-                                <path id="path-gdp-unused" class="chart-path" stroke="var(--c-gdp-total)" d="" />
-                                <g id="gdp-bar-chart"></g>
-                                <g id="gdp-data-points"></g>
-                                <g id="gdp-x-axis-labels"></g>
+                                <g id="gdp-indicator-y-axis-labels"></g>
+                                <g id="gdp-indicator-data-points"></g>
+                                <g id="gdp-indicator-x-axis-labels"></g>
                             </svg>
                         </div>
-                        <div class="chart-tooltip" id="gdp-chart-tooltip">
-                            <div class="chart-tooltip-date" id="gdp-tooltip-date"></div>
-                            <div id="gdp-tooltip-content"></div>
+                        <div class="chart-tooltip" id="gdp-indicator-chart-tooltip">
+                            <div class="chart-tooltip-date" id="gdp-indicator-tooltip-date"></div>
+                            <div id="gdp-indicator-tooltip-content"></div>
+                        </div>
+                    </main>
+                </div>
+            </div>
+
+            <!-- GDP per Capita Panel (국제 주요국 1인당 GDP) -->
+            <div id="gdp-per-capita-panel" class="market-content reveal" style="display: none;">
+                <div class="product-grid">
+                    <aside class="product-sidebar">
+                        <h3>Financial Products</h3>
+                        <ul class="product-menu">
+                            <li onclick="switchProduct('exchange-rate')">Exchange Rate</li>
+                            <li onclick="switchProduct('interest-rates')">Interest Rates</li>
+                            <li onclick="switchProduct('inflation')">Inflation</li>
+                            <li onclick="switchProduct('gdp-indicator')">GDP</li>
+                            <li class="selected" onclick="switchProduct('gdp-per-capita')">GDP per Capita</li>
+                            <li onclick="switchProduct('gni')">GNI</li>
+                            <li onclick="switchProduct('trade')">Export x Import</li>
+                            <li onclick="switchProduct('gdp-growth')">Economy Growth Rate</li>
+                            <li onclick="switchProduct('employment')">Employment</li>
+                            <li onclick="switchProduct('global-stocks')">Global Stocks</li>
+                        </ul>
+                    </aside>
+
+                    <main class="tool-workspace">
+                        <div class="tool-header">
+                            <div>
+                                <span style="font-size: 0.8rem; font-weight: 600; color: var(--accent-color); text-transform: uppercase;">Economy / GDP per Capita</span>
+                                <h2>GDP per Capita</h2>
+                                <p>Trend Analysis of GDP per Capita</p>
+                            </div>
+                            <div class="live-badge"><div class="live-dot"></div> Live Market</div>
+                        </div>
+
+                        <div class="chart-controls">
+                            <div class="filter-group">
+                                <span class="filter-label">Period</span>
+                                <input type="number" class="date-input gdp-per-capita-date-input" id="gdp-per-capita-start-date" placeholder="시작 연도" inputmode="numeric">
+                                <span style="color:var(--text-sub)">~</span>
+                                <input type="number" class="date-input gdp-per-capita-date-input" id="gdp-per-capita-end-date" placeholder="종료 연도" inputmode="numeric">
+                            </div>
+                            <div class="filter-group">
+                                <span class="filter-label">Country</span>
+                                <div class="country-chips" id="gdp-per-capita-country-chips">
+                                    <!-- 동적으로 생성 -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="chart-header" id="gdp-per-capita-chart-header">
+                            <div class="chart-title-section">
+                                <h2 class="chart-main-title" id="gdp-per-capita-chart-main-title">GDP per Capita</h2>
+                                <div class="chart-main-value" id="gdp-per-capita-chart-main-value">-</div>
+                            </div>
+                            <div class="chart-stats" id="gdp-per-capita-chart-stats">
+                                <div class="stat-item">
+                                    <span class="stat-label">High</span>
+                                    <span class="stat-value" id="gdp-per-capita-stat-high">-</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Low</span>
+                                    <span class="stat-value" id="gdp-per-capita-stat-low">-</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Average</span>
+                                    <span class="stat-value" id="gdp-per-capita-stat-average">-</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="chart-area" id="gdp-per-capita-chart-container">
+                            <svg class="chart-svg" id="gdp-per-capita-chart-svg" viewBox="0 0 1200 400" preserveAspectRatio="none">
+                                <line x1="0" y1="350" x2="1200" y2="350" class="chart-grid-line" />
+                                <line x1="0" y1="280" x2="1200" y2="280" class="chart-grid-line" />
+                                <line x1="0" y1="210" x2="1200" y2="210" class="chart-grid-line" />
+                                <line x1="0" y1="140" x2="1200" y2="140" class="chart-grid-line" />
+                                <line x1="0" y1="70" x2="1200" y2="70" class="chart-grid-line" />
+                                <g id="gdp-per-capita-y-axis-labels"></g>
+                                <g id="gdp-per-capita-data-points"></g>
+                                <g id="gdp-per-capita-x-axis-labels"></g>
+                            </svg>
+                        </div>
+                        <div class="chart-tooltip" id="gdp-per-capita-chart-tooltip">
+                            <div class="chart-tooltip-date" id="gdp-per-capita-tooltip-date"></div>
+                            <div id="gdp-per-capita-tooltip-content"></div>
+                        </div>
+                    </main>
+                </div>
+            </div>
+
+            <!-- GNI Panel (국제 주요국 국민총소득) -->
+            <div id="gni-panel" class="market-content reveal" style="display: none;">
+                <div class="product-grid">
+                    <aside class="product-sidebar">
+                        <h3>Financial Products</h3>
+                        <ul class="product-menu">
+                            <li onclick="switchProduct('exchange-rate')">Exchange Rate</li>
+                            <li onclick="switchProduct('interest-rates')">Interest Rates</li>
+                            <li onclick="switchProduct('inflation')">Inflation</li>
+                            <li onclick="switchProduct('gdp-indicator')">GDP</li>
+                            <li onclick="switchProduct('gdp-per-capita')">GDP per Capita</li>
+                            <li class="selected" onclick="switchProduct('gni')">GNI</li>
+                            <li onclick="switchProduct('trade')">Export x Import</li>
+                            <li onclick="switchProduct('gdp-growth')">Economy Growth Rate</li>
+                            <li onclick="switchProduct('employment')">Employment</li>
+                            <li onclick="switchProduct('global-stocks')">Global Stocks</li>
+                        </ul>
+                    </aside>
+
+                    <main class="tool-workspace">
+                        <div class="tool-header">
+                            <div>
+                                <span style="font-size: 0.8rem; font-weight: 600; color: var(--accent-color); text-transform: uppercase;">Economy / GNI</span>
+                                <h2>GNI</h2>
+                                <p>Trend Analysis of Gross National Income</p>
+                            </div>
+                            <div class="live-badge"><div class="live-dot"></div> Live Market</div>
+                        </div>
+
+                        <div class="chart-controls">
+                            <div class="filter-group">
+                                <span class="filter-label">Period</span>
+                                <input type="number" class="date-input gni-date-input" id="gni-start-date" placeholder="시작 연도" inputmode="numeric">
+                                <span style="color:var(--text-sub)">~</span>
+                                <input type="number" class="date-input gni-date-input" id="gni-end-date" placeholder="종료 연도" inputmode="numeric">
+                            </div>
+                            <div class="filter-group">
+                                <span class="filter-label">Country</span>
+                                <div class="country-chips" id="gni-country-chips">
+                                    <!-- 동적으로 생성 -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="chart-header" id="gni-chart-header">
+                            <div class="chart-title-section">
+                                <h2 class="chart-main-title" id="gni-chart-main-title">GNI</h2>
+                                <div class="chart-main-value" id="gni-chart-main-value">-</div>
+                            </div>
+                            <div class="chart-stats" id="gni-chart-stats">
+                                <div class="stat-item">
+                                    <span class="stat-label">High</span>
+                                    <span class="stat-value" id="gni-stat-high">-</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Low</span>
+                                    <span class="stat-value" id="gni-stat-low">-</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Average</span>
+                                    <span class="stat-value" id="gni-stat-average">-</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="chart-area" id="gni-chart-container">
+                            <svg class="chart-svg" id="gni-chart-svg" viewBox="0 0 1200 400" preserveAspectRatio="none">
+                                <line x1="0" y1="350" x2="1200" y2="350" class="chart-grid-line" />
+                                <line x1="0" y1="280" x2="1200" y2="280" class="chart-grid-line" />
+                                <line x1="0" y1="210" x2="1200" y2="210" class="chart-grid-line" />
+                                <line x1="0" y1="140" x2="1200" y2="140" class="chart-grid-line" />
+                                <line x1="0" y1="70" x2="1200" y2="70" class="chart-grid-line" />
+                                <g id="gni-y-axis-labels"></g>
+                                <g id="gni-data-points"></g>
+                                <g id="gni-x-axis-labels"></g>
+                            </svg>
+                        </div>
+                        <div class="chart-tooltip" id="gni-chart-tooltip">
+                            <div class="chart-tooltip-date" id="gni-tooltip-date"></div>
+                            <div id="gni-tooltip-content"></div>
                         </div>
                     </main>
                 </div>
@@ -565,15 +701,16 @@
                     <aside class="product-sidebar">
                         <h3>Financial Products</h3>
                         <ul class="product-menu">
-                            <li onclick="switchProduct('exchange-rate')">Exchange Rate <i class="fas fa-chevron-right" style="font-size:0.7rem"></i></li>
-                            <li class="selected" onclick="switchProduct('interest-rates')">Interest Rates <i class="fas fa-chevron-right" style="font-size:0.7rem"></i></li>
-                            <li onclick="switchProduct('inflation')">Inflation (물가)</li>
-                            <li onclick="switchProduct('gdp')">주요 지표</li>
-                            <li onclick="switchProduct('trade')">수출입 통계</li>
+                            <li onclick="switchProduct('exchange-rate')">Exchange Rate</li>
+                            <li class="selected" onclick="switchProduct('interest-rates')">Interest Rates</li>
+                            <li onclick="switchProduct('inflation')">Inflation</li>
+                            <li onclick="switchProduct('gdp-indicator')">GDP</li>
+                            <li onclick="switchProduct('gdp-per-capita')">GDP per Capita</li>
+                            <li onclick="switchProduct('gni')">GNI</li>
+                            <li onclick="switchProduct('trade')">Export x Import</li>
                             <li onclick="switchProduct('gdp-growth')">Economy Growth Rate</li>
-                            <li onclick="switchProduct('employment')">고용 통계</li>
-                            <li>Commodities</li>
-                            <li>Global Stocks</li>
+                            <li onclick="switchProduct('employment')">Employment</li>
+                            <li onclick="switchProduct('global-stocks')">Global Stocks</li>
                         </ul>
                     </aside>
 
@@ -582,7 +719,7 @@
                             <div>
                                 <span style="font-size: 0.8rem; font-weight: 600; color: var(--accent-color); text-transform: uppercase;">Economy / Interest Rates</span>
                                 <h2>Interest Rates</h2>
-                                <p>주요국 기준금리 변동 추이 분석</p>
+                                <p>Policy Interest Rate Trends</p>
                             </div>
                             <div class="live-badge"><div class="live-dot"></div> Live Market</div>
                         </div>
@@ -592,12 +729,11 @@
                             <!-- Date Range & Cycle Selection -->
                             <div class="filter-group">
                                 <span class="filter-label">Period</span>
-                                <input type="month" class="date-input interest-date-input" id="interest-start-date" value="2023-11">
+                                <input type="text" class="date-input interest-date-input" id="interest-start-date" value="2023-11" placeholder="YYYY-MM" pattern="\d{4}-\d{2}" style="width: 100px;">
                                 <span style="color:var(--text-sub)">~</span>
-                                <input type="month" class="date-input interest-date-input" id="interest-end-date" value="2024-05">
+                                <input type="text" class="date-input interest-date-input" id="interest-end-date" value="2024-05" placeholder="YYYY-MM" pattern="\d{4}-\d{2}" style="width: 100px;">
                                 <div class="period-btns interest-cycle-btns">
                                     <button class="period-btn interest-cycle-btn active" data-cycle="M" title="Monthly: Monthly data">Monthly</button>
-                                    <button class="period-btn interest-cycle-btn" data-cycle="Q" title="Quarterly: Quarterly data">Quarterly</button>
                                 </div>
                             </div>
                             <!-- Country Selection Chips -->
@@ -676,23 +812,25 @@
                     <aside class="product-sidebar">
                         <h3>Financial Products</h3>
                         <ul class="product-menu">
-                            <li onclick="switchProduct('exchange-rate')">Exchange Rate <i class="fas fa-chevron-right" style="font-size:0.7rem"></i></li>
+                            <li onclick="switchProduct('exchange-rate')">Exchange Rate</li>
                             <li onclick="switchProduct('interest-rates')">Interest Rates</li>
-                            <li onclick="switchProduct('inflation')">Inflation (물가)</li>
-                            <li onclick="switchProduct('gdp')">주요 지표</li>
-                            <li class="selected" onclick="switchProduct('trade')">수출입 통계 <i class="fas fa-chevron-right" style="font-size:0.7rem"></i></li>
-                            <li onclick="switchProduct('employment')">고용 통계</li>
-                            <li>Commodities</li>
-                            <li>Global Stocks</li>
+                            <li onclick="switchProduct('inflation')">Inflation</li>
+                            <li onclick="switchProduct('gdp-indicator')">GDP</li>
+                            <li onclick="switchProduct('gdp-per-capita')">GDP per Capita</li>
+                            <li onclick="switchProduct('gni')">GNI</li>
+                            <li class="selected" onclick="switchProduct('trade')">Export x Import</li>
+                            <li onclick="switchProduct('gdp-growth')">Economy Growth Rate</li>
+                            <li onclick="switchProduct('employment')">Employment</li>
+                            <li onclick="switchProduct('global-stocks')">Global Stocks</li>
                         </ul>
                     </aside>
 
                     <main class="tool-workspace">
                         <div class="tool-header">
                             <div>
-                                <span style="font-size: 0.8rem; font-weight: 600; color: var(--accent-color); text-transform: uppercase;">Economy / 수출입 통계</span>
-                                <h2>수출입 통계</h2>
-                                <p>한국 수출입 금액 및 무역수지 추이 분석</p>
+                                <span style="font-size: 0.8rem; font-weight: 600; color: var(--accent-color); text-transform: uppercase;">Economy / Export x Import</span>
+                                <h2>Export x Import</h2>
+                                <p>Trend Analysis of Exports, Imports, and Trade Balance</p>
                             </div>
                             <div class="live-badge"><div class="live-dot"></div> Live Market</div>
                         </div>
@@ -705,19 +843,19 @@
                                 <span style="color:var(--text-sub)">~</span>
                                 <input type="date" class="date-input trade-date-input" id="trade-end-date">
                                 <div class="period-btns trade-cycle-btns">
-                                    <button class="period-btn trade-cycle-btn active" data-cycle="M" title="Monthly (월간): 월별 데이터">월별</button>
-                                    <button class="period-btn trade-cycle-btn" data-cycle="Q" title="Quarterly (분기별): 분기별 데이터">분기별</button>
+                                    <button class="period-btn trade-cycle-btn active" data-cycle="M" title="Monthly: Monthly data">Monthly</button>
+                                    <button class="period-btn trade-cycle-btn" data-cycle="Q" title="Quarterly: Quarterly data">Quarterly</button>
                                 </div>
                                 <span class="filter-label" style="margin-left: 1.5rem; display: inline-flex; align-items: center;">Indicators</span>
                                 <div class="chip-group" style="margin-left: 0.5rem; display: inline-flex;">
                                     <button class="chip active" id="chip-trade-export" data-indicator="EXPORT" onclick="toggleTradeIndicator('EXPORT')">
-                                        <div class="chip-dot"></div>수출
+                                        <div class="chip-dot"></div>Export
                                     </button>
                                     <button class="chip active" id="chip-trade-import" data-indicator="IMPORT" onclick="toggleTradeIndicator('IMPORT')">
-                                        <div class="chip-dot"></div>수입
+                                        <div class="chip-dot"></div>Import
                                     </button>
                                     <button class="chip" id="chip-trade-balance" data-indicator="BALANCE" onclick="toggleTradeIndicator('BALANCE')">
-                                        <div class="chip-dot"></div>무역수지
+                                        <div class="chip-dot"></div>Trade Balance
                                     </button>
                                 </div>
                             </div>
@@ -732,7 +870,7 @@
                         <!-- Chart Header -->
                         <div class="chart-header" id="trade-chart-header">
                             <div class="chart-title-section">
-                                <h2 class="chart-main-title" id="trade-chart-main-title">수출입실적</h2>
+                                <h2 class="chart-main-title" id="trade-chart-main-title">Trade Balance</h2>
                             </div>
                         </div>
 
@@ -784,23 +922,25 @@
                     <aside class="product-sidebar">
                         <h3>Financial Products</h3>
                         <ul class="product-menu">
-                            <li onclick="switchProduct('exchange-rate')">Exchange Rate <i class="fas fa-chevron-right" style="font-size:0.7rem"></i></li>
+                            <li onclick="switchProduct('exchange-rate')">Exchange Rate</li>
                             <li onclick="switchProduct('interest-rates')">Interest Rates</li>
-                            <li onclick="switchProduct('inflation')">Inflation (물가)</li>
-                            <li onclick="switchProduct('gdp')">주요 지표</li>
-                            <li onclick="switchProduct('trade')">수출입 통계</li>
-                            <li class="selected" onclick="switchProduct('employment')">고용 통계 <i class="fas fa-chevron-right" style="font-size:0.7rem"></i></li>
-                            <li>Commodities</li>
-                            <li>Global Stocks</li>
+                            <li onclick="switchProduct('inflation')">Inflation</li>
+                            <li onclick="switchProduct('gdp-indicator')">GDP</li>
+                            <li onclick="switchProduct('gdp-per-capita')">GDP per Capita</li>
+                            <li onclick="switchProduct('gni')">GNI</li>
+                            <li onclick="switchProduct('trade')">Export x Import</li>
+                            <li onclick="switchProduct('gdp-growth')">Economy Growth Rate</li>
+                            <li class="selected" onclick="switchProduct('employment')">Employment</li>
+                            <li onclick="switchProduct('global-stocks')">Global Stocks</li>
                         </ul>
                     </aside>
 
                     <main class="tool-workspace">
                         <div class="tool-header">
                             <div>
-                                <span style="font-size: 0.8rem; font-weight: 600; color: var(--accent-color); text-transform: uppercase;">Economy / 고용 통계</span>
-                                <h2>고용 통계</h2>
-                                <p>실업률, 고용률, 취업자 수 등 노동시장 동향 분석</p>
+                                <span style="font-size: 0.8rem; font-weight: 600; color: var(--accent-color); text-transform: uppercase;">Economy / Employment</span>
+                                <h2>Employment</h2>
+                                <p>Trend Analysis of Unemployment Rate</p>
                             </div>
                             <div class="live-badge"><div class="live-dot"></div> Live Market</div>
                         </div>
@@ -813,22 +953,14 @@
                                 <span style="color:var(--text-sub)">~</span>
                                 <input type="date" class="date-input employment-date-input" id="employment-end-date">
                                 <div class="period-btns employment-cycle-btns">
-                                    <button class="period-btn employment-cycle-btn active" data-cycle="M" title="Monthly (월간): 월별 데이터">월별</button>
-                                    <button class="period-btn employment-cycle-btn" data-cycle="Q" title="Quarterly (분기별): 분기별 데이터">분기별</button>
+                                    <button class="period-btn employment-cycle-btn active" data-cycle="M" title="Monthly: Monthly data">Monthly</button>
+                                    <button class="period-btn employment-cycle-btn" data-cycle="Q" title="Quarterly: Quarterly data">Quarterly</button>
                                 </div>
                             </div>
                             <div class="filter-group">
-                                <span class="filter-label">Indicators</span>
-                                <div class="chip-group">
-                                    <button class="chip active" id="chip-employment-unemployment" data-indicator="UNEMPLOYMENT_RATE" onclick="toggleEmploymentIndicator('UNEMPLOYMENT_RATE')">
-                                        <div class="chip-dot"></div>실업률
-                                    </button>
-                                    <button class="chip active" id="chip-employment-employment" data-indicator="EMPLOYMENT_RATE" onclick="toggleEmploymentIndicator('EMPLOYMENT_RATE')">
-                                        <div class="chip-dot"></div>고용률
-                                    </button>
-                                    <button class="chip" id="chip-employment-employed" data-indicator="EMPLOYED" onclick="toggleEmploymentIndicator('EMPLOYED')">
-                                        <div class="chip-dot"></div>취업자 수
-                                    </button>
+                                <span class="filter-label">Country</span>
+                                <div class="country-chips" id="employment-country-chips">
+                                    <!-- 동적으로 생성 -->
                                 </div>
                             </div>
                         </div>
@@ -836,24 +968,20 @@
                         <!-- Chart Header -->
                         <div class="chart-header" id="employment-chart-header">
                             <div class="chart-title-section">
-                                <h2 class="chart-main-title" id="employment-chart-main-title">실업률</h2>
+                                <h2 class="chart-main-title" id="employment-chart-main-title">Unemployment Rate</h2>
                                 <div class="chart-main-value" id="employment-chart-main-value">-</div>
-                                <div class="chart-change" id="employment-chart-change">
-                                    <span class="change-value" id="employment-change-value">-</span>
-                                    <span class="change-percent" id="employment-change-percent">(-)</span>
-                                </div>
                             </div>
                             <div class="chart-stats" id="employment-chart-stats">
                                 <div class="stat-item">
-                                    <span class="stat-label">최고</span>
+                                    <span class="stat-label">High</span>
                                     <span class="stat-value" id="employment-stat-high">-</span>
                                 </div>
                                 <div class="stat-item">
-                                    <span class="stat-label">최저</span>
+                                    <span class="stat-label">Low</span>
                                     <span class="stat-value" id="employment-stat-low">-</span>
                                 </div>
                                 <div class="stat-item">
-                                    <span class="stat-label">평균</span>
+                                    <span class="stat-label">Average</span>
                                     <span class="stat-value" id="employment-stat-average">-</span>
                                 </div>
                             </div>
@@ -872,10 +1000,8 @@
                                 <!-- Y-axis labels (generated via JS) -->
                                 <g id="employment-y-axis-labels"></g>
                                 
-                                <!-- Line chart paths -->
-                                <path id="path-employment-unemployment" class="chart-path visible" stroke="var(--c-employment-unemployment)" d="" />
-                                <path id="path-employment-employment" class="chart-path visible" stroke="var(--c-employment-employment)" d="" />
-                                <path id="path-employment-employed" class="chart-path visible" stroke="var(--c-employment-employed)" d="" />
+                                <!-- Line chart paths - will be dynamically created for multiple countries -->
+                                <g id="employment-paths-group"></g>
                                 
                                 <!-- Data points (for line chart) -->
                                 <g id="employment-data-points"></g>
@@ -899,15 +1025,16 @@
                     <aside class="product-sidebar">
                         <h3>Financial Products</h3>
                         <ul class="product-menu">
-                            <li onclick="switchProduct('exchange-rate')">Exchange Rate <i class="fas fa-chevron-right" style="font-size:0.7rem"></i></li>
+                            <li onclick="switchProduct('exchange-rate')">Exchange Rate</li>
                             <li onclick="switchProduct('interest-rates')">Interest Rates</li>
-                            <li onclick="switchProduct('inflation')">Inflation (물가)</li>
-                            <li onclick="switchProduct('gdp')">주요 지표</li>
-                            <li onclick="switchProduct('trade')">수출입 통계</li>
-                            <li class="selected" onclick="switchProduct('gdp-growth')">Economy Growth Rate <i class="fas fa-chevron-right" style="font-size:0.7rem"></i></li>
-                            <li onclick="switchProduct('employment')">고용 통계</li>
-                            <li>Commodities</li>
-                            <li>Global Stocks</li>
+                            <li onclick="switchProduct('inflation')">Inflation</li>
+                            <li onclick="switchProduct('gdp-indicator')">GDP</li>
+                            <li onclick="switchProduct('gdp-per-capita')">GDP per Capita</li>
+                            <li onclick="switchProduct('gni')">GNI</li>
+                            <li onclick="switchProduct('trade')">Export x Import</li>
+                            <li class="selected" onclick="switchProduct('gdp-growth')">Economy Growth Rate</li>
+                            <li onclick="switchProduct('employment')">Employment</li>
+                            <li onclick="switchProduct('global-stocks')">Global Stocks</li>
                         </ul>
                     </aside>
 
@@ -916,7 +1043,7 @@
                             <div>
                                 <span style="font-size: 0.8rem; font-weight: 600; color: var(--accent-color); text-transform: uppercase;">Economy / Economy Growth Rate</span>
                                 <h2>Economy Growth Rate</h2>
-                                <p>국제 주요국 경제성장률 추이 분석</p>
+                                <p>Trend Analysis of Economic Growth Rate</p>
                             </div>
                             <div class="live-badge"><div class="live-dot"></div> Live Market</div>
                         </div>
@@ -989,6 +1116,97 @@
                         <div class="chart-tooltip" id="gdp-growth-chart-tooltip">
                             <div class="chart-tooltip-date" id="gdp-growth-tooltip-date"></div>
                             <div id="gdp-growth-tooltip-content"></div>
+                        </div>
+                    </main>
+                </div>
+            </div>
+
+            <!-- Global Stocks Panel (국제 주요국 주가지수) -->
+            <div id="global-stocks-panel" class="market-content reveal" style="display: none;">
+                <div class="product-grid">
+                    <aside class="product-sidebar">
+                        <h3>Financial Products</h3>
+                        <ul class="product-menu">
+                            <li onclick="switchProduct('exchange-rate')">Exchange Rate</li>
+                            <li onclick="switchProduct('interest-rates')">Interest Rates</li>
+                            <li onclick="switchProduct('inflation')">Inflation</li>
+                            <li onclick="switchProduct('gdp-indicator')">GDP</li>
+                            <li onclick="switchProduct('gdp-per-capita')">GDP per Capita</li>
+                            <li onclick="switchProduct('gni')">GNI</li>
+                            <li onclick="switchProduct('trade')">Export x Import</li>
+                            <li onclick="switchProduct('gdp-growth')">Economy Growth Rate</li>
+                            <li onclick="switchProduct('employment')">Employment</li>
+                            <li class="selected" onclick="switchProduct('global-stocks')">Global Stocks</li>
+                        </ul>
+                    </aside>
+
+                    <main class="tool-workspace">
+                        <div class="tool-header">
+                            <div>
+                                <span style="font-size: 0.8rem; font-weight: 600; color: var(--accent-color); text-transform: uppercase;">Economy / Global Stocks</span>
+                                <h2>Global Stocks</h2>
+                                <p>Trend Analysis of Global Stock Indices</p>
+                            </div>
+                            <div class="live-badge"><div class="live-dot"></div> Live Market</div>
+                        </div>
+
+                        <div class="chart-controls">
+                            <div class="filter-group">
+                                <span class="filter-label">Period</span>
+                                <input type="date" class="date-input global-stocks-date-input" id="global-stocks-start-date">
+                                <span style="color:var(--text-sub)">~</span>
+                                <input type="date" class="date-input global-stocks-date-input" id="global-stocks-end-date">
+                                <div class="period-btns global-stocks-cycle-btns">
+                                    <button class="period-btn global-stocks-cycle-btn active" data-cycle="M" title="Monthly: Monthly data">Monthly</button>
+                                    <button class="period-btn global-stocks-cycle-btn" data-cycle="Q" title="Quarterly: Quarterly data">Quarterly</button>
+                                </div>
+                            </div>
+                            <div class="filter-group">
+                                <span class="filter-label">Country</span>
+                                <div class="country-chips" id="global-stocks-country-chips">
+                                    <!-- 동적으로 생성 -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="chart-header" id="global-stocks-chart-header">
+                            <div class="chart-title-section">
+                                <h2 class="chart-main-title" id="global-stocks-chart-main-title">Global Stock Index</h2>
+                                <div class="chart-main-value" id="global-stocks-chart-main-value">-</div>
+                            </div>
+                            <div class="chart-stats" id="global-stocks-chart-stats">
+                                <div class="stat-item">
+                                    <span class="stat-label">High</span>
+                                    <span class="stat-value" id="global-stocks-stat-high">-</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Low</span>
+                                    <span class="stat-value" id="global-stocks-stat-low">-</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Average</span>
+                                    <span class="stat-value" id="global-stocks-stat-average">-</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="chart-area" id="global-stocks-chart-container">
+                            <svg class="chart-svg" id="global-stocks-chart-svg" viewBox="0 0 1200 400" preserveAspectRatio="none">
+                                <line x1="0" y1="350" x2="1200" y2="350" class="chart-grid-line" />
+                                <line x1="0" y1="280" x2="1200" y2="280" class="chart-grid-line" />
+                                <line x1="0" y1="210" x2="1200" y2="210" class="chart-grid-line" />
+                                <line x1="0" y1="140" x2="1200" y2="140" class="chart-grid-line" />
+                                <line x1="0" y1="70" x2="1200" y2="70" class="chart-grid-line" />
+                                
+                                <g id="global-stocks-y-axis-labels"></g>
+                                <g id="global-stocks-paths-group"></g>
+                                <g id="global-stocks-data-points"></g>
+                                <g id="global-stocks-x-axis-labels"></g>
+                            </svg>
+                        </div>
+                        <div class="chart-tooltip" id="global-stocks-chart-tooltip">
+                            <div class="chart-tooltip-date" id="global-stocks-tooltip-date"></div>
+                            <div id="global-stocks-tooltip-content"></div>
                         </div>
                     </main>
                 </div>
@@ -1306,6 +1524,7 @@
     <script src="js/features/market/economy/trade.js"></script>
     <script src="js/features/market/economy/employment.js"></script>
     <script src="js/features/market/economy/gdp-growth.js"></script>
+    <script src="js/features/market/economy/international-indicators.js"></script>
     
     <!-- 3. Market Data - Logistics 모듈 -->
     <script src="js/features/market/logistics/logistics.js"></script>
@@ -2321,6 +2540,19 @@
                     if (data.items && Object.keys(data.items).length > 0) {
                         gdpGrowthCountryMapping = data.items;
                         gdpGrowthCountryListLoaded = true;
+                        
+                        // Set Korea as default country
+                        const itemCodes = Object.keys(gdpGrowthCountryMapping);
+                        const korCode = itemCodes.find(code => {
+                            const name = gdpGrowthCountryMapping[code].name;
+                            return name && (name.includes('한국') || name.includes('KOR') || name.toLowerCase().includes('korea'));
+                        });
+                        if (korCode) {
+                            activeGDPGrowthCountries = [korCode];
+                        } else if (itemCodes.length > 0) {
+                            activeGDPGrowthCountries = [itemCodes[0]];
+                        }
+                        
                         return gdpGrowthCountryMapping;
                     }
                 }
@@ -2333,6 +2565,18 @@
             }
         }
         
+        // GDP Growth country name translation (uses tradeCountryNameMap)
+        function getGDPGrowthCountryNameEnglish(koreanName) {
+            if (!koreanName) return koreanName;
+            const name = koreanName.toLowerCase();
+            for (const info of tradeCountryNameMap) {
+                if (info.keywords.some(keyword => name.includes(keyword))) {
+                    return info.englishName;
+                }
+            }
+            return koreanName;
+        }
+        
         function initGDPGrowthCountryChips() {
             const chipsContainer = document.getElementById('gdp-growth-country-chips');
             if (!chipsContainer) return;
@@ -2341,23 +2585,45 @@
             
             const itemCodes = Object.keys(gdpGrowthCountryMapping);
             if (itemCodes.length === 0) {
-                chipsContainer.innerHTML = '<span style="color: var(--text-sub); font-size: 0.8rem;">국가 리스트 로딩 중...</span>';
+                chipsContainer.innerHTML = '<span style="color: var(--text-sub); font-size: 0.8rem;">Loading...</span>';
                 return;
             }
             
-            itemCodes.forEach(itemCode => {
+            itemCodes.forEach((itemCode, index) => {
                 const countryInfo = gdpGrowthCountryMapping[itemCode];
                 const chip = document.createElement('button');
                 chip.className = 'chip';
                 chip.setAttribute('data-item-code', itemCode);
                 chip.setAttribute('title', countryInfo.name);
                 
+                const chipDot = document.createElement('div');
+                chipDot.className = 'chip-dot';
+                chip.appendChild(chipDot);
+                
                 const isActive = activeGDPGrowthCountries.includes(itemCode);
+                const countryColor = getGDPGrowthCountryColor(itemCode);
+                
                 if (isActive) {
                     chip.classList.add('active');
+                    chipDot.style.background = countryColor;
+                    chip.style.borderColor = countryColor;
+                    chip.style.color = countryColor;
+                    // Get rgb values for background
+                    const tempEl = document.createElement('div');
+                    tempEl.style.color = countryColor;
+                    document.body.appendChild(tempEl);
+                    const computedColor = window.getComputedStyle(tempEl).color;
+                    document.body.removeChild(tempEl);
+                    const rgbMatch = computedColor.match(/\d+/g);
+                    if (rgbMatch && rgbMatch.length >= 3) {
+                        chip.style.background = `rgba(${rgbMatch[0]}, ${rgbMatch[1]}, ${rgbMatch[2]}, 0.2)`;
+                    }
+                } else {
+                    chipDot.style.background = 'currentColor';
                 }
                 
-                chip.appendChild(document.createTextNode(countryInfo.name));
+                const englishName = getGDPGrowthCountryNameEnglish(countryInfo.name);
+                chip.appendChild(document.createTextNode(englishName));
                 chip.addEventListener('click', () => toggleGDPGrowthCountry(itemCode));
                 
                 chipsContainer.appendChild(chip);
@@ -2375,10 +2641,31 @@
             // UI 업데이트
             const chip = document.querySelector(`#gdp-growth-country-chips [data-item-code="${itemCode}"]`);
             if (chip) {
-                if (activeGDPGrowthCountries.includes(itemCode)) {
+                const chipDot = chip.querySelector('.chip-dot');
+                const isActive = activeGDPGrowthCountries.includes(itemCode);
+                const countryColor = getGDPGrowthCountryColor(itemCode);
+                
+                if (isActive) {
                     chip.classList.add('active');
+                    if (chipDot) chipDot.style.background = countryColor;
+                    chip.style.borderColor = countryColor;
+                    chip.style.color = countryColor;
+                    // Get rgb values for background
+                    const tempEl = document.createElement('div');
+                    tempEl.style.color = countryColor;
+                    document.body.appendChild(tempEl);
+                    const computedColor = window.getComputedStyle(tempEl).color;
+                    document.body.removeChild(tempEl);
+                    const rgbMatch = computedColor.match(/\d+/g);
+                    if (rgbMatch && rgbMatch.length >= 3) {
+                        chip.style.background = `rgba(${rgbMatch[0]}, ${rgbMatch[1]}, ${rgbMatch[2]}, 0.2)`;
+                    }
                 } else {
                     chip.classList.remove('active');
+                    if (chipDot) chipDot.style.background = 'currentColor';
+                    chip.style.borderColor = '';
+                    chip.style.color = '';
+                    chip.style.background = '';
                 }
             }
             
@@ -2767,7 +3054,7 @@
                 const titleEl = document.getElementById('gdp-growth-chart-main-title');
                 const valueEl = document.getElementById('gdp-growth-chart-main-value');
                 const countryInfo = gdpGrowthCountryMapping[firstCountry];
-                const countryName = countryInfo ? countryInfo.name : firstCountry;
+                const countryName = countryInfo ? getGDPGrowthCountryNameEnglish(countryInfo.name) : firstCountry;
                 if (titleEl) titleEl.textContent = `${countryName} Economy Growth Rate`;
                 if (valueEl) valueEl.textContent = '-';
                 return;
@@ -2782,7 +3069,7 @@
             const average = values.reduce((sum, v) => sum + v, 0) / values.length;
             
             const countryInfo = gdpGrowthCountryMapping[firstCountry];
-            const countryName = countryInfo ? countryInfo.name : firstCountry;
+            const countryName = countryInfo ? getGDPGrowthCountryNameEnglish(countryInfo.name) : firstCountry;
             
             const titleEl = document.getElementById('gdp-growth-chart-main-title');
             const valueEl = document.getElementById('gdp-growth-chart-main-value');
@@ -3068,6 +3355,19 @@
                     const data = await response.json();
                     if (data.items && Object.keys(data.items).length > 0) {
                         tradeCountryMapping = data.items;
+                        
+                        // Set Korea as default country
+                        const itemCodes = Object.keys(tradeCountryMapping);
+                        const korCode = itemCodes.find(code => {
+                            const name = tradeCountryMapping[code].name;
+                            return name && (name.includes('한국') || name.includes('KOR') || name.toLowerCase().includes('korea'));
+                        });
+                        if (korCode) {
+                            activeTradeCountry = korCode;
+                        } else if (itemCodes.length > 0) {
+                            activeTradeCountry = itemCodes[0];
+                        }
+                        
                         return tradeCountryMapping;
                     }
                 }
@@ -3080,6 +3380,62 @@
             }
         }
         
+        // Trade country name translation map
+        const tradeCountryNameMap = [
+            { keywords: ['호주', '오스트레일리아', 'aus', 'australia'], englishName: 'Australia' },
+            { keywords: ['오스트리아', 'aut', 'austria'], englishName: 'Austria' },
+            { keywords: ['벨기에', 'bel', 'belgium'], englishName: 'Belgium' },
+            { keywords: ['브라질', 'bra', 'brazil'], englishName: 'Brazil' },
+            { keywords: ['캐나다', 'can', 'canada'], englishName: 'Canada' },
+            { keywords: ['스위스', 'che', 'switzerland'], englishName: 'Switzerland' },
+            { keywords: ['칠레', 'chl', 'chile'], englishName: 'Chile' },
+            { keywords: ['중국', 'chn', 'china'], englishName: 'China' },
+            { keywords: ['체코', 'cze', 'czech'], englishName: 'Czech Republic' },
+            { keywords: ['독일', 'deu', 'germany'], englishName: 'Germany' },
+            { keywords: ['덴마크', 'dnk', 'denmark'], englishName: 'Denmark' },
+            { keywords: ['에스토니아', 'est', 'estonia'], englishName: 'Estonia' },
+            { keywords: ['스페인', 'esp', 'spain'], englishName: 'Spain' },
+            { keywords: ['핀란드', 'fin', 'finland'], englishName: 'Finland' },
+            { keywords: ['프랑스', 'fra', 'france'], englishName: 'France' },
+            { keywords: ['영국', 'gbr', 'uk', 'united kingdom'], englishName: 'UK' },
+            { keywords: ['그리스', 'grc', 'greece'], englishName: 'Greece' },
+            { keywords: ['헝가리', 'hun', 'hungary'], englishName: 'Hungary' },
+            { keywords: ['인도네시아', 'idn', 'indonesia'], englishName: 'Indonesia' },
+            { keywords: ['아일랜드', 'irl', 'ireland'], englishName: 'Ireland' },
+            { keywords: ['이스라엘', 'isr', 'israel'], englishName: 'Israel' },
+            { keywords: ['인도', 'ind', 'india'], englishName: 'India' },
+            { keywords: ['아이슬란드', 'isl', 'iceland'], englishName: 'Iceland' },
+            { keywords: ['이탈리아', 'ita', 'italy'], englishName: 'Italy' },
+            { keywords: ['일본', 'jpn', 'japan'], englishName: 'Japan' },
+            { keywords: ['한국', 'kor', 'korea'], englishName: 'Korea' },
+            { keywords: ['룩셈부르크', 'lux', 'luxembourg'], englishName: 'Luxembourg' },
+            { keywords: ['라트비아', 'lva', 'latvia'], englishName: 'Latvia' },
+            { keywords: ['멕시코', 'mex', 'mexico'], englishName: 'Mexico' },
+            { keywords: ['네덜란드', 'nld', 'netherlands'], englishName: 'Netherlands' },
+            { keywords: ['노르웨이', 'nor', 'norway'], englishName: 'Norway' },
+            { keywords: ['뉴질랜드', 'nzl', 'zealand'], englishName: 'New Zealand' },
+            { keywords: ['폴란드', 'pol', 'poland'], englishName: 'Poland' },
+            { keywords: ['포르투갈', 'prt', 'portugal'], englishName: 'Portugal' },
+            { keywords: ['러시아', 'rus', 'russia'], englishName: 'Russia' },
+            { keywords: ['스웨덴', 'swe', 'sweden'], englishName: 'Sweden' },
+            { keywords: ['슬로베니아', 'svn', 'slovenia'], englishName: 'Slovenia' },
+            { keywords: ['슬로바키아', 'svk', 'slovakia'], englishName: 'Slovakia' },
+            { keywords: ['튀르키예', '터키', 'tur', 'turkey', 'turkiye'], englishName: 'Turkey' },
+            { keywords: ['미국', 'usa', 'us ', 'united states'], englishName: 'USA' },
+            { keywords: ['남아프리카', '남아공', 'zaf', 'south africa'], englishName: 'South Africa' }
+        ];
+        
+        function getTradeCountryNameEnglish(koreanName) {
+            if (!koreanName) return koreanName;
+            const name = koreanName.toLowerCase();
+            for (const info of tradeCountryNameMap) {
+                if (info.keywords.some(keyword => name.includes(keyword))) {
+                    return info.englishName;
+                }
+            }
+            return koreanName;
+        }
+        
         function initTradeCountryChips() {
             const chipsContainer = document.getElementById('trade-country-chips');
             if (!chipsContainer) return;
@@ -3088,7 +3444,7 @@
             
             const itemCodes = Object.keys(tradeCountryMapping);
             if (itemCodes.length === 0) {
-                chipsContainer.innerHTML = '<span style="color: var(--text-sub); font-size: 0.8rem;">국가 리스트 로딩 중...</span>';
+                chipsContainer.innerHTML = '<span style="color: var(--text-sub); font-size: 0.8rem;">Loading...</span>';
                 return;
             }
             
@@ -3099,12 +3455,24 @@
                 chip.setAttribute('data-item-code', itemCode);
                 chip.setAttribute('title', countryInfo.name);
                 
+                const chipDot = document.createElement('div');
+                chipDot.className = 'chip-dot';
+                chip.appendChild(chipDot);
+                
                 const isActive = activeTradeCountry === itemCode;
                 if (isActive) {
                     chip.classList.add('active');
+                    const accentColor = 'var(--accent-color)';
+                    chipDot.style.background = accentColor;
+                    chip.style.borderColor = accentColor;
+                    chip.style.color = accentColor;
+                    chip.style.background = 'rgba(59, 130, 246, 0.2)';
+                } else {
+                    chipDot.style.background = 'currentColor';
                 }
                 
-                chip.appendChild(document.createTextNode(countryInfo.name));
+                const englishName = getTradeCountryNameEnglish(countryInfo.name);
+                chip.appendChild(document.createTextNode(englishName));
                 chip.addEventListener('click', () => toggleTradeCountry(itemCode));
                 
                 chipsContainer.appendChild(chip);
@@ -3124,14 +3492,22 @@
             // UI 업데이트
             document.querySelectorAll('#trade-country-chips .chip').forEach(chip => {
                 const chipItemCode = chip.getAttribute('data-item-code');
-                if (chipItemCode === itemCode) {
-                    if (activeTradeCountry === itemCode) {
-                        chip.classList.add('active');
-                    } else {
-                        chip.classList.remove('active');
-                    }
+                const chipDot = chip.querySelector('.chip-dot');
+                const isActive = activeTradeCountry === chipItemCode;
+                
+                if (isActive) {
+                    chip.classList.add('active');
+                    const accentColor = 'var(--accent-color)';
+                    if (chipDot) chipDot.style.background = accentColor;
+                    chip.style.borderColor = accentColor;
+                    chip.style.color = accentColor;
+                    chip.style.background = 'rgba(59, 130, 246, 0.2)';
                 } else {
                     chip.classList.remove('active');
+                    if (chipDot) chipDot.style.background = 'currentColor';
+                    chip.style.borderColor = '';
+                    chip.style.color = '';
+                    chip.style.background = '';
                 }
             });
             
@@ -4443,10 +4819,10 @@
             if (titleEl) {
                 if (activeTradeCountry) {
                     const countryInfo = tradeCountryMapping[activeTradeCountry];
-                    const countryName = countryInfo ? countryInfo.name : activeTradeCountry;
-                    titleEl.textContent = `${countryName} 수출입실적`;
+                    const countryName = countryInfo ? getTradeCountryNameEnglish(countryInfo.name) : activeTradeCountry;
+                    titleEl.textContent = `${countryName} Export and Import Performance`;
                 } else {
-                    titleEl.textContent = '수출입실적';
+                    titleEl.textContent = 'Export and Import Performance';
                 }
             }
         }

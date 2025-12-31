@@ -276,6 +276,88 @@ async function fetchInflationCountryList() {
     }
 }
 
+// Country info mapping (Korean name → English name)
+const inflationCountryInfoMap = [
+    { keywords: ['오스트리아', 'aut', 'austria'], englishName: 'Austria' },
+    { keywords: ['호주', 'aus', 'australia'], englishName: 'Australia' },
+    { keywords: ['벨기에', 'bel', 'belgium'], englishName: 'Belgium' },
+    { keywords: ['브라질', 'bra', 'brazil'], englishName: 'Brazil' },
+    { keywords: ['캐나다', 'can', 'canada'], englishName: 'Canada' },
+    { keywords: ['스위스', 'che', 'switzerland'], englishName: 'Switzerland' },
+    { keywords: ['칠레', 'chl', 'chile'], englishName: 'Chile' },
+    { keywords: ['중국', 'chn', 'china'], englishName: 'China' },
+    { keywords: ['체코', 'cze', 'czech'], englishName: 'Czech Republic' },
+    { keywords: ['독일', 'deu', 'germany'], englishName: 'Germany' },
+    { keywords: ['덴마크', 'dnk', 'denmark'], englishName: 'Denmark' },
+    { keywords: ['에스토니아', 'est', 'estonia'], englishName: 'Estonia' },
+    { keywords: ['스페인', 'esp', 'spain'], englishName: 'Spain' },
+    { keywords: ['핀란드', 'fin', 'finland'], englishName: 'Finland' },
+    { keywords: ['프랑스', 'fra', 'france'], englishName: 'France' },
+    { keywords: ['영국', 'gbr', 'uk', 'united kingdom'], englishName: 'UK' },
+    { keywords: ['그리스', 'grc', 'greece'], englishName: 'Greece' },
+    { keywords: ['헝가리', 'hun', 'hungary'], englishName: 'Hungary' },
+    { keywords: ['인도네시아', 'idn', 'indonesia'], englishName: 'Indonesia' },
+    { keywords: ['아일랜드', 'irl', 'ireland'], englishName: 'Ireland' },
+    { keywords: ['이스라엘', 'isr', 'israel'], englishName: 'Israel' },
+    { keywords: ['인도', 'ind', 'india'], englishName: 'India' },
+    { keywords: ['아이슬란드', 'isl', 'iceland'], englishName: 'Iceland' },
+    { keywords: ['이탈리아', 'ita', 'italy'], englishName: 'Italy' },
+    { keywords: ['일본', 'jpn', 'japan'], englishName: 'Japan' },
+    { keywords: ['한국', 'kor', 'korea'], englishName: 'Korea' },
+    { keywords: ['룩셈부르크', 'lux', 'luxembourg'], englishName: 'Luxembourg' },
+    { keywords: ['라트비아', 'lva', 'latvia'], englishName: 'Latvia' },
+    { keywords: ['멕시코', 'mex', 'mexico'], englishName: 'Mexico' },
+    { keywords: ['네덜란드', 'nld', 'netherlands', 'holland'], englishName: 'Netherlands' },
+    { keywords: ['노르웨이', 'nor', 'norway'], englishName: 'Norway' },
+    { keywords: ['뉴질랜드', 'nzl', 'zealand'], englishName: 'New Zealand' },
+    { keywords: ['폴란드', 'pol', 'poland'], englishName: 'Poland' },
+    { keywords: ['포르투갈', 'prt', 'portugal'], englishName: 'Portugal' },
+    { keywords: ['러시아', 'rus', 'russia'], englishName: 'Russia' },
+    { keywords: ['스웨덴', 'swe', 'sweden'], englishName: 'Sweden' },
+    { keywords: ['슬로베니아', 'svn', 'slovenia'], englishName: 'Slovenia' },
+    { keywords: ['슬로바키아', 'svk', 'slovakia'], englishName: 'Slovakia' },
+    { keywords: ['튀르키예', 'tur', 'turkey'], englishName: 'Turkey' },
+    { keywords: ['미국', 'usa', 'us ', 'united states'], englishName: 'USA' },
+    { keywords: ['유로', 'eur', 'eurozone', 'euro area'], englishName: 'Eurozone' },
+    { keywords: ['남아프리카', 'zaf', 'south africa'], englishName: 'South Africa' }
+];
+
+// itemCode에서 국가 코드 추출 (예: "AUS_CPI" -> "aus")
+function extractInflationCountryCode(itemCode) {
+    if (!itemCode) return null;
+    const code = itemCode.toLowerCase();
+    // 패턴: XXX_CPI, XXX_RATE 등에서 국가코드 추출
+    const match = code.match(/^([a-z]{2,3})_/);
+    if (match) return match[1];
+    // 국가코드가 직접 포함된 경우
+    const countryPattern = code.match(/^([a-z]{2,3})$/);
+    if (countryPattern) return countryPattern[1];
+    return null;
+}
+
+function getInflationCountryNameEnglish(koreanName, itemCode = null) {
+    if (!koreanName && !itemCode) return koreanName;
+    
+    // 1. itemCode에서 국가 코드 추출하여 매칭 시도
+    const countryCode = extractInflationCountryCode(itemCode);
+    if (countryCode) {
+        for (const info of inflationCountryInfoMap) {
+            if (info.keywords.some(keyword => keyword.toLowerCase() === countryCode)) {
+                return info.englishName;
+            }
+        }
+    }
+    
+    // 2. 이름 기반 매칭
+    const name = (koreanName || '').toLowerCase();
+    for (const info of inflationCountryInfoMap) {
+        if (info.keywords.some(keyword => name.includes(keyword.toLowerCase()))) {
+            return info.englishName;
+        }
+    }
+    return koreanName;
+}
+
 function initInflationCountryChips() {
     const chipsContainer = document.getElementById('inflation-country-chips');
     if (!chipsContainer) return;
@@ -284,17 +366,23 @@ function initInflationCountryChips() {
     
     const itemCodes = Object.keys(inflationCountryMapping);
     if (itemCodes.length === 0) {
-        chipsContainer.innerHTML = '<span style="color: var(--text-sub); font-size: 0.8rem;">국가 리스트 로딩 중...</span>';
+        chipsContainer.innerHTML = '<span style="color: var(--text-sub); font-size: 0.8rem;">Loading country list...</span>';
         return;
+    }
+    
+    // Set Korea as default if no countries selected yet
+    if (activeInflationCountries.length === 0) {
+        const korCode = itemCodes.find(code => {
+            const name = inflationCountryMapping[code].name;
+            return name.includes('한국') || name.includes('KOR') || code.includes('KOR');
+        });
+        if (korCode) {
+            activeInflationCountries.push(korCode);
+        }
     }
     
     itemCodes.forEach(itemCode => {
         const countryInfo = inflationCountryMapping[itemCode];
-        // 한국 버튼 제거
-        const name = countryInfo.name.toLowerCase();
-        if (name.includes('한국') || name.includes('kor') || name.includes('korea')) {
-            return; // 한국은 건너뛰기
-        }
         
         const chip = document.createElement('button');
         chip.className = 'chip';
@@ -332,7 +420,9 @@ function initInflationCountryChips() {
         }
         
         chip.appendChild(chipDot);
-        chip.appendChild(document.createTextNode(countryInfo.name));
+        // Display country name in English
+        const englishName = getInflationCountryNameEnglish(countryInfo.name, itemCode);
+        chip.appendChild(document.createTextNode(englishName));
         
         chip.addEventListener('click', () => toggleInflationCountry(itemCode));
         
@@ -654,7 +744,7 @@ function updateInflationChart() {
             path.classList.add('chart-path');
             path.setAttribute('stroke', getInflationCountryColor(itemCode));
             path.setAttribute('stroke-width', '2.5');
-            path.setAttribute('stroke-dasharray', '5,5'); // 국가 데이터는 점선으로 구분
+            // Solid lines instead of dotted (removed stroke-dasharray)
             path.setAttribute('fill', 'none');
             svg.insertBefore(path, pointsGroup);
         }
@@ -682,41 +772,8 @@ function updateInflationChart() {
 }
 
 function renderInflationCountryDataPoints(data, itemCode) {
-    const pointsGroup = document.getElementById('inflation-data-points');
-    if (!pointsGroup || !data || data.length === 0) return;
-    
-    const svg = document.getElementById('inflation-chart-svg');
-    if (!svg) return;
-    
-    const { width, height } = getSvgViewBoxSize(svg);
-    const padding = { top: 20, bottom: 30, left: 40, right: 20 };
-    const chartWidth = width - padding.left - padding.right;
-    const chartHeight = height - padding.top - padding.bottom;
-    
-    const minValue = inflationYAxisRange.min;
-    const maxValue = inflationYAxisRange.max;
-    const valueRange = maxValue - minValue || 1;
-    
-    const countryColor = getInflationCountryColor(itemCode);
-    
-    data.forEach((point, index) => {
-        const x = padding.left + (index / (data.length - 1 || 1)) * chartWidth;
-        const normalizedValue = (point.value - minValue) / valueRange;
-        const y = padding.top + (1 - normalizedValue) * chartHeight;
-        
-        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        circle.setAttribute('cx', x);
-        circle.setAttribute('cy', y);
-        circle.setAttribute('r', '4');
-        circle.setAttribute('fill', countryColor);
-        circle.setAttribute('stroke', '#fff');
-        circle.setAttribute('stroke-width', '1.5');
-        circle.setAttribute('data-date', point.date);
-        circle.setAttribute('data-value', point.value);
-        circle.setAttribute('data-country', itemCode);
-        circle.classList.add('data-point');
-        pointsGroup.appendChild(circle);
-    });
+    // Data points (circles) are removed as per user request - showing only lines
+    // No circles are rendered for country data
 }
 
 function generateInflationSVGPath(data) {
@@ -895,42 +952,11 @@ function renderInflationBarChart(displaySeries, itemCode) {
 }
 
 function renderInflationDataPoints(displaySeries, itemCode) {
+    // Data points (circles) are removed as per user request - showing only lines
     const g = document.getElementById('inflation-data-points');
-    if (!g) return;
-    
-    g.innerHTML = '';
-    
-    const data = Array.isArray(displaySeries) ? displaySeries : [];
-    if (!itemCode || data.length === 0) return;
-        
-        const svg = document.getElementById('inflation-chart-svg');
-        if (!svg) return;
-        
-        const { width, height } = getSvgViewBoxSize(svg);
-        const padding = { top: 20, bottom: 30, left: 40, right: 20 };
-        const chartWidth = width - padding.left - padding.right;
-        const chartHeight = height - padding.top - padding.bottom;
-        
-        const minValue = inflationYAxisRange.min;
-        const maxValue = inflationYAxisRange.max;
-        const valueRange = maxValue - minValue || 1;
-        
-    const color = INFLATION_ITEM_COLORS[itemCode] || 'var(--accent-color)';
-        
-        data.forEach((point, index) => {
-            const x = padding.left + (index / (data.length - 1 || 1)) * chartWidth;
-            const normalizedValue = (point.value - minValue) / valueRange;
-            const y = padding.top + (1 - normalizedValue) * chartHeight;
-            
-            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-            circle.setAttribute('cx', String(x));
-            circle.setAttribute('cy', String(y));
-            circle.setAttribute('r', '4');
-            circle.setAttribute('fill', color);
-            circle.setAttribute('stroke', '#fff');
-            circle.setAttribute('stroke-width', '1');
-            g.appendChild(circle);
-    });
+    if (g) {
+        g.innerHTML = '';
+    }
 }
 
 // ============================================================
@@ -1036,31 +1062,16 @@ function showInflationTooltip(event, dataPoint, itemCode, prevPoint = null, coun
     // Show value
     const itemNames = INFLATION_ITEM_NAMES;
     const colorMap = INFLATION_ITEM_COLORS;
-    const metricLabel = getInflationMetricLabel(inflationCycle);
     const valueText = Number(dataPoint.value).toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-    let changeRow = '';
-    if (prevPoint && Number.isFinite(prevPoint.value) && prevPoint.value !== 0) {
-        const change = dataPoint.value - prevPoint.value;
-        const changePercent = (change / prevPoint.value) * 100;
-        const sign = change > 0 ? '+' : '';
-        changeRow = `
-            <div class="chart-tooltip-item">
-                <div class="chart-tooltip-currency">
-                    <div class="chart-tooltip-dot" style="background: ${colorMap[itemCode] || 'var(--accent-color)'}; opacity: 0.6;"></div>
-                    <span>${metricLabel}</span>
-                </div>
-                <span class="chart-tooltip-value">${sign}${change.toFixed(2)} (${sign}${changePercent.toFixed(2)}%)</span>
-            </div>
-        `;
-    }
+    // "전기비" row removed as per user request
     
-    // 활성화된 국가들의 지수 표시
+    // 활성화된 국가들의 지수 표시 (in English)
     let countryRows = '';
     Object.keys(countryDataPoints).forEach(itemCode => {
         const countryPoint = countryDataPoints[itemCode];
         const countryInfo = inflationCountryMapping[itemCode];
-        const countryName = countryInfo ? countryInfo.name : itemCode;
+        const countryName = countryInfo ? getInflationCountryNameEnglish(countryInfo.name, itemCode) : itemCode;
         const countryColor = getInflationCountryColor(itemCode);
         
         // CSS 변수를 실제 색상으로 변환
@@ -1082,16 +1093,11 @@ function showInflationTooltip(event, dataPoint, itemCode, prevPoint = null, coun
         `;
     });
     
-    tooltipContent.innerHTML = `
+    // Only show country rows (총지수 row removed as per user request)
+    tooltipContent.innerHTML = countryRows || `
         <div class="chart-tooltip-item">
-            <div class="chart-tooltip-currency">
-                <div class="chart-tooltip-dot" style="background: ${colorMap[itemCode] || 'var(--accent-color)'};"></div>
-                <span>${itemNames[itemCode] || itemCode}</span>
-            </div>
             <span class="chart-tooltip-value">${valueText}</span>
         </div>
-        ${changeRow}
-        ${countryRows}
     `;
     
     // Position tooltip

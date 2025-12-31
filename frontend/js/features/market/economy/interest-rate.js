@@ -29,34 +29,34 @@ let interestCountryListLoaded = false;
 let interestMouseMoveHandler = null;
 let interestMouseLeaveHandler = null;
 
-// 국가 정보 매핑 (한국어명 → {englishName, color})
+// 국가 정보 매핑 (한국어명 → {englishName, color}) - 26개 국가 고유 색상
 const interestCountryInfoMap = [
     { keywords: ['호주', 'aus', 'australia'], englishName: 'Australia', color: 'var(--c-interest-aus)' },
     { keywords: ['브라질', 'bra', 'brazil'], englishName: 'Brazil', color: 'var(--c-interest-bra)' },
     { keywords: ['캐나다', 'can', 'canada'], englishName: 'Canada', color: 'var(--c-interest-can)' },
-    { keywords: ['스위스', 'che', 'switzerland'], englishName: 'Switzerland', color: 'var(--accent-color)' },
-    { keywords: ['칠레', 'chl', 'chile'], englishName: 'Chile', color: 'var(--accent-color)' },
+    { keywords: ['스위스', 'che', 'switzerland'], englishName: 'Switzerland', color: 'var(--c-interest-che)' },
+    { keywords: ['칠레', 'chl', 'chile'], englishName: 'Chile', color: 'var(--c-interest-chl)' },
     { keywords: ['중국', 'chn', 'china'], englishName: 'China', color: 'var(--c-interest-chn)' },
-    { keywords: ['체코', 'cze', 'czech'], englishName: 'Czech Republic', color: 'var(--accent-color)' },
-    { keywords: ['덴마크', 'dnk', 'denmark'], englishName: 'Denmark', color: 'var(--accent-color)' },
+    { keywords: ['체코', 'cze', 'czech'], englishName: 'Czech Republic', color: 'var(--c-interest-cze)' },
+    { keywords: ['덴마크', 'dnk', 'denmark'], englishName: 'Denmark', color: 'var(--c-interest-dnk)' },
     { keywords: ['영국', 'gbr', 'uk', 'united kingdom'], englishName: 'UK', color: 'var(--c-interest-gbr)' },
-    { keywords: ['헝가리', 'hun', 'hungary'], englishName: 'Hungary', color: 'var(--accent-color)' },
-    { keywords: ['인도네시아', 'idn', 'indonesia'], englishName: 'Indonesia', color: 'var(--accent-color)' },
-    { keywords: ['이스라엘', 'isr', 'israel'], englishName: 'Israel', color: 'var(--accent-color)' },
+    { keywords: ['헝가리', 'hun', 'hungary'], englishName: 'Hungary', color: 'var(--c-interest-hun)' },
+    { keywords: ['인도네시아', 'idn', 'indonesia'], englishName: 'Indonesia', color: 'var(--c-interest-idn)' },
+    { keywords: ['이스라엘', 'isr', 'israel'], englishName: 'Israel', color: 'var(--c-interest-isr)' },
     { keywords: ['인도', 'ind', 'india'], englishName: 'India', color: 'var(--c-interest-ind)' },
-    { keywords: ['아이슬란드', 'isl', 'iceland'], englishName: 'Iceland', color: 'var(--accent-color)' },
+    { keywords: ['아이슬란드', 'isl', 'iceland'], englishName: 'Iceland', color: 'var(--c-interest-isl)' },
     { keywords: ['일본', 'jpn', 'japan'], englishName: 'Japan', color: 'var(--c-interest-jpn)' },
     { keywords: ['한국', 'kor', 'korea'], englishName: 'Korea', color: 'var(--c-interest-kor)' },
-    { keywords: ['멕시코', 'mex', 'mexico'], englishName: 'Mexico', color: 'var(--accent-color)' },
-    { keywords: ['노르웨이', 'nor', 'norway'], englishName: 'Norway', color: 'var(--accent-color)' },
+    { keywords: ['멕시코', 'mex', 'mexico'], englishName: 'Mexico', color: 'var(--c-interest-mex)' },
+    { keywords: ['노르웨이', 'nor', 'norway'], englishName: 'Norway', color: 'var(--c-interest-nor)' },
     { keywords: ['뉴질랜드', 'nzl', 'zealand'], englishName: 'New Zealand', color: 'var(--c-interest-nzl)' },
-    { keywords: ['폴란드', 'pol', 'poland'], englishName: 'Poland', color: 'var(--accent-color)' },
+    { keywords: ['폴란드', 'pol', 'poland'], englishName: 'Poland', color: 'var(--c-interest-pol)' },
     { keywords: ['러시아', 'rus', 'russia'], englishName: 'Russia', color: 'var(--c-interest-rus)' },
-    { keywords: ['스웨덴', 'swe', 'sweden'], englishName: 'Sweden', color: 'var(--accent-color)' },
-    { keywords: ['튀르키예', 'tur', 'turkey'], englishName: 'Turkey', color: 'var(--accent-color)' },
+    { keywords: ['스웨덴', 'swe', 'sweden'], englishName: 'Sweden', color: 'var(--c-interest-swe)' },
+    { keywords: ['튀르키예', 'tur', 'turkey'], englishName: 'Turkey', color: 'var(--c-interest-tur)' },
     { keywords: ['미국', 'usa', 'us ', 'united states'], englishName: 'USA', color: 'var(--c-interest-usa)' },
-    { keywords: ['유로', 'eur', 'eurozone', 'euro area'], englishName: 'Eurozone', color: 'var(--accent-color)' },
-    { keywords: ['남아프리카', 'zaf', 'south africa'], englishName: 'South Africa', color: 'var(--accent-color)' },
+    { keywords: ['유로', 'eur', 'eurozone', 'euro area'], englishName: 'Eurozone', color: 'var(--c-interest-eur)' },
+    { keywords: ['남아프리카', 'zaf', 'south africa'], englishName: 'South Africa', color: 'var(--c-interest-zaf)' },
     { keywords: ['독일', 'deu', 'germany'], englishName: 'Germany', color: 'var(--c-interest-deu)' },
     { keywords: ['프랑스', 'fra', 'france'], englishName: 'France', color: 'var(--c-interest-fra)' },
     { keywords: ['이탈리아', 'ita', 'italy'], englishName: 'Italy', color: 'var(--c-interest-ita)' },
@@ -91,24 +91,41 @@ function initInterestRates() {
         endDateInput.max = endDateInput.value;
         
         // Add event listeners for date inputs
-        startDateInput.addEventListener('change', () => {
-            if (validateInterestDateRange()) {
-                if (activeInterestCountries.length > 0) {
-                    fetchInterestRateDataMulti();
-                } else {
-                    fetchInterestRateData();
+        const handleDateInputChange = (inputEl) => {
+            // Validate and format YYYY-MM input
+            let value = inputEl.value.trim();
+            // Allow partial input while typing
+            if (value.match(/^\d{4}-\d{2}$/)) {
+                // Valid format
+                if (validateInterestDateRange()) {
+                    if (activeInterestCountries.length > 0) {
+                        fetchInterestRateDataMulti();
+                    } else {
+                        fetchInterestRateData();
+                    }
                 }
             }
-        });
-        endDateInput.addEventListener('change', () => {
-            if (validateInterestDateRange()) {
-                if (activeInterestCountries.length > 0) {
-                    fetchInterestRateDataMulti();
-                } else {
-                    fetchInterestRateData();
-                }
+        };
+        
+        startDateInput.addEventListener('change', () => handleDateInputChange(startDateInput));
+        endDateInput.addEventListener('change', () => handleDateInputChange(endDateInput));
+        
+        // Add input formatting for text inputs
+        const formatDateInput = (e) => {
+            let value = e.target.value.replace(/[^\d-]/g, '');
+            // Auto-add hyphen after year
+            if (value.length === 4 && !value.includes('-')) {
+                value = value + '-';
             }
-        });
+            // Limit to 7 chars (YYYY-MM)
+            if (value.length > 7) {
+                value = value.substring(0, 7);
+            }
+            e.target.value = value;
+        };
+        
+        startDateInput.addEventListener('input', formatDateInput);
+        endDateInput.addEventListener('input', formatDateInput);
     }
     
     // Initialize cycle buttons (M, Q)
@@ -163,8 +180,16 @@ function validateInterestDateRange() {
     
     if (!startDateInput || !endDateInput) return false;
     
-    const startDate = new Date(startDateInput.value);
-    const endDate = new Date(endDateInput.value);
+    // Handle YYYY-MM format for text inputs
+    const startValue = startDateInput.value.trim();
+    const endValue = endDateInput.value.trim();
+    
+    if (!startValue.match(/^\d{4}-\d{2}$/) || !endValue.match(/^\d{4}-\d{2}$/)) {
+        return false;
+    }
+    
+    const startDate = new Date(startValue + '-01');
+    const endDate = new Date(endValue + '-01');
     
     if (startDate > endDate) {
         alert('시작일은 종료일보다 앞서야 합니다.');
@@ -291,7 +316,7 @@ async function fetchInterestCountryList() {
                 interestCountryMapping = data.items;
                 interestCountryListLoaded = true;
                 
-                // 기본으로 첫 3개 국가 선택 (한국, 미국, 일본 우선)
+                // 기본으로 한국만 선택
                 const itemCodes = Object.keys(interestCountryMapping);
                 const defaultCodes = [];
                 
@@ -301,20 +326,6 @@ async function fetchInterestCountryList() {
                     return name.includes('한국') || name.includes('KOR') || code.includes('KOR');
                 });
                 if (korCode) defaultCodes.push(korCode);
-                
-                // 미국 찾기
-                const usaCode = itemCodes.find(code => {
-                    const name = interestCountryMapping[code].name;
-                    return name.includes('미국') || name.includes('USA') || name.includes('US') || code.includes('USA');
-                });
-                if (usaCode && !defaultCodes.includes(usaCode)) defaultCodes.push(usaCode);
-                
-                // 일본 찾기
-                const jpnCode = itemCodes.find(code => {
-                    const name = interestCountryMapping[code].name;
-                    return name.includes('일본') || name.includes('JPN') || name.includes('JAPAN') || code.includes('JPN');
-                });
-                if (jpnCode && !defaultCodes.includes(jpnCode)) defaultCodes.push(jpnCode);
                 
                 // 최소 1개는 선택
                 if (defaultCodes.length === 0 && itemCodes.length > 0) {
@@ -387,7 +398,7 @@ function initInterestCountryChips() {
         
         chip.appendChild(chipDot);
         // 국가 이름을 영어로 표시
-        const englishName = getInterestCountryNameEnglish(countryInfo.name);
+        const englishName = getInterestCountryNameEnglish(countryInfo.name, itemCode);
         chip.appendChild(document.createTextNode(englishName));
         
         chip.addEventListener('click', () => toggleInterestCountry(itemCode));
@@ -695,14 +706,37 @@ function getInterestDataUnitCount(data, cycle) {
 // COUNTRY INFO HELPERS
 // ============================================================
 
-// 국가 정보 찾기 (한국어명 기반)
-function findInterestCountryInfo(koreanName) {
-    if (!koreanName) return null;
+// itemCode에서 국가 코드 추출 (예: "AUS_IR" -> "aus", "0000001" -> null)
+function extractCountryCodeFromItemCode(itemCode) {
+    if (!itemCode) return null;
+    const code = itemCode.toLowerCase();
+    // 패턴: XXX_IR, XXX_RATE 등에서 국가코드 추출
+    const match = code.match(/^([a-z]{2,3})_/);
+    if (match) return match[1];
+    // 국가코드가 직접 포함된 경우 (예: 'KOR', 'USA')
+    const countryPattern = code.match(/^([a-z]{2,3})$/);
+    if (countryPattern) return countryPattern[1];
+    return null;
+}
+
+// 국가 정보 찾기 (한국어명 또는 itemCode 기반)
+function findInterestCountryInfo(koreanNameOrItemCode, itemCode = null) {
+    if (!koreanNameOrItemCode && !itemCode) return null;
     
-    const name = koreanName.toLowerCase();
+    // 1. itemCode에서 국가 코드 추출하여 매칭 시도
+    const countryCode = extractCountryCodeFromItemCode(itemCode) || extractCountryCodeFromItemCode(koreanNameOrItemCode);
+    if (countryCode) {
+        for (const info of interestCountryInfoMap) {
+            if (info.keywords.some(keyword => keyword.toLowerCase() === countryCode)) {
+                return info;
+            }
+        }
+    }
     
+    // 2. 이름 기반 매칭
+    const name = (koreanNameOrItemCode || '').toLowerCase();
     for (const info of interestCountryInfoMap) {
-        if (info.keywords.some(keyword => name.includes(keyword))) {
+        if (info.keywords.some(keyword => name.includes(keyword.toLowerCase()))) {
             return info;
         }
     }
@@ -711,36 +745,22 @@ function findInterestCountryInfo(koreanName) {
 }
 
 // 국가 이름을 영어로 변환하는 함수
-function getInterestCountryNameEnglish(koreanName) {
-    const info = findInterestCountryInfo(koreanName);
+function getInterestCountryNameEnglish(koreanName, itemCode = null) {
+    const info = findInterestCountryInfo(koreanName, itemCode);
     return info ? info.englishName : koreanName;
 }
 
 // 국가별 색상 매핑 (item_code → CSS 변수)
 function getInterestCountryColor(itemCode) {
     const countryInfo = interestCountryMapping[itemCode];
-    if (!countryInfo) {
-        // 기본 색상 (item_code 기반 해시)
-        const colors = [
-            'var(--c-interest-kor)', 'var(--c-interest-usa)', 'var(--c-interest-jpn)',
-            'var(--c-interest-chn)', 'var(--c-interest-gbr)', 'var(--c-interest-deu)',
-            'var(--c-interest-fra)', 'var(--c-interest-ita)', 'var(--c-interest-esp)',
-            'var(--c-interest-can)', 'var(--c-interest-aus)', 'var(--c-interest-nzl)'
-        ];
-        let hash = 0;
-        for (let i = 0; i < itemCode.length; i++) {
-            hash = ((hash << 5) - hash) + itemCode.charCodeAt(i);
-            hash = hash & hash;
-        }
-        return colors[Math.abs(hash) % colors.length];
-    }
     
-    const info = findInterestCountryInfo(countryInfo.name);
+    // 1. itemCode로 직접 국가 코드 추출하여 색상 찾기
+    const info = findInterestCountryInfo(countryInfo?.name, itemCode);
     if (info) {
         return info.color;
     }
     
-    // 매핑되지 않은 경우 기본 색상 (item_code 기반 해시)
+    // 2. 매핑되지 않은 경우 기본 색상 (item_code 기반 해시)
     const colors = [
         'var(--c-interest-kor)', 'var(--c-interest-usa)', 'var(--c-interest-jpn)',
         'var(--c-interest-chn)', 'var(--c-interest-gbr)', 'var(--c-interest-deu)',
@@ -941,27 +961,67 @@ function renderInterestXAxisLabelsMulti(sortedDates) {
     const padding = { left: 40, right: 20 };
     const chartWidth = width - padding.left - padding.right;
     
-    // 주기에 따라 라벨 간격 조정
-    const labelInterval = Math.max(1, Math.floor(sortedDates.length / 8));
+    // 기간 계산 (월 단위)
+    const totalMonths = sortedDates.length;
     
-    sortedDates.forEach((date, index) => {
-        if (index % labelInterval !== 0 && index !== sortedDates.length - 1) return;
-        
+    // 기간별 라벨 표시 규칙:
+    // 1Y 이내 (≤12개월): YY.MM 모든 월 표시
+    // 1Y~2Y (13~24개월): YY.MM 홀수 월만 표시
+    // 2Y 초과 (>24개월): YYYY 연도만 표시
+    
+    const targets = [];
+    
+    if (totalMonths <= 12) {
+        // 1Y 이내: 모든 월 표시 (YY.MM)
+        sortedDates.forEach((date, index) => {
+            targets.push({ index, date });
+        });
+    } else if (totalMonths <= 24) {
+        // 1Y~2Y: 홀수 월만 표시 (YY.MM)
+        sortedDates.forEach((date, index) => {
+            if (date.length === 6) {
+                const month = parseInt(date.substring(4, 6), 10);
+                // 홀수 월만 (1, 3, 5, 7, 9, 11)
+                if (month % 2 === 1) {
+                    targets.push({ index, date });
+                }
+            }
+        });
+        // 첫 번째와 마지막 추가 (중복 방지)
+        if (targets.length === 0 || targets[0].index !== 0) {
+            targets.unshift({ index: 0, date: sortedDates[0] });
+        }
+        if (targets[targets.length - 1].index !== sortedDates.length - 1) {
+            targets.push({ index: sortedDates.length - 1, date: sortedDates[sortedDates.length - 1] });
+        }
+    } else {
+        // 2Y 초과: 연도만 표시 (YYYY)
+        const seenYears = new Set();
+        sortedDates.forEach((date, index) => {
+            if (date.length >= 4) {
+                const year = date.substring(0, 4);
+                if (!seenYears.has(year)) {
+                    seenYears.add(year);
+                    targets.push({ index, date, isYear: true });
+                }
+            }
+        });
+    }
+    
+    // 라벨 렌더링
+    targets.forEach(({ index, date, isYear }) => {
         const x = padding.left + (index / (sortedDates.length - 1 || 1)) * chartWidth;
-        const y = 370; // 400 - 30 = 370
+        const y = 370;
         
-        // 날짜 형식 변환 (YYYYMM 또는 YYYYQn)
         let labelText = '';
-        if (date.length === 6 && !date.includes('Q')) {
-            // YYYYMM 형식
-            const year = date.substring(0, 4);
+        if (isYear) {
+            // 연도만 표시
+            labelText = date.substring(0, 4);
+        } else if (date.length === 6 && !date.includes('Q')) {
+            // YYYYMM 형식 -> YY.MM
+            const year = date.substring(2, 4);
             const month = date.substring(4, 6);
-            labelText = `${year.substring(2)}.${month}`;
-        } else if (date.includes('Q')) {
-            // YYYYQn 형식 (예: 2024Q1)
-            const year = date.substring(0, 4);
-            const quarter = date.substring(5);
-            labelText = `${year.substring(2)}Q${quarter}`;
+            labelText = `${year}.${month}`;
         } else {
             labelText = date;
         }
@@ -979,52 +1039,11 @@ function renderInterestXAxisLabelsMulti(sortedDates) {
 }
 
 function renderInterestDataPointsMulti(sortedDates) {
+    // Data points (circles) are removed as per user request - showing only lines
     const pointsGroup = document.getElementById('interest-data-points');
-    if (!pointsGroup || !sortedDates || sortedDates.length === 0) return;
-    
-    pointsGroup.innerHTML = '';
-    
-    const svg = document.getElementById('interest-chart-svg');
-    if (!svg) return;
-    
-    const { width, height } = getSvgViewBoxSize(svg);
-    const padding = { top: 20, bottom: 30, left: 40, right: 20 };
-    const chartWidth = width - padding.left - padding.right;
-    const chartHeight = height - padding.top - padding.bottom;
-    
-    const minValue = interestYAxisRange.min;
-    const maxValue = interestYAxisRange.max;
-    const valueRange = maxValue - minValue || 1;
-    
-    activeInterestCountries.forEach(itemCode => {
-        const data = interestCountryData[itemCode];
-        if (!data || data.length === 0) return;
-        
-        const color = getInterestCountryColor(itemCode);
-        
-        sortedDates.forEach((date, index) => {
-            const item = data.find(d => d.date === date);
-            if (!item) return;
-            
-            const x = padding.left + (index / (sortedDates.length - 1 || 1)) * chartWidth;
-            const normalizedValue = (item.value - minValue) / valueRange;
-            const y = padding.top + (1 - normalizedValue) * chartHeight;
-            
-            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-            circle.setAttribute('cx', x);
-            circle.setAttribute('cy', y);
-            circle.setAttribute('r', '4');
-            circle.setAttribute('fill', color);
-            circle.setAttribute('stroke', 'var(--bg-color)');
-            circle.setAttribute('stroke-width', '1');
-            circle.setAttribute('data-date', date);
-            circle.setAttribute('data-item-code', itemCode);
-            circle.setAttribute('data-value', item.value);
-            circle.style.cursor = 'pointer';
-            
-            pointsGroup.appendChild(circle);
-        });
-    });
+    if (pointsGroup) {
+        pointsGroup.innerHTML = '';
+    }
 }
 
 function setupInterestChartInteractivityMulti() {
@@ -1078,13 +1097,19 @@ function showInterestTooltipMulti(event) {
     const svg = document.getElementById('interest-chart-svg');
     if (!svg) return;
     
-    const rect = svg.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
-    
-    const { width, height } = getSvgViewBoxSize(svg);
+    const svgRect = svg.getBoundingClientRect();
+    const { width: vbWidth, height: vbHeight } = getSvgViewBoxSize(svg);
     const chartPadding = { left: 40, right: 20 };
-    const chartWidth = width - chartPadding.left - chartPadding.right;
+    const chartWidth = vbWidth - chartPadding.left - chartPadding.right;
+    
+    // 픽셀 좌표를 viewBox 좌표로 변환
+    const pixelX = event.clientX - svgRect.left;
+    const scaleX = vbWidth / svgRect.width;
+    const viewBoxX = pixelX * scaleX;
+    
+    // viewBox 좌표에서 차트 영역 내 비율 계산
+    const chartRelativeX = viewBoxX - chartPadding.left;
+    const ratio = Math.max(0, Math.min(1, chartRelativeX / chartWidth));
     
     // 모든 국가 데이터 병합하여 공통 날짜 목록 생성
     const allDates = new Set();
@@ -1097,16 +1122,16 @@ function showInterestTooltipMulti(event) {
     
     if (sortedDates.length === 0) return;
     
-    // X 좌표로 날짜 찾기
-    const dateIndex = Math.round(((x - chartPadding.left) / chartWidth) * (sortedDates.length - 1));
+    // 비율로 날짜 인덱스 찾기
+    const dateIndex = Math.round(ratio * (sortedDates.length - 1));
     const dateIndexClamped = Math.max(0, Math.min(sortedDates.length - 1, dateIndex));
     const date = sortedDates[dateIndexClamped];
     
-    // 날짜 포맷팅
+    // 날짜 포맷팅 (X축과 동일한 형식: YY.MM)
     let dateLabel = date;
     if (date.length === 6 && !date.includes('Q')) {
-        // YYYYMM 형식
-        const year = date.substring(0, 4);
+        // YYYYMM 형식 -> YY.MM
+        const year = date.substring(2, 4);
         const month = date.substring(4, 6);
         dateLabel = `${year}.${month}`;
     } else if (date.includes('Q')) {
@@ -1141,7 +1166,7 @@ function showInterestTooltipMulti(event) {
         if (!item) return;
         
         const countryInfo = interestCountryMapping[itemCode];
-        const countryName = countryInfo ? getInterestCountryNameEnglish(countryInfo.name) : itemCode;
+        const countryName = countryInfo ? getInterestCountryNameEnglish(countryInfo.name, itemCode) : itemCode;
         const color = getInterestCountryColor(itemCode);
         
         // CSS 변수를 실제 색상으로 변환
@@ -1259,7 +1284,7 @@ function updateInterestChartHeaderMulti() {
     
     // 헤더 업데이트
     const countryInfo = interestCountryMapping[firstCountryCode];
-    const countryName = countryInfo ? getInterestCountryNameEnglish(countryInfo.name) : firstCountryCode;
+    const countryName = countryInfo ? getInterestCountryNameEnglish(countryInfo.name, firstCountryCode) : firstCountryCode;
     
     const titleEl = document.getElementById('interest-chart-main-title');
     if (titleEl) titleEl.textContent = countryName + ' Interest Rate';
@@ -1370,13 +1395,27 @@ function setupInterestChartInteractivity() {
                 return;
             }
             
-            const rect = chartContainer.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const svgX = (x / rect.width) * 1200; // viewBox width
+            const svgEl = document.getElementById('interest-chart-svg');
+            if (!svgEl) {
+                hideInterestTooltip();
+                return;
+            }
+            
+            const svgRect = svgEl.getBoundingClientRect();
+            const { width: vbWidth } = getSvgViewBoxSize(svgEl);
+            
+            // 픽셀 좌표를 viewBox 좌표로 변환
+            const pixelX = e.clientX - svgRect.left;
+            const scaleX = vbWidth / svgRect.width;
+            const viewBoxX = pixelX * scaleX;
             
             const padding = { left: 40, right: 20 };
-            const chartWidth = 1200 - padding.left - padding.right;
-            const dataIndex = Math.round(((svgX - padding.left) / chartWidth) * (interestRateData.length - 1));
+            const chartWidth = vbWidth - padding.left - padding.right;
+            
+            // viewBox 좌표에서 차트 영역 내 비율 계산
+            const chartRelativeX = viewBoxX - padding.left;
+            const ratio = Math.max(0, Math.min(1, chartRelativeX / chartWidth));
+            const dataIndex = Math.round(ratio * (interestRateData.length - 1));
             
             if (dataIndex >= 0 && dataIndex < interestRateData.length) {
                 const dataPoint = interestRateData[dataIndex];
@@ -1402,30 +1441,25 @@ function showInterestTooltip(event, dataPoint) {
     
     if (!tooltip || !tooltipDate || !tooltipContent || !dataPoint) return;
     
-    // 주기에 따라 날짜 포맷
-    const dateObj = parseInterestDate(dataPoint.date, interestCycle);
+    // 날짜 포맷 (X축과 동일한 형식: YY.MM)
     let formattedDate = dataPoint.date;
     
-    if (dateObj) {
-        formattedDate = formatInterestDate(dateObj, interestCycle);
-        tooltipDate.textContent = formattedDate;
-    } else {
-        // 파싱 실패 시 원본 표시 (주기별 형식으로 포맷)
-        if (interestCycle === 'M' && dataPoint.date.length === 6) {
-            formattedDate = `${dataPoint.date.substring(0, 4)}/${dataPoint.date.substring(4, 6)}`;
-        } else if (interestCycle === 'Q' && dataPoint.date.includes('Q')) {
-            // 분기별: YYQn 형식 (예: 24Q1, 24Q2)
-            const match = dataPoint.date.match(/^(\d{4})Q([1-4])$/);
-            if (match) {
-                const year = match[1].substring(2, 4); // 마지막 2자리
-                const quarter = match[2];
-                formattedDate = `${year}Q${quarter}`;
-            } else {
-                formattedDate = dataPoint.date;
-            }
-            }
-        tooltipDate.textContent = formattedDate;
+    if (interestCycle === 'M' && dataPoint.date.length === 6) {
+        // 월별: YY.MM 형식
+        const year = dataPoint.date.substring(2, 4);
+        const month = dataPoint.date.substring(4, 6);
+        formattedDate = `${year}.${month}`;
+    } else if (interestCycle === 'Q' && dataPoint.date.includes('Q')) {
+        // 분기별: YYQn 형식 (예: 24Q1, 24Q2)
+        const match = dataPoint.date.match(/^(\d{4})Q([1-4])$/);
+        if (match) {
+            const year = match[1].substring(2, 4);
+            const quarter = match[2];
+            formattedDate = `${year}Q${quarter}`;
+        }
     }
+    
+    tooltipDate.textContent = formattedDate;
     
     // Show value
     tooltipContent.innerHTML = `
@@ -1525,48 +1559,12 @@ function renderInterestBarChart() {
 }
 
 // 데이터 포인트 렌더링 함수 (꺾은선 그래프용)
+// Data points (circles) are removed as per user request - showing only lines
 function renderInterestDataPoints() {
     const pointsGroup = document.getElementById('interest-data-points');
-    if (!pointsGroup || !interestRateData || interestRateData.length === 0) return;
-    
-    pointsGroup.innerHTML = '';
-    
-    const svg = document.getElementById('interest-chart-svg');
-    if (!svg) return;
-    
-    const { width, height } = getSvgViewBoxSize(svg);
-    const padding = { top: 20, bottom: 30, left: 40, right: 20 };
-    const chartWidth = width - padding.left - padding.right;
-    const chartHeight = height - padding.top - padding.bottom;
-    
-    const minValue = interestYAxisRange.min;
-    const maxValue = interestYAxisRange.max;
-    const valueRange = maxValue - minValue || 1;
-    
-    // 각 데이터 포인트에 동그라미 추가
-    interestRateData.forEach((point, index) => {
-        const x = padding.left + (index / (interestRateData.length - 1 || 1)) * chartWidth;
-        const normalizedValue = (point.value - minValue) / valueRange;
-        const y = padding.top + (1 - normalizedValue) * chartHeight;
-        
-        // 외부 원 (배경)
-        const outerCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        outerCircle.setAttribute('cx', String(x));
-        outerCircle.setAttribute('cy', String(y));
-        outerCircle.setAttribute('r', '5');
-        outerCircle.setAttribute('fill', 'var(--bg-color)');
-        outerCircle.setAttribute('stroke', 'var(--accent-color)');
-        outerCircle.setAttribute('stroke-width', '2');
-        pointsGroup.appendChild(outerCircle);
-        
-        // 내부 원 (포인트)
-        const innerCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        innerCircle.setAttribute('cx', String(x));
-        innerCircle.setAttribute('cy', String(y));
-        innerCircle.setAttribute('r', '3');
-        innerCircle.setAttribute('fill', 'var(--accent-color)');
-        pointsGroup.appendChild(innerCircle);
-    });
+    if (pointsGroup) {
+        pointsGroup.innerHTML = '';
+    }
 }
 
 function renderInterestYAxisLabels() {
@@ -1660,26 +1658,16 @@ function renderInterestXAxisLabels(isSingleUnit = false) {
     const y = height - padding.bottom + 15;
     
     if (isSingleUnit) {
-        // 1개 단위: 중앙에 레이블 표시
+        // 1개 단위: 중앙에 레이블 표시 (YY.MM 형식)
         const centerX = padding.left + chartWidth / 2;
         const dataPoint = interestRateData[0];
         let label = '';
         
-        if (interestCycle === 'M' && dataPoint.date.length === 6) {
-            // 월별: YY.MM 형식으로 명확하게 표시
+        if (dataPoint.date.length === 6) {
+            // 월별: YY.MM 형식
             const year = dataPoint.date.substring(2, 4);
             const month = dataPoint.date.substring(4, 6);
             label = `${year}.${month}`;
-        } else if (interestCycle === 'Q' && dataPoint.date.includes('Q')) {
-            // 분기별: YYQn 형식 (예: 24Q1, 24Q2)
-            const match = dataPoint.date.match(/^(\d{4})Q([1-4])$/);
-            if (match) {
-                const year = match[1].substring(2, 4); // 마지막 2자리
-                const quarter = match[2];
-                label = `${year}Q${quarter}`;
-            } else {
-                label = dataPoint.date;
-            }
         } else {
             label = dataPoint.date;
         }
@@ -1735,56 +1723,53 @@ function buildInterestXAxisTargets(rangeKey, dates) {
     const n = dates.length;
     if (n === 0) return [];
     
-    // 일정한 간격으로 라벨 표시 (가독성 향상)
     const targets = [];
-    let labelIndices = [];
     
-    if (interestCycle === 'M') {
-        // 월별: 매 2개월마다 표시
-        for (let i = 0; i < n; i += 2) {
-            labelIndices.push(i);
-        }
-    } else if (interestCycle === 'Q') {
-        // 분기별: 모든 분기 표시
+    // 기간별 라벨 표시 규칙:
+    // 1Y 이내 (≤12개월): YY.MM 모든 월 표시
+    // 1Y~2Y (13~24개월): YY.MM 홀수 월만 표시
+    // 2Y 초과 (>24개월): YYYY 연도만 표시
+    
+    if (n <= 12) {
+        // 1Y 이내: 모든 월 표시
         for (let i = 0; i < n; i++) {
-            labelIndices.push(i);
+            const dateStr = dates[i];
+            let label = dateStr;
+            
+            if (dateStr.length === 6) {
+                const year = dateStr.substring(2, 4);
+                const month = dateStr.substring(4, 6);
+                label = `${year}.${month}`;
+            }
+            
+            targets.push({ idx: i, label: label });
         }
-    }
-    
-    // 첫 번째와 마지막 라벨은 항상 포함
-    if (labelIndices.length === 0 || labelIndices[0] !== 0) {
-        labelIndices.unshift(0);
-    }
-    if (labelIndices[labelIndices.length - 1] !== n - 1) {
-        labelIndices.push(n - 1);
-    }
-    
-    // 중복 제거 및 정렬
-    labelIndices = [...new Set(labelIndices)].sort((a, b) => a - b);
-    
-    for (const i of labelIndices) {
-        const dateStr = dates[i];
-        let label = dateStr;
-        
-        if (interestCycle === 'M' && dateStr.length === 6) {
-            // 월별: 항상 연도.월 형식으로 명확하게 표시
-            const year = dateStr.substring(2, 4);
-            const month = dateStr.substring(4, 6);
-            label = `${year}.${month}`;
-        } else if (interestCycle === 'Q' && dateStr.includes('Q')) {
-            // 분기별: YYQn 형식 (예: 24Q1, 24Q2)
-            const match = dateStr.match(/^(\d{4})Q([1-4])$/);
-            if (match) {
-                const year = match[1].substring(2, 4); // 마지막 2자리
-                const quarter = match[2];
-                label = `${year}Q${quarter}`;
-            } else {
-                label = dateStr;
+    } else if (n <= 24) {
+        // 1Y~2Y: 홀수 월만 표시
+        for (let i = 0; i < n; i++) {
+            const dateStr = dates[i];
+            if (dateStr.length === 6) {
+                const month = parseInt(dateStr.substring(4, 6), 10);
+                // 홀수 월만 (1, 3, 5, 7, 9, 11) 또는 첫/마지막
+                if (month % 2 === 1 || i === 0 || i === n - 1) {
+                    const year = dateStr.substring(2, 4);
+                    const monthStr = dateStr.substring(4, 6);
+                    targets.push({ idx: i, label: `${year}.${monthStr}` });
+                }
             }
         }
-        
-        if (label) {
-            targets.push({ idx: i, label: label });
+    } else {
+        // 2Y 초과: 연도만 표시
+        const seenYears = new Set();
+        for (let i = 0; i < n; i++) {
+            const dateStr = dates[i];
+            if (dateStr.length >= 4) {
+                const year = dateStr.substring(0, 4);
+                if (!seenYears.has(year)) {
+                    seenYears.add(year);
+                    targets.push({ idx: i, label: year });
+                }
+            }
         }
     }
     

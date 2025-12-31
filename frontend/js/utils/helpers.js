@@ -474,6 +474,63 @@ function getSvgViewBoxSize(svgEl) {
 }
 
 /**
+ * 주말/공휴일 등 빠진 날짜를 이전 영업일 데이터로 채우기
+ * @param {Array} data - {date, value} 배열 (date는 YYYYMMDD 형식)
+ * @param {string} startDateStr - 시작일 (YYYYMMDD 또는 YYYY-MM-DD)
+ * @param {string} endDateStr - 종료일 (YYYYMMDD 또는 YYYY-MM-DD)
+ * @returns {Array} - 모든 날짜가 채워진 {date, value} 배열
+ */
+function fillMissingDates(data, startDateStr, endDateStr) {
+    if (!data || data.length === 0) return [];
+    
+    // 날짜 형식 정규화
+    const normalizeDate = (str) => str.includes('-') ? str.replace(/-/g, '') : str;
+    const start = normalizeDate(startDateStr);
+    const end = normalizeDate(endDateStr);
+    
+    // 기존 데이터를 맵으로 변환
+    const dataMap = {};
+    data.forEach(item => {
+        dataMap[item.date] = item.value;
+    });
+    
+    // 시작일과 종료일 파싱
+    const startObj = parseYYYYMMDD(start);
+    const endObj = parseYYYYMMDD(end);
+    
+    if (!startObj || !endObj) return data;
+    
+    const result = [];
+    let lastValue = null;
+    
+    // 시작일 이전의 첫 번째 데이터 값 찾기 (없는 경우 대비)
+    const sortedDates = Object.keys(dataMap).sort();
+    if (sortedDates.length > 0) {
+        lastValue = dataMap[sortedDates[0]];
+    }
+    
+    // 시작일부터 종료일까지 모든 날짜 순회
+    const current = new Date(startObj);
+    while (current <= endObj) {
+        const dateStr = toYYYYMMDD(current);
+        
+        if (dataMap[dateStr] !== undefined) {
+            // 실제 데이터가 있는 경우
+            lastValue = dataMap[dateStr];
+            result.push({ date: dateStr, value: lastValue, isActual: true });
+        } else if (lastValue !== null) {
+            // 데이터가 없는 경우 (주말/공휴일) - 이전 값 사용
+            result.push({ date: dateStr, value: lastValue, isActual: false });
+        }
+        
+        // 다음 날로 이동
+        current.setDate(current.getDate() + 1);
+    }
+    
+    return result;
+}
+
+/**
  * 정렬된 날짜 배열에서 가장 가까운 날짜 찾기 (이진 탐색)
  * @param {Array} sortedDates - 정렬된 날짜 배열 (YYYYMMDD 형식)
  * @param {string} targetDateStr - 찾을 날짜 (YYYYMMDD 형식)
@@ -519,17 +576,28 @@ function dedupeAndSortTargets(targets) {
 
 /**
  * X축 타겟 위치 계산
- * @param {string} rangeKey - 기간 키 ('1W', '1M', '3M', '1Y')
+ * 기간에 따라 다른 라벨 표시:
+ * - 1W: 모든 일자 표시 (MM.DD)
+ * - 1M: 1일, 15일, 마지막날 표시
+ * - 3M: 각 월 표시
+ * - 1Y: 각 월 표시 (12개월)
+ * - 1Y 초과: 연도와 홀수 월만 표시
+ * - 2Y 초과: 연도만 표시
+ * 
+ * @param {string} rangeKey - 기간 키 ('1W', '1M', '3M', '1Y' 또는 null)
  * @param {Array} dates - 날짜 배열 (YYYYMMDD 형식)
  * @param {string} endDateOverride - 종료일 오버라이드 (YYYY-MM-DD 또는 YYYYMMDD)
  * @returns {Array} - { idx, label } 객체 배열
  */
 function buildXAxisTargets(rangeKey, dates, endDateOverride = null) {
-    // endDateOverride가 제공되면 사용, 없으면 실제 데이터의 마지막 날짜 사용
-    let endDateStr, endObj;
+    if (!dates || dates.length === 0) return [];
     
+    // 시작일과 종료일 계산
+    const startDateStr = dates[0];
+    const startObj = parseYYYYMMDD(startDateStr);
+    
+    let endDateStr, endObj;
     if (endDateOverride) {
-        // YYYY-MM-DD 형식이면 YYYYMMDD로 변환
         if (endDateOverride.includes('-')) {
             endDateStr = endDateOverride.replace(/-/g, '');
         } else {
@@ -537,22 +605,36 @@ function buildXAxisTargets(rangeKey, dates, endDateOverride = null) {
         }
         endObj = parseYYYYMMDD(endDateStr);
     } else {
-        // 기존 로직: 실제 데이터의 마지막 날짜 사용
-        const n = dates.length;
-        endDateStr = dates[n - 1];
+        endDateStr = dates[dates.length - 1];
         endObj = parseYYYYMMDD(endDateStr);
     }
     
-    if (!endObj) return [];
+    if (!endObj || !startObj) return [];
+
+    // 실제 조회 기간 계산 (일 단위)
+    const diffMs = endObj.getTime() - startObj.getTime();
+    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
 
     const indexMap = {};
     for (let i = 0; i < dates.length; i++) indexMap[dates[i]] = i;
 
     const targets = []; // { idx, label }
+    
+    // 날짜 포맷 함수들
     const formatMD = (dObj) => {
         const month = String(dObj.getMonth() + 1).padStart(2, '0');
         const day = String(dObj.getDate()).padStart(2, '0');
         return `${month}.${day}`;
+    };
+    
+    const formatYM = (dObj) => {
+        const year = String(dObj.getFullYear()).slice(-2);
+        const month = String(dObj.getMonth() + 1).padStart(2, '0');
+        return `${year}.${month}`;
+    };
+    
+    const formatYear = (dObj) => {
+        return String(dObj.getFullYear());
     };
 
     const snap = (targetStr) => {
@@ -562,85 +644,205 @@ function buildXAxisTargets(rangeKey, dates, endDateOverride = null) {
         if (idx == null) return null;
         return { closest, idx };
     };
+    
+    // 정확한 날짜가 있으면 해당 인덱스 반환, 없으면 null
+    const exactMatch = (targetStr) => {
+        const idx = indexMap[targetStr];
+        if (idx == null) return null;
+        return { closest: targetStr, idx };
+    };
 
-    if (rangeKey === '1W') {
-        // 최신 날짜 기준 -6일 ~ 0일 (달력 기준) 타겟을 만들고 가장 가까운 데이터로 스냅
-        for (let dBack = 6; dBack >= 0; dBack--) {
-            const candidate = new Date(endObj.getFullYear(), endObj.getMonth(), endObj.getDate() - dBack);
-            const s = snap(toYYYYMMDD(candidate));
-            if (!s) continue;
-            const dObj = parseYYYYMMDD(s.closest);
+    // 1W: 모든 일자 표시 (중복 없이)
+    if (rangeKey === '1W' || diffDays <= 7) {
+        // 이미 표시한 날짜 추적 (중복 방지)
+        const shownDates = new Set();
+        
+        for (let i = 0; i < dates.length; i++) {
+            const dateStr = dates[i];
+            // 이미 같은 날짜가 표시되었으면 스킵
+            if (shownDates.has(dateStr)) continue;
+            shownDates.add(dateStr);
+            
+            const dObj = parseYYYYMMDD(dateStr);
             if (!dObj) continue;
-            targets.push({ idx: s.idx, label: String(dObj.getDate()) });
-        }
-        // 마지막 레이블이 항상 오늘(종료일)이 되도록 보장
-        if (endDateOverride) {
-            const todayIdx = dates.length - 1; // 마지막 인덱스
-            const todayLabel = formatMD(endObj);
-            targets.push({ idx: todayIdx, label: todayLabel });
+            targets.push({ idx: i, label: formatMD(dObj) });
         }
         return dedupeAndSortTargets(targets);
     }
 
-    if (rangeKey === '1M') {
-        // 최신 날짜 기준 4주차: -21, -14, -7, 0일
-        const offsets = [21, 14, 7, 0];
-        for (const off of offsets) {
-            const candidate = new Date(endObj.getFullYear(), endObj.getMonth(), endObj.getDate() - off);
-            const s = snap(toYYYYMMDD(candidate));
-            if (!s) continue;
-            const dObj = parseYYYYMMDD(s.closest);
+    // 1M: 1일, 15일, 마지막날 표시
+    if (rangeKey === '1M' || (diffDays > 7 && diffDays <= 31)) {
+        // 각 월의 1일, 15일, 마지막날 찾기
+        const monthData = {}; // { 'YYYY-MM': { first: idx, fifteenth: idx, last: idx } }
+        
+        for (let i = 0; i < dates.length; i++) {
+            const dObj = parseYYYYMMDD(dates[i]);
             if (!dObj) continue;
-            targets.push({ idx: s.idx, label: formatMD(dObj) });
+            
+            const yearMonth = `${dObj.getFullYear()}-${String(dObj.getMonth() + 1).padStart(2, '0')}`;
+            const day = dObj.getDate();
+            
+            if (!monthData[yearMonth]) {
+                monthData[yearMonth] = { first: null, fifteenth: null, last: null };
+            }
+            
+            // 1일 (또는 1일에 가장 가까운 날)
+            if (day === 1) {
+                monthData[yearMonth].first = { idx: i, date: dates[i] };
+            } else if (!monthData[yearMonth].first && day <= 5) {
+                monthData[yearMonth].first = { idx: i, date: dates[i] };
+            }
+            
+            // 15일 (또는 15일에 가장 가까운 날)
+            if (day === 15) {
+                monthData[yearMonth].fifteenth = { idx: i, date: dates[i] };
+            } else if (!monthData[yearMonth].fifteenth && day >= 13 && day <= 17) {
+                monthData[yearMonth].fifteenth = { idx: i, date: dates[i] };
+            }
+            
+            // 마지막날 (항상 최신 인덱스로 업데이트)
+            monthData[yearMonth].last = { idx: i, date: dates[i] };
         }
-        // 마지막 레이블이 항상 오늘(종료일)이 되도록 보장
-        if (endDateOverride) {
-            const todayIdx = dates.length - 1;
-            const todayLabel = formatMD(endObj);
-            targets.push({ idx: todayIdx, label: todayLabel });
+        
+        // 정렬된 월별로 타겟 추가
+        const sortedMonths = Object.keys(monthData).sort();
+        for (const ym of sortedMonths) {
+            const data = monthData[ym];
+            
+            // 1일 추가
+            if (data.first) {
+                const dObj = parseYYYYMMDD(data.first.date);
+                if (dObj) targets.push({ idx: data.first.idx, label: formatMD(dObj) });
+            }
+            
+            // 15일 추가
+            if (data.fifteenth) {
+                const dObj = parseYYYYMMDD(data.fifteenth.date);
+                if (dObj) targets.push({ idx: data.fifteenth.idx, label: formatMD(dObj) });
+            }
+            
+            // 마지막날 추가
+            if (data.last) {
+                const dObj = parseYYYYMMDD(data.last.date);
+                if (dObj) targets.push({ idx: data.last.idx, label: formatMD(dObj) });
+            }
         }
+        
         return dedupeAndSortTargets(targets);
     }
 
-    if (rangeKey === '3M') {
-        // 최신 날짜의 "일"을 유지한 채 3개월: -2, -1, 0개월
-        for (let mBack = 2; mBack >= 0; mBack--) {
-            const year = endObj.getFullYear();
-            const monthIndex = endObj.getMonth() - mBack;
-            const candidate = makeDateSafe(year, monthIndex, endObj.getDate());
-            const s = snap(toYYYYMMDD(candidate));
-            if (!s) continue;
-            const dObj = parseYYYYMMDD(s.closest);
+    // 3M: 각 월 표시
+    if (rangeKey === '3M' || (diffDays > 31 && diffDays <= 93)) {
+        // 각 월의 첫 번째 데이터 포인트 찾기
+        const monthStarts = {};
+        
+        for (let i = 0; i < dates.length; i++) {
+            const dObj = parseYYYYMMDD(dates[i]);
             if (!dObj) continue;
-            targets.push({ idx: s.idx, label: formatMD(dObj) });
+            const yearMonth = `${dObj.getFullYear()}-${String(dObj.getMonth()).padStart(2, '0')}`;
+            // 같은 월의 첫 번째 인덱스만 저장
+            if (!monthStarts[yearMonth]) {
+                monthStarts[yearMonth] = { idx: i, date: dates[i] };
+            }
         }
-        // 마지막 레이블이 항상 오늘(종료일)이 되도록 보장
-        if (endDateOverride) {
-            const todayIdx = dates.length - 1;
-            const todayLabel = formatMD(endObj);
-            targets.push({ idx: todayIdx, label: todayLabel });
+        
+        // 월별 첫 번째 날짜들을 정렬하여 추가
+        const sortedMonths = Object.keys(monthStarts).sort();
+        for (const ym of sortedMonths) {
+            const { idx, date } = monthStarts[ym];
+            const dObj = parseYYYYMMDD(date);
+            if (dObj) {
+                const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                                   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                targets.push({ idx, label: monthNames[dObj.getMonth()] });
+            }
         }
+        
         return dedupeAndSortTargets(targets);
     }
 
-    if (rangeKey === '1Y') {
-        // 최신 날짜의 "일"을 유지한 채 12개월: -11..0개월
-        for (let mBack = 11; mBack >= 0; mBack--) {
-            const year = endObj.getFullYear();
-            const monthIndex = endObj.getMonth() - mBack;
-            const candidate = makeDateSafe(year, monthIndex, endObj.getDate());
-            const s = snap(toYYYYMMDD(candidate));
-            if (!s) continue;
-            const dObj = parseYYYYMMDD(s.closest);
+    // 1Y: 각 월 표시 (현재 월 포함 12개월)
+    if (rangeKey === '1Y' || (diffDays > 93 && diffDays <= 365)) {
+        // 각 월의 첫 번째 데이터 포인트 찾기
+        const monthStarts = {};
+        
+        for (let i = 0; i < dates.length; i++) {
+            const dObj = parseYYYYMMDD(dates[i]);
             if (!dObj) continue;
-            targets.push({ idx: s.idx, label: formatMD(dObj) });
+            const yearMonth = `${dObj.getFullYear()}-${String(dObj.getMonth()).padStart(2, '0')}`;
+            // 같은 월의 첫 번째 인덱스만 저장
+            if (!monthStarts[yearMonth]) {
+                monthStarts[yearMonth] = { idx: i, date: dates[i] };
+            }
         }
-        // 마지막 레이블이 항상 오늘(종료일)이 되도록 보장
-        if (endDateOverride) {
-            const todayIdx = dates.length - 1;
-            const todayLabel = formatMD(endObj);
-            targets.push({ idx: todayIdx, label: todayLabel });
+        
+        // 월별 첫 번째 날짜들을 정렬하여 추가
+        const sortedMonths = Object.keys(monthStarts).sort();
+        for (const ym of sortedMonths) {
+            const { idx, date } = monthStarts[ym];
+            const dObj = parseYYYYMMDD(date);
+            if (dObj) {
+                const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                                   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                targets.push({ idx, label: monthNames[dObj.getMonth()] });
+            }
         }
+        
+        return dedupeAndSortTargets(targets);
+    }
+
+    // 1Y 초과 ~ 2Y 이하: 연도와 홀수 월만 표시
+    if (diffDays > 365 && diffDays <= 730) {
+        const monthStarts = {};
+        
+        for (let i = 0; i < dates.length; i++) {
+            const dObj = parseYYYYMMDD(dates[i]);
+            if (!dObj) continue;
+            const month = dObj.getMonth() + 1; // 1-12
+            // 홀수 월만 (1, 3, 5, 7, 9, 11)
+            if (month % 2 === 1) {
+                const yearMonth = `${dObj.getFullYear()}-${String(dObj.getMonth()).padStart(2, '0')}`;
+                if (!monthStarts[yearMonth]) {
+                    monthStarts[yearMonth] = { idx: i, date: dates[i] };
+                }
+            }
+        }
+        
+        const sortedMonths = Object.keys(monthStarts).sort();
+        for (const ym of sortedMonths) {
+            const { idx, date } = monthStarts[ym];
+            const dObj = parseYYYYMMDD(date);
+            if (dObj) {
+                targets.push({ idx, label: formatYM(dObj) });
+            }
+        }
+        
+        return dedupeAndSortTargets(targets);
+    }
+
+    // 2Y 초과: 연도만 표시
+    if (diffDays > 730) {
+        const yearStarts = {};
+        
+        for (let i = 0; i < dates.length; i++) {
+            const dObj = parseYYYYMMDD(dates[i]);
+            if (!dObj) continue;
+            const year = dObj.getFullYear();
+            // 각 연도의 첫 번째 데이터만 저장
+            if (!yearStarts[year]) {
+                yearStarts[year] = { idx: i, date: dates[i] };
+            }
+        }
+        
+        const sortedYears = Object.keys(yearStarts).sort();
+        for (const year of sortedYears) {
+            const { idx, date } = yearStarts[year];
+            const dObj = parseYYYYMMDD(date);
+            if (dObj) {
+                targets.push({ idx, label: formatYear(dObj) });
+            }
+        }
+        
         return dedupeAndSortTargets(targets);
     }
 
@@ -673,6 +875,7 @@ window.parseInterestDate = parseInterestDate;
 window.formatInterestDate = formatInterestDate;
 window.compareInterestDates = compareInterestDates;
 window.getSvgViewBoxSize = getSvgViewBoxSize;
+window.fillMissingDates = fillMissingDates;
 window.findClosestDate = findClosestDate;
 window.dedupeAndSortTargets = dedupeAndSortTargets;
 window.buildXAxisTargets = buildXAxisTargets;

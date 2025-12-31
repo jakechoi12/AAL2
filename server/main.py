@@ -162,6 +162,37 @@ def get_statistic_item_list():
     
     return jsonify(result)
 
+
+@app.route('/api/bok/cache/stats', methods=['GET'])
+def get_bok_cache_stats():
+    """
+    BOK API 캐시 통계를 반환합니다.
+    
+    Returns:
+    - total: 전체 캐시 항목 수
+    - active: 유효한 캐시 항목 수
+    - expired: 만료된 캐시 항목 수
+    """
+    try:
+        stats = bok_backend.get_cache_stats()
+        return jsonify(stats)
+    except Exception as e:
+        logger.error(f"Error getting cache stats: {e}", exc_info=True)
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/bok/cache/clear', methods=['POST'])
+def clear_bok_cache():
+    """
+    BOK API 캐시를 초기화합니다.
+    """
+    try:
+        bok_backend.clear_api_cache()
+        return jsonify({'message': 'BOK API cache cleared successfully'})
+    except Exception as e:
+        logger.error(f"Error clearing BOK cache: {e}", exc_info=True)
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/api/market/indices/stats', methods=['GET'])
 def get_market_indices_stats():
     """

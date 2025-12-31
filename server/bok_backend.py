@@ -3,6 +3,9 @@ import os
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
 import logging
+import threading
+import time
+from functools import wraps
 
 load_dotenv()
 
@@ -17,6 +20,138 @@ if not ECOS_API_KEY:
 
 API_BASE_URL = "http://ecos.bok.or.kr/api"
 API_TIMEOUT = 30  # 30초 타임아웃
+
+# ============================================================
+# RATE LIMITING & CACHING CONFIGURATION
+# ============================================================
+# BOK API 제한: 3분(180초)에 300회 → 안전하게 3분에 250회로 제한
+# 즉, 약 0.72초에 1회 → 안전하게 0.8초 간격으로 설정
+RATE_LIMIT_INTERVAL = 0.8  # 최소 요청 간격 (초)
+CACHE_TTL_SECONDS = 300  # 캐시 유효 시간 (5분)
+CACHE_TTL_ITEM_LIST = 3600  # 항목 목록 캐시 유효 시간 (1시간)
+
+# Rate Limiter - 요청 간격 제어
+class RateLimiter:
+    """API 호출 간격을 제어하는 Rate Limiter"""
+    def __init__(self, min_interval=RATE_LIMIT_INTERVAL):
+        self.min_interval = min_interval
+        self.last_request_time = 0
+        self.lock = threading.Lock()
+        self.request_count = 0
+        self.window_start = time.time()
+        self.window_size = 180  # 3분 윈도우
+        self.max_requests = 250  # 3분당 최대 요청 수
+    
+    def wait_if_needed(self):
+        """필요한 경우 대기하여 rate limit을 준수"""
+        with self.lock:
+            current_time = time.time()
+            
+            # 윈도우 리셋 체크
+            if current_time - self.window_start >= self.window_size:
+                self.request_count = 0
+                self.window_start = current_time
+                logger.debug("Rate limit window reset")
+            
+            # 윈도우 내 요청 수 체크
+            if self.request_count >= self.max_requests:
+                wait_time = self.window_size - (current_time - self.window_start)
+                if wait_time > 0:
+                    logger.warning(f"Rate limit reached ({self.request_count}/{self.max_requests}). Waiting {wait_time:.1f}s")
+                    time.sleep(wait_time)
+                    self.request_count = 0
+                    self.window_start = time.time()
+                    current_time = time.time()
+            
+            # 최소 간격 체크
+            elapsed = current_time - self.last_request_time
+            if elapsed < self.min_interval:
+                sleep_time = self.min_interval - elapsed
+                time.sleep(sleep_time)
+            
+            self.last_request_time = time.time()
+            self.request_count += 1
+            logger.debug(f"API request #{self.request_count} in current window")
+
+# 전역 Rate Limiter 인스턴스
+_rate_limiter = RateLimiter()
+
+# 캐시 저장소
+class CacheEntry:
+    """캐시 항목"""
+    def __init__(self, data, ttl=CACHE_TTL_SECONDS):
+        self.data = data
+        self.created_at = time.time()
+        self.ttl = ttl
+    
+    def is_expired(self):
+        return time.time() - self.created_at > self.ttl
+
+class APICache:
+    """API 응답 캐시"""
+    def __init__(self):
+        self.cache = {}
+        self.lock = threading.Lock()
+    
+    def get(self, key):
+        """캐시에서 데이터 조회"""
+        with self.lock:
+            if key in self.cache:
+                entry = self.cache[key]
+                if not entry.is_expired():
+                    logger.debug(f"Cache HIT: {key[:50]}...")
+                    return entry.data
+                else:
+                    # 만료된 항목 삭제
+                    del self.cache[key]
+                    logger.debug(f"Cache EXPIRED: {key[:50]}...")
+            return None
+    
+    def set(self, key, data, ttl=CACHE_TTL_SECONDS):
+        """캐시에 데이터 저장"""
+        with self.lock:
+            self.cache[key] = CacheEntry(data, ttl)
+            logger.debug(f"Cache SET: {key[:50]}... (TTL: {ttl}s)")
+    
+    def clear(self):
+        """캐시 전체 삭제"""
+        with self.lock:
+            count = len(self.cache)
+            self.cache.clear()
+            logger.info(f"Cache cleared: {count} entries removed")
+    
+    def cleanup_expired(self):
+        """만료된 캐시 항목 정리"""
+        with self.lock:
+            expired_keys = [k for k, v in self.cache.items() if v.is_expired()]
+            for key in expired_keys:
+                del self.cache[key]
+            if expired_keys:
+                logger.debug(f"Cleaned up {len(expired_keys)} expired cache entries")
+    
+    def get_stats(self):
+        """캐시 통계 반환"""
+        with self.lock:
+            total = len(self.cache)
+            expired = sum(1 for v in self.cache.values() if v.is_expired())
+            return {"total": total, "active": total - expired, "expired": expired}
+
+# 전역 캐시 인스턴스
+_api_cache = APICache()
+
+def get_cache_stats():
+    """캐시 통계 조회 (외부 노출용)"""
+    return _api_cache.get_stats()
+
+def clear_api_cache():
+    """캐시 초기화 (외부 노출용)"""
+    _api_cache.clear()
+
+def _generate_cache_key(*args, **kwargs):
+    """캐시 키 생성"""
+    key_parts = [str(arg) for arg in args]
+    key_parts.extend(f"{k}={v}" for k, v in sorted(kwargs.items()))
+    return ":".join(key_parts)
 
 # BOK ECOS API StatisticSearch 엔드포인트 형식:
 # /StatisticSearch/{KEY}/{언어}/{요청시작건수}/{요청종료건수}/{통계표코드}/{주기}/{시작일자}/{종료일자}/{항목코드}
@@ -344,7 +479,7 @@ def format_date_for_cycle(date_str, cycle):
         return date_str
 
 
-def get_bok_statistics(stat_code, item_code, cycle, start_date, end_date, start_index=1, end_index=None):
+def get_bok_statistics(stat_code, item_code, cycle, start_date, end_date, start_index=1, end_index=None, use_cache=True):
     """
     한국은행 ECOS API에서 통계 데이터를 조회합니다.
     
@@ -356,6 +491,7 @@ def get_bok_statistics(stat_code, item_code, cycle, start_date, end_date, start_
         end_date: 종료일자 (YYYYMMDD 형식으로 입력받지만, 주기에 따라 변환됨)
         start_index: 요청 시작 건수 (기본값: 1)
         end_index: 요청 종료 건수 (None이면 기간에 따라 자동 계산, 최대 1000)
+        use_cache: 캐시 사용 여부 (기본값: True)
     
     Returns:
         dict: API 응답 데이터 또는 에러 정보
@@ -428,7 +564,20 @@ def get_bok_statistics(stat_code, item_code, cycle, start_date, end_date, start_
     logger.info(f"BOK API Request: stat_code={stat_code}, item_code={item_code}, cycle={cycle}, period={formatted_start_date}~{formatted_end_date} (original: {start_date}~{end_date})")
     logger.debug(f"Request URL: {url}")
     
+    # 캐시 키 생성 (API 키 제외)
+    cache_key = _generate_cache_key("StatisticSearch", stat_code, item_code, cycle, formatted_start_date, formatted_end_date, start_index, end_index)
+    
+    # 캐시에서 먼저 조회
+    if use_cache:
+        cached_data = _api_cache.get(cache_key)
+        if cached_data is not None:
+            logger.info(f"Cache HIT for stat_code={stat_code}, item_code={item_code}")
+            return cached_data
+    
     try:
+        # Rate Limiting 적용
+        _rate_limiter.wait_if_needed()
+        
         response = requests.get(url, timeout=API_TIMEOUT)
         response.raise_for_status()
         
@@ -463,6 +612,11 @@ def get_bok_statistics(stat_code, item_code, cycle, start_date, end_date, start_
             }
         
         logger.info(f"Successfully retrieved {total_count} records")
+        
+        # 성공적인 응답을 캐시에 저장
+        if use_cache:
+            _api_cache.set(cache_key, data, CACHE_TTL_SECONDS)
+        
         return data
         
     except requests.exceptions.Timeout:
@@ -1319,7 +1473,7 @@ def get_category_info(category=None):
         }
 
 
-def search_statistical_codes(stat_code=None, stat_name=None, start_index=1, end_index=100):
+def search_statistical_codes(stat_code=None, stat_name=None, start_index=1, end_index=100, use_cache=True):
     """
     통계표 코드를 검색합니다.
     
@@ -1332,6 +1486,7 @@ def search_statistical_codes(stat_code=None, stat_name=None, start_index=1, end_
         stat_name: 통계표명 (부분 검색 가능, 예: "소비자물가지수")
         start_index: 요청 시작 건수 (기본값: 1)
         end_index: 요청 종료 건수 (기본값: 100, 최대 1000)
+        use_cache: 캐시 사용 여부 (기본값: True)
     
     Returns:
         dict: 검색 결과 (StatisticalCodeSearch 형식) 또는 에러 정보
@@ -1343,6 +1498,16 @@ def search_statistical_codes(stat_code=None, stat_name=None, start_index=1, end_
         end_index = 1000
         logger.warning(f"end_index limited to 1000 (BOK API maximum)")
     
+    # 캐시 키 생성 (검색 조건 포함)
+    cache_key = _generate_cache_key("StatisticTableList", stat_code or "", stat_name or "", start_index, end_index)
+    
+    # 캐시에서 먼저 조회
+    if use_cache:
+        cached_data = _api_cache.get(cache_key)
+        if cached_data is not None:
+            logger.info(f"Cache HIT for StatisticTableList search")
+            return cached_data
+    
     # URL 구성
     # /StatisticTableList/{KEY}/{언어}/{요청시작건수}/{요청종료건수}/
     url = f"{API_BASE_URL}/StatisticTableList/{ECOS_API_KEY}/json/kr/{start_index}/{end_index}/"
@@ -1351,6 +1516,9 @@ def search_statistical_codes(stat_code=None, stat_name=None, start_index=1, end_
     logger.debug(f"Request URL: {url}")
     
     try:
+        # Rate Limiting 적용
+        _rate_limiter.wait_if_needed()
+        
         # http에서 302로 https로 가면 404가 나는 케이스가 있어 리다이렉트를 따라가지 않음
         response = requests.get(url, timeout=API_TIMEOUT, allow_redirects=False)
         if response.status_code in (301, 302, 307, 308):
@@ -1391,6 +1559,11 @@ def search_statistical_codes(stat_code=None, stat_name=None, start_index=1, end_
         }
         
         logger.info(f"Successfully matched {result['list_total_count']} statistical codes")
+        
+        # 성공적인 응답을 캐시에 저장 (통계표 목록은 긴 TTL 사용)
+        if use_cache:
+            _api_cache.set(cache_key, result, CACHE_TTL_ITEM_LIST)
+        
         return result
         
     except requests.exceptions.Timeout:
@@ -1419,7 +1592,7 @@ def search_statistical_codes(stat_code=None, stat_name=None, start_index=1, end_
         return {"error": error_msg}
 
 
-def get_statistic_item_list(stat_code, start_index=1, end_index=100):
+def get_statistic_item_list(stat_code, start_index=1, end_index=100, use_cache=True):
     """
     특정 통계표의 항목 목록을 조회합니다.
     
@@ -1430,6 +1603,7 @@ def get_statistic_item_list(stat_code, start_index=1, end_index=100):
         stat_code: 통계표 코드 (예: "901Y009")
         start_index: 요청 시작 건수 (기본값: 1)
         end_index: 요청 종료 건수 (기본값: 100, 최대 1000)
+        use_cache: 캐시 사용 여부 (기본값: True)
     
     Returns:
         dict: 항목 목록 (StatisticItemList 형식) 또는 에러 정보
@@ -1441,6 +1615,16 @@ def get_statistic_item_list(stat_code, start_index=1, end_index=100):
         end_index = 1000
         logger.warning(f"end_index limited to 1000 (BOK API maximum)")
     
+    # 캐시 키 생성
+    cache_key = _generate_cache_key("StatisticItemList", stat_code, start_index, end_index)
+    
+    # 캐시에서 먼저 조회 (항목 목록은 자주 변경되지 않으므로 긴 TTL 사용)
+    if use_cache:
+        cached_data = _api_cache.get(cache_key)
+        if cached_data is not None:
+            logger.info(f"Cache HIT for StatisticItemList stat_code={stat_code}")
+            return cached_data
+    
     # URL 구성
     # /StatisticItemList/{KEY}/{언어}/{요청시작건수}/{요청종료건수}/{통계표코드}/
     url = f"{API_BASE_URL}/StatisticItemList/{ECOS_API_KEY}/json/kr/{start_index}/{end_index}/{stat_code}/"
@@ -1449,6 +1633,9 @@ def get_statistic_item_list(stat_code, start_index=1, end_index=100):
     logger.debug(f"Request URL: {url}")
     
     try:
+        # Rate Limiting 적용
+        _rate_limiter.wait_if_needed()
+        
         response = requests.get(url, timeout=API_TIMEOUT)
         response.raise_for_status()
         
@@ -1473,6 +1660,11 @@ def get_statistic_item_list(stat_code, start_index=1, end_index=100):
         total_count = item_list.get('list_total_count', 0)
         
         logger.info(f"Successfully retrieved {total_count} items for stat_code={stat_code}")
+        
+        # 항목 목록은 자주 변경되지 않으므로 긴 TTL로 캐시
+        if use_cache:
+            _api_cache.set(cache_key, item_list, CACHE_TTL_ITEM_LIST)
+        
         return item_list
         
     except requests.exceptions.Timeout:
