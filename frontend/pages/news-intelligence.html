@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News Intelligence - AAL</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📰</text></svg>">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    
+    <!-- Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Leaflet Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/base.css">
+    <link rel="stylesheet" href="../css/components/header.css">
+    <link rel="stylesheet" href="../css/sections/news-intelligence.css">
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="logo">
+            <a href="../ai_studio_code_F2.html" style="text-decoration: none; color: inherit;">
+                AAL<span>.</span>
+            </a>
+            <div class="full-name">All About Logistics</div>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="quotation.html">Quotation</a></li>
+                <li><a href="bidding-list.html">Bidding</a></li>
+                <li><a href="market-data.html">Market Data</a></li>
+                <li><a href="news-intelligence.html" class="active">News Intel</a></li>
+                <li><a href="../ai_studio_code_F2.html#tools">Tools</a></li>
+                <li><a href="report-insight.html">Report & Insight</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Dashboard Layout -->
+    <div class="news-dashboard">
+        <!-- Sidebar -->
+        <aside class="news-sidebar">
+            <!-- Daily Summary Panel -->
+            <div class="news-panel">
+                <div class="panel-header">
+                    <i class="fas fa-chart-line"></i>
+                    Daily Summary
+                </div>
+                <div class="summary-stat">
+                    <div class="stat-value" id="total-articles">--</div>
+                    <div class="stat-label">Articles in last 24h</div>
+                    <div class="stat-updated" id="last-updated">Last Updated: --</div>
+                </div>
+                <div class="summary-stat stat-breakdown">
+                    <div class="stat-item">
+                        <div class="value" id="kr-count">--</div>
+                        <div class="label">Korea</div>
+                    </div>
+                    <div class="stat-item" style="text-align: right;">
+                        <div class="value" id="global-count">--</div>
+                        <div class="label">Global</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Categories Panel -->
+            <div class="news-panel">
+                <div class="panel-header">
+                    <i class="fas fa-pie-chart"></i>
+                    Categories
+                </div>
+                <div class="category-chart-container">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Critical Alerts Panel -->
+            <div class="news-panel">
+                <div class="panel-header">
+                    <i class="fas fa-bell" style="color: var(--severity-severe);"></i>
+                    Critical Alerts
+                </div>
+                <div id="critical-alerts-list">
+                    <div class="loading-spinner">
+                        <div class="spinner"></div>
+                        Loading...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Operation Clocks Panel -->
+            <div class="news-panel">
+                <div class="panel-header">
+                    <i class="fas fa-clock"></i>
+                    Operation Clocks
+                </div>
+                <div class="clock-display">
+                    <div class="utc-time" id="utc-time">---</div>
+                    <div class="kst-time" id="kst-time">Seoul (KST): ---</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="news-main">
+            <!-- Map Container -->
+            <div class="map-container">
+                <div id="news-map"></div>
+            </div>
+
+            <!-- Word Cloud -->
+            <div class="wordcloud-container">
+                <div class="wordcloud-title">INTELLIGENCE WORD CLOUD</div>
+                <div class="wordcloud-content" id="wordcloud-content">
+                    <div class="loading-spinner">
+                        <div class="spinner"></div>
+                        Loading keywords...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter Bar -->
+            <div class="filter-bar">
+                <div class="main-tabs">
+                    <button class="tab-btn active" data-type="all">All Intelligence</button>
+                    <button class="tab-btn" data-type="KR">Korea Focus</button>
+                    <button class="tab-btn" data-type="GLOBAL">Global Focus</button>
+                </div>
+                <div class="category-filter">
+                    <div class="category-chip active" data-category="all">All Categories</div>
+                    <div class="category-chip" data-category="Crisis">Crisis</div>
+                    <div class="category-chip" data-category="Ocean">Ocean</div>
+                    <div class="category-chip" data-category="Air">Air</div>
+                    <div class="category-chip" data-category="Inland">Inland</div>
+                    <div class="category-chip" data-category="Economy">Economy</div>
+                    <div class="category-chip" data-category="ETC">ETC</div>
+                </div>
+            </div>
+
+            <!-- News List -->
+            <div class="news-list" id="news-list">
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                    Loading articles...
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination" id="pagination"></div>
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-brand">AAL.</div>
+        <div class="copyright">&copy; 2025 AllAboutLogistics.</div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="../js/features/news-intelligence/news-intelligence.js"></script>
+</body>
+</html>
+
