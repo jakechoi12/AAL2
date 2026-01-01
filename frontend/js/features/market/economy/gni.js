@@ -1,34 +1,35 @@
 /**
- * AAL Application - GDP Growth Rate Module
- * 경제성장률 관련 기능 모듈
+ * AAL Application - GNI Module
+ * 국민총소득(GNI) 관련 기능 모듈
  * 
- * 담당 패널: #gdp-growth-panel
+ * 담당 패널: #gni-panel
  */
 
 // ============================================================
 // MODULE MARKER
 // ============================================================
-window.gdpGrowthModuleLoaded = true;
+window.gniModuleLoaded = true;
 
 // ============================================================
 // CONFIGURATION
 // ============================================================
 
-const GDP_GROWTH_CONFIG = {
-    apiCategory: 'gdp-growth-international',
-    panelId: 'gdp-growth-panel',
-    title: 'Economy Growth Rate',
-    description: '국제 주요국 경제성장률',
+const GNI_CONFIG = {
+    apiCategory: 'gni-international',
+    panelId: 'gni-panel',
+    title: 'GNI',
+    description: '국제 주요국 국민총소득(GNI)',
     cycle: 'A',
-    unit: '%',
-    chartPrefix: 'gdp-growth'
+    unit: 'M USD',
+    unitType: 'million-usd',
+    chartPrefix: 'gni'
 };
 
 // ============================================================
 // STATE
 // ============================================================
 
-const gdpGrowthState = {
+const gniState = {
     countryMapping: {},
     activeCountries: [],
     countryData: {},
@@ -41,7 +42,7 @@ const gdpGrowthState = {
 // COUNTRY HELPERS
 // ============================================================
 
-const gdpGrowthCountryMap = [
+const gniCountryMap = [
     { keywords: ['호주', 'aus', 'australia'], name: 'Australia', color: 'var(--c-interest-aus)' },
     { keywords: ['브라질', 'bra', 'brazil'], name: 'Brazil', color: 'var(--c-interest-bra)' },
     { keywords: ['캐나다', 'can', 'canada'], name: 'Canada', color: 'var(--c-interest-can)' },
@@ -57,31 +58,39 @@ const gdpGrowthCountryMap = [
     { keywords: ['미국', 'usa', 'us '], name: 'USA', color: 'var(--c-interest-usa)' }
 ];
 
-function getGDPGrowthCountryName(koreanName) {
+function getGNICountryName(koreanName) {
     if (!koreanName) return koreanName;
     const n = koreanName.toLowerCase();
-    for (const c of gdpGrowthCountryMap) {
+    for (const c of gniCountryMap) {
         if (c.keywords.some(k => n.includes(k))) return c.name;
     }
     return koreanName;
 }
 
-function getGDPGrowthCountryColor(itemCode) {
-    const info = gdpGrowthState.countryMapping[itemCode];
+function getGNICountryColor(itemCode) {
+    const info = gniState.countryMapping[itemCode];
     if (!info) return '#4ECDC4';
     const n = info.name?.toLowerCase() || '';
-    for (const c of gdpGrowthCountryMap) {
+    for (const c of gniCountryMap) {
         if (c.keywords.some(k => n.includes(k))) return c.color;
     }
     return '#4ECDC4';
+}
+
+function getUsdKrwRateGNI() { return window.exchangeRates?.USD || 1350; }
+
+function convertGNIToKRW(value) {
+    if (!Number.isFinite(value)) return null;
+    const krwTrillion = value * getUsdKrwRateGNI() / 1000000;
+    return krwTrillion >= 1 ? `≈${krwTrillion.toLocaleString('en-US', {maximumFractionDigits: 0})}조 원` : null;
 }
 
 // ============================================================
 // INITIALIZATION
 // ============================================================
 
-async function initGDPGrowth() {
-    const prefix = GDP_GROWTH_CONFIG.chartPrefix;
+async function initGNI() {
+    const prefix = GNI_CONFIG.chartPrefix;
     const startInput = document.getElementById(`${prefix}-start-date`);
     const endInput = document.getElementById(`${prefix}-end-date`);
     
@@ -94,79 +103,79 @@ async function initGDPGrowth() {
         startInput.max = now.getFullYear();
         endInput.max = now.getFullYear();
         
-        startInput.addEventListener('change', () => validateGDPGrowthDateRange() && fetchGDPGrowthData());
-        endInput.addEventListener('change', () => validateGDPGrowthDateRange() && fetchGDPGrowthData());
+        startInput.addEventListener('change', () => validateGNIDateRange() && fetchGNIData());
+        endInput.addEventListener('change', () => validateGNIDateRange() && fetchGNIData());
     }
     
     try {
-        await fetchGDPGrowthCountryList();
-        initGDPGrowthCountryChips();
-        fetchGDPGrowthData();
+        await fetchGNICountryList();
+        initGNICountryChips();
+        fetchGNIData();
     } catch (err) {
-        console.error('Failed to init GDP Growth:', err);
+        console.error('Failed to init GNI:', err);
     }
     
-    gdpGrowthState.isLoaded = true;
-    window.gdpGrowthDataLoaded = true;
+    gniState.isLoaded = true;
+    window.gniDataLoaded = true;
 }
 
-async function fetchGDPGrowthCountryList() {
-    if (gdpGrowthState.countryListLoaded) return gdpGrowthState.countryMapping;
+async function fetchGNICountryList() {
+    if (gniState.countryListLoaded) return gniState.countryMapping;
     
-    const res = await fetch(`${API_BASE}/market/categories?category=${GDP_GROWTH_CONFIG.apiCategory}`);
+    const res = await fetch(`${API_BASE}/market/categories?category=${GNI_CONFIG.apiCategory}`);
     if (res.ok) {
         const data = await res.json();
         if (data.items) {
-            gdpGrowthState.countryMapping = data.items;
-            gdpGrowthState.countryListLoaded = true;
+            gniState.countryMapping = data.items;
+            gniState.countryListLoaded = true;
             const codes = Object.keys(data.items);
             const korCode = codes.find(c => {
                 const n = data.items[c].name;
                 return n && (n.includes('한국') || n.toLowerCase().includes('korea'));
             });
-            gdpGrowthState.activeCountries = korCode ? [korCode] : (codes.length ? [codes[0]] : []);
+            gniState.activeCountries = korCode ? [korCode] : (codes.length ? [codes[0]] : []);
         }
     }
-    return gdpGrowthState.countryMapping;
+    return gniState.countryMapping;
 }
 
-function initGDPGrowthCountryChips() {
-    const container = document.getElementById(`${GDP_GROWTH_CONFIG.chartPrefix}-country-chips`);
+function initGNICountryChips() {
+    const container = document.getElementById(`${GNI_CONFIG.chartPrefix}-country-chips`);
     if (!container) return;
     container.innerHTML = '';
     
-    Object.keys(gdpGrowthState.countryMapping).forEach(code => {
-        const info = gdpGrowthState.countryMapping[code];
+    Object.keys(gniState.countryMapping).forEach(code => {
+        const info = gniState.countryMapping[code];
         const chip = document.createElement('button');
         chip.className = 'chip';
         chip.setAttribute('data-item-code', code);
         
-        const isActive = gdpGrowthState.activeCountries.includes(code);
+        const isActive = gniState.activeCountries.includes(code);
         if (isActive) chip.classList.add('active');
         
-        const color = getGDPGrowthCountryColor(code);
+        const color = getGNICountryColor(code);
         const dot = document.createElement('div');
         dot.className = 'chip-dot';
         dot.style.background = isActive ? color : 'currentColor';
         if (isActive) { chip.style.borderColor = color; chip.style.color = color; }
         
         chip.appendChild(dot);
-        chip.appendChild(document.createTextNode(getGDPGrowthCountryName(info.name)));
-        chip.addEventListener('click', () => toggleGDPGrowthCountry(code));
+        chip.appendChild(document.createTextNode(getGNICountryName(info.name)));
+        chip.addEventListener('click', () => toggleGNICountry(code));
         container.appendChild(chip);
     });
 }
 
-function toggleGDPGrowthCountry(itemCode) {
-    const idx = gdpGrowthState.activeCountries.indexOf(itemCode);
-    if (idx === -1) gdpGrowthState.activeCountries.push(itemCode);
-    else gdpGrowthState.activeCountries.splice(idx, 1);
-    initGDPGrowthCountryChips();
-    if (validateGDPGrowthDateRange()) fetchGDPGrowthData();
+function toggleGNICountry(itemCode) {
+    const idx = gniState.activeCountries.indexOf(itemCode);
+    if (idx === -1) gniState.activeCountries.push(itemCode);
+    else gniState.activeCountries.splice(idx, 1);
+    initGNICountryChips();
+    if (validateGNIDateRange()) fetchGNIData();
 }
 
-function validateGDPGrowthDateRange() {
-    const prefix = GDP_GROWTH_CONFIG.chartPrefix;
+function validateGNIDateRange() {
+    const prefix = GNI_CONFIG.chartPrefix;
     const s = document.getElementById(`${prefix}-start-date`);
     const e = document.getElementById(`${prefix}-end-date`);
     return s && e && parseInt(s.value, 10) <= parseInt(e.value, 10);
@@ -176,10 +185,10 @@ function validateGDPGrowthDateRange() {
 // DATA FETCHING
 // ============================================================
 
-async function fetchGDPGrowthData() {
-    const prefix = GDP_GROWTH_CONFIG.chartPrefix;
-    if (!validateGDPGrowthDateRange() || gdpGrowthState.activeCountries.length === 0) {
-        updateGDPGrowthChart();
+async function fetchGNIData() {
+    const prefix = GNI_CONFIG.chartPrefix;
+    if (!validateGNIDateRange() || gniState.activeCountries.length === 0) {
+        updateGNIChart();
         return;
     }
     
@@ -190,8 +199,8 @@ async function fetchGDPGrowthData() {
     if (container) container.style.opacity = '0.5';
     
     try {
-        const results = await Promise.all(gdpGrowthState.activeCountries.map(async code => {
-            const url = `${API_BASE}/market/indices?type=${GDP_GROWTH_CONFIG.apiCategory}&itemCode=${code}&startDate=${startDate}&endDate=${endDate}&cycle=A`;
+        const results = await Promise.all(gniState.activeCountries.map(async code => {
+            const url = `${API_BASE}/market/indices?type=${GNI_CONFIG.apiCategory}&itemCode=${code}&startDate=${startDate}&endDate=${endDate}&cycle=A`;
             try {
                 const res = await fetch(url);
                 return { itemCode: code, data: await res.json() };
@@ -200,17 +209,17 @@ async function fetchGDPGrowthData() {
             }
         }));
         
-        gdpGrowthState.countryData = {};
+        gniState.countryData = {};
         results.forEach(({ itemCode, data }) => {
             if (!data.error && data.StatisticSearch?.row) {
-                gdpGrowthState.countryData[itemCode] = data.StatisticSearch.row
+                gniState.countryData[itemCode] = data.StatisticSearch.row
                     .map(r => ({ date: r.TIME, value: parseFloat(r.DATA_VALUE) }))
                     .filter(i => !isNaN(i.value))
                     .sort((a, b) => parseInt(a.date) - parseInt(b.date));
             }
         });
         
-        updateGDPGrowthChart();
+        updateGNIChart();
     } finally {
         if (container) container.style.opacity = '1';
     }
@@ -220,8 +229,8 @@ async function fetchGDPGrowthData() {
 // CHART RENDERING
 // ============================================================
 
-function updateGDPGrowthChart() {
-    const prefix = GDP_GROWTH_CONFIG.chartPrefix;
+function updateGNIChart() {
+    const prefix = GNI_CONFIG.chartPrefix;
     const svg = document.getElementById(`${prefix}-chart-svg`);
     const pathsGroup = document.getElementById(`${prefix}-paths-group`);
     const pointsGroup = document.getElementById(`${prefix}-data-points`);
@@ -232,55 +241,54 @@ function updateGDPGrowthChart() {
     if (pointsGroup) pointsGroup.innerHTML = '';
     
     const allDates = new Set();
-    Object.values(gdpGrowthState.countryData).forEach(d => d.forEach(i => allDates.add(i.date)));
+    Object.values(gniState.countryData).forEach(d => d.forEach(i => allDates.add(i.date)));
     const sortedDates = Array.from(allDates).sort((a, b) => parseInt(a) - parseInt(b));
     
     if (sortedDates.length === 0) {
-        renderGDPGrowthYAxis();
-        renderGDPGrowthXAxis([]);
+        renderGNIYAxis();
+        renderGNIXAxis([]);
         return;
     }
     
     const allVals = [];
-    Object.values(gdpGrowthState.countryData).forEach(d => d.forEach(i => allVals.push(i.value)));
-    const min = Math.min(...allVals, 0);
-    const max = Math.max(...allVals);
+    Object.values(gniState.countryData).forEach(d => d.forEach(i => allVals.push(i.value)));
+    const min = Math.min(...allVals), max = Math.max(...allVals);
     const range = max - min || 1;
-    gdpGrowthState.yAxisRange = { min: min - range * 0.05, max: max + range * 0.05 };
+    gniState.yAxisRange = { min: Math.max(0, min - range * 0.05), max: max + range * 0.05 };
     
-    renderGDPGrowthYAxis();
+    renderGNIYAxis();
     
-    gdpGrowthState.activeCountries.forEach(code => {
-        const data = gdpGrowthState.countryData[code];
+    gniState.activeCountries.forEach(code => {
+        const data = gniState.countryData[code];
         if (!data?.length) return;
         
         const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
         path.classList.add('chart-path', 'visible');
-        path.setAttribute('stroke', getGDPGrowthCountryColor(code));
+        path.setAttribute('stroke', getGNICountryColor(code));
         path.setAttribute('stroke-width', '2.5');
         path.setAttribute('fill', 'none');
         
         const sortedData = sortedDates.map(d => data.find(i => i.date === d) || null).filter(Boolean);
         if (sortedData.length) {
-            path.setAttribute('d', generateGDPGrowthPath(sortedData));
+            path.setAttribute('d', generateGNIPath(sortedData));
             (pathsGroup || svg).appendChild(path);
         }
     });
     
-    renderGDPGrowthXAxis(sortedDates);
-    setupGDPGrowthInteractivity();
-    updateGDPGrowthHeader();
+    renderGNIXAxis(sortedDates);
+    setupGNIInteractivity();
+    updateGNIHeader();
 }
 
-function generateGDPGrowthPath(data) {
-    const svg = document.getElementById(`${GDP_GROWTH_CONFIG.chartPrefix}-chart-svg`);
+function generateGNIPath(data) {
+    const svg = document.getElementById(`${GNI_CONFIG.chartPrefix}-chart-svg`);
     if (!svg || !data.length) return '';
     
     const { width, height } = getSvgViewBoxSize(svg);
     const pad = { top: 20, bottom: 30, left: 60, right: 20 };
     const cw = width - pad.left - pad.right;
     const ch = height - pad.top - pad.bottom;
-    const { min, max } = gdpGrowthState.yAxisRange;
+    const { min, max } = gniState.yAxisRange;
     const range = max - min || 1;
     
     return data.map((p, i) => {
@@ -290,11 +298,11 @@ function generateGDPGrowthPath(data) {
     }).join(' ');
 }
 
-function renderGDPGrowthYAxis() {
-    const g = document.getElementById(`${GDP_GROWTH_CONFIG.chartPrefix}-y-axis-labels`);
+function renderGNIYAxis() {
+    const g = document.getElementById(`${GNI_CONFIG.chartPrefix}-y-axis-labels`);
     if (!g) return;
     g.innerHTML = '';
-    const { min, max } = gdpGrowthState.yAxisRange;
+    const { min, max } = gniState.yAxisRange;
     for (let i = 0; i <= 5; i++) {
         const val = max - (i / 5) * (max - min);
         const y = 20 + (i / 5) * 330;
@@ -303,17 +311,17 @@ function renderGDPGrowthYAxis() {
         t.setAttribute('y', y);
         t.setAttribute('class', 'chart-yaxis-label');
         t.setAttribute('text-anchor', 'end');
-        t.textContent = val.toFixed(1) + '%';
+        t.textContent = val.toLocaleString('en-US', { maximumFractionDigits: 0 });
         g.appendChild(t);
     }
 }
 
-function renderGDPGrowthXAxis(dates) {
-    const g = document.getElementById(`${GDP_GROWTH_CONFIG.chartPrefix}-x-axis-labels`);
+function renderGNIXAxis(dates) {
+    const g = document.getElementById(`${GNI_CONFIG.chartPrefix}-x-axis-labels`);
     if (!g || !dates.length) return;
     g.innerHTML = '';
     
-    const svg = document.getElementById(`${GDP_GROWTH_CONFIG.chartPrefix}-chart-svg`);
+    const svg = document.getElementById(`${GNI_CONFIG.chartPrefix}-chart-svg`);
     const { width } = getSvgViewBoxSize(svg);
     const cw = width - 80;
     const interval = Math.max(1, Math.floor(dates.length / 8));
@@ -331,8 +339,8 @@ function renderGDPGrowthXAxis(dates) {
     });
 }
 
-function setupGDPGrowthInteractivity() {
-    const prefix = GDP_GROWTH_CONFIG.chartPrefix;
+function setupGNIInteractivity() {
+    const prefix = GNI_CONFIG.chartPrefix;
     const container = document.getElementById(`${prefix}-chart-container`);
     const tooltip = document.getElementById(`${prefix}-chart-tooltip`);
     if (!container || !tooltip) return;
@@ -342,18 +350,18 @@ function setupGDPGrowthInteractivity() {
     const newC = container.cloneNode(true);
     container.parentNode.replaceChild(newC, container);
     
-    newC.addEventListener('mousemove', e => showGDPGrowthTooltip(e));
-    newC.addEventListener('mouseleave', () => hideGDPGrowthTooltip());
+    newC.addEventListener('mousemove', e => showGNITooltip(e));
+    newC.addEventListener('mouseleave', () => hideGNITooltip());
 }
 
-function showGDPGrowthTooltip(event) {
-    const prefix = GDP_GROWTH_CONFIG.chartPrefix;
+function showGNITooltip(event) {
+    const prefix = GNI_CONFIG.chartPrefix;
     const tooltip = document.getElementById(`${prefix}-chart-tooltip`);
     const svg = document.getElementById(`${prefix}-chart-svg`);
     if (!tooltip || !svg) return;
     
     const allDates = new Set();
-    Object.values(gdpGrowthState.countryData).forEach(d => d.forEach(i => allDates.add(i.date)));
+    Object.values(gniState.countryData).forEach(d => d.forEach(i => allDates.add(i.date)));
     const dates = Array.from(allDates).sort((a, b) => parseInt(a) - parseInt(b));
     if (!dates.length) return;
     
@@ -364,18 +372,19 @@ function showGDPGrowthTooltip(event) {
     const date = dates[Math.max(0, Math.min(dates.length - 1, idx))];
     
     let content = '';
-    gdpGrowthState.activeCountries.forEach(code => {
-        const item = gdpGrowthState.countryData[code]?.find(d => d.date === date);
+    gniState.activeCountries.forEach(code => {
+        const item = gniState.countryData[code]?.find(d => d.date === date);
         if (!item) return;
-        const name = getGDPGrowthCountryName(gdpGrowthState.countryMapping[code]?.name || code);
-        const color = getGDPGrowthCountryColor(code);
+        const name = getGNICountryName(gniState.countryMapping[code]?.name || code);
+        const color = getGNICountryColor(code);
+        const krw = convertGNIToKRW(item.value);
         content += `<div class="chart-tooltip-item">
             <div class="chart-tooltip-currency"><div class="chart-tooltip-dot" style="background:${color}"></div><span>${name}</span></div>
-            <span class="chart-tooltip-value">${item.value.toFixed(1)}%</span>
+            <span class="chart-tooltip-value">${item.value.toLocaleString()} M USD${krw ? ` (${krw})` : ''}</span>
         </div>`;
     });
     
-    if (!content) return hideGDPGrowthTooltip();
+    if (!content) return hideGNITooltip();
     
     document.getElementById(`${prefix}-tooltip-content`).innerHTML = content;
     document.getElementById(`${prefix}-tooltip-date`).textContent = date;
@@ -386,40 +395,44 @@ function showGDPGrowthTooltip(event) {
     tooltip.style.visibility = 'visible';
 }
 
-function hideGDPGrowthTooltip() {
-    const t = document.getElementById(`${GDP_GROWTH_CONFIG.chartPrefix}-chart-tooltip`);
+function hideGNITooltip() {
+    const t = document.getElementById(`${GNI_CONFIG.chartPrefix}-chart-tooltip`);
     if (t) { t.classList.remove('visible'); t.style.visibility = 'hidden'; }
 }
 
-function updateGDPGrowthHeader() {
-    const prefix = GDP_GROWTH_CONFIG.chartPrefix;
-    const code = gdpGrowthState.activeCountries[0];
-    const data = gdpGrowthState.countryData[code];
+function updateGNIHeader() {
+    const prefix = GNI_CONFIG.chartPrefix;
+    const code = gniState.activeCountries[0];
+    const data = gniState.countryData[code];
     if (!data?.length) return;
     
     const vals = data.map(i => i.value);
     const current = vals[vals.length - 1];
-    const name = getGDPGrowthCountryName(gdpGrowthState.countryMapping[code]?.name || code);
+    const name = getGNICountryName(gniState.countryMapping[code]?.name || code);
     
     const title = document.getElementById(`${prefix}-chart-main-title`);
-    if (title) title.textContent = `Economy Growth Rate - ${name}`;
+    if (title) title.textContent = `GNI - ${name}`;
     
     const value = document.getElementById(`${prefix}-chart-main-value`);
-    if (value) value.innerHTML = `${current.toFixed(1)}<span style="font-size:50%;opacity:0.8">%</span>`;
+    if (value) {
+        const krw = convertGNIToKRW(current);
+        value.innerHTML = `${current.toLocaleString()} <span style="font-size:50%;opacity:0.8">M USD${krw ? ` (${krw})` : ''}</span>`;
+    }
     
     const high = document.getElementById(`${prefix}-stat-high`);
     const low = document.getElementById(`${prefix}-stat-low`);
     const avg = document.getElementById(`${prefix}-stat-average`);
-    if (high) high.textContent = Math.max(...vals).toFixed(1) + '%';
-    if (low) low.textContent = Math.min(...vals).toFixed(1) + '%';
-    if (avg) avg.textContent = (vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(1) + '%';
+    if (high) high.textContent = Math.max(...vals).toLocaleString();
+    if (low) low.textContent = Math.min(...vals).toLocaleString();
+    if (avg) avg.textContent = Math.round(vals.reduce((a, b) => a + b, 0) / vals.length).toLocaleString();
 }
 
 // ============================================================
 // EXPORTS
 // ============================================================
 
-window.initGDPGrowth = initGDPGrowth;
-window.toggleGDPGrowthCountry = toggleGDPGrowthCountry;
+window.initGNI = initGNI;
+window.toggleGNICountry = toggleGNICountry;
 
-console.log('📈 GDP Growth module loaded');
+console.log('🌍 GNI module loaded');
+

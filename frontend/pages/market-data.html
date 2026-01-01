@@ -98,23 +98,23 @@
                         <div class="chart-header" id="chart-header">
                             <div class="chart-title-section">
                                 <h2 class="chart-main-title" id="chart-main-title">USD/KRW</h2>
-                                <div class="chart-main-value" id="chart-main-value">-</div>
-                                <div class="chart-change-info">
-                                    <span class="chart-change" id="chart-change">-</span>
-                                    <span class="chart-date" id="chart-date">-</span>
+                                <div class="chart-value-container">
+                                    <span class="chart-value" id="chart-main-value">-</span>
+                                    <span class="chart-change" id="change-value">-</span>
+                                    <span class="chart-change-percent" id="change-percent">(-)</span>
                                 </div>
                             </div>
                             <div class="chart-stats-inline" id="chart-stats-inline">
                                 <div class="stat-item">
-                                    <span class="stat-label">기간 고가</span>
+                                    <span class="stat-label">High</span>
                                     <span class="stat-value" id="stat-high">-</span>
                                 </div>
                                 <div class="stat-item">
-                                    <span class="stat-label">기간 저가</span>
+                                    <span class="stat-label">Low</span>
                                     <span class="stat-value" id="stat-low">-</span>
                                 </div>
                                 <div class="stat-item">
-                                    <span class="stat-label">기간 평균</span>
+                                    <span class="stat-label">Average</span>
                                     <span class="stat-value" id="stat-average">-</span>
                                 </div>
                             </div>
@@ -356,10 +356,45 @@
                             <li onclick="switchProduct('global-stocks')">Global Stocks</li>
                         </ul>
                     </aside>
-                    <main class="tool-workspace" style="display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; min-height:400px;">
-                        <i class="fas fa-chart-bar" style="font-size:3rem; color:#333; margin-bottom:1.5rem;"></i>
-                        <h2 style="margin-bottom:0.5rem;">GDP</h2>
-                        <p style="color:var(--text-sub);">GDP 데이터를 로드하고 있습니다...</p>
+                    <main class="tool-workspace">
+                        <div class="chart-header">
+                            <div class="chart-info">
+                                <h2 class="chart-title" id="gdp-indicator-chart-main-title">GDP</h2>
+                                <div class="chart-value-container">
+                                    <span class="chart-value" id="gdp-indicator-chart-main-value">-</span>
+                                </div>
+                            </div>
+                            <div class="chart-stats">
+                                <div class="stat-item"><span class="stat-label">High</span><span class="stat-value" id="gdp-indicator-stat-high">-</span></div>
+                                <div class="stat-item"><span class="stat-label">Low</span><span class="stat-value" id="gdp-indicator-stat-low">-</span></div>
+                                <div class="stat-item"><span class="stat-label">Average</span><span class="stat-value" id="gdp-indicator-stat-average">-</span></div>
+                            </div>
+                        </div>
+                        <div class="chart-controls">
+                            <div class="date-range-control">
+                                <input type="number" class="date-input" id="gdp-indicator-start-date" min="1960" />
+                                <span class="date-separator">~</span>
+                                <input type="number" class="date-input" id="gdp-indicator-end-date" min="1960" />
+                            </div>
+                        </div>
+                        <div class="currency-toggle" id="gdp-indicator-country-chips"></div>
+                        <div class="chart-area" id="gdp-indicator-chart-container">
+                            <svg class="chart-svg" id="gdp-indicator-chart-svg" viewBox="0 0 1200 400" preserveAspectRatio="none">
+                                <line x1="0" y1="350" x2="1200" y2="350" class="chart-grid-line" />
+                                <line x1="0" y1="280" x2="1200" y2="280" class="chart-grid-line" />
+                                <line x1="0" y1="210" x2="1200" y2="210" class="chart-grid-line" />
+                                <line x1="0" y1="140" x2="1200" y2="140" class="chart-grid-line" />
+                                <line x1="0" y1="70" x2="1200" y2="70" class="chart-grid-line" />
+                                <g id="gdp-indicator-y-axis-labels"></g>
+                                <g id="gdp-indicator-paths-group"></g>
+                                <g id="gdp-indicator-data-points"></g>
+                                <g id="gdp-indicator-x-axis-labels"></g>
+                            </svg>
+                        </div>
+                        <div class="chart-tooltip" id="gdp-indicator-chart-tooltip">
+                            <div class="chart-tooltip-date" id="gdp-indicator-tooltip-date"></div>
+                            <div id="gdp-indicator-tooltip-content"></div>
+                        </div>
                     </main>
                 </div>
             </div>
@@ -382,10 +417,45 @@
                             <li onclick="switchProduct('global-stocks')">Global Stocks</li>
                         </ul>
                     </aside>
-                    <main class="tool-workspace" style="display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; min-height:400px;">
-                        <i class="fas fa-user-chart" style="font-size:3rem; color:#333; margin-bottom:1.5rem;"></i>
-                        <h2 style="margin-bottom:0.5rem;">GDP per Capita</h2>
-                        <p style="color:var(--text-sub);">1인당 GDP 데이터를 로드하고 있습니다...</p>
+                    <main class="tool-workspace">
+                        <div class="chart-header">
+                            <div class="chart-info">
+                                <h2 class="chart-title" id="gdp-per-capita-chart-main-title">GDP per Capita</h2>
+                                <div class="chart-value-container">
+                                    <span class="chart-value" id="gdp-per-capita-chart-main-value">-</span>
+                                </div>
+                            </div>
+                            <div class="chart-stats">
+                                <div class="stat-item"><span class="stat-label">High</span><span class="stat-value" id="gdp-per-capita-stat-high">-</span></div>
+                                <div class="stat-item"><span class="stat-label">Low</span><span class="stat-value" id="gdp-per-capita-stat-low">-</span></div>
+                                <div class="stat-item"><span class="stat-label">Average</span><span class="stat-value" id="gdp-per-capita-stat-average">-</span></div>
+                            </div>
+                        </div>
+                        <div class="chart-controls">
+                            <div class="date-range-control">
+                                <input type="number" class="date-input" id="gdp-per-capita-start-date" min="1960" />
+                                <span class="date-separator">~</span>
+                                <input type="number" class="date-input" id="gdp-per-capita-end-date" min="1960" />
+                            </div>
+                        </div>
+                        <div class="currency-toggle" id="gdp-per-capita-country-chips"></div>
+                        <div class="chart-area" id="gdp-per-capita-chart-container">
+                            <svg class="chart-svg" id="gdp-per-capita-chart-svg" viewBox="0 0 1200 400" preserveAspectRatio="none">
+                                <line x1="0" y1="350" x2="1200" y2="350" class="chart-grid-line" />
+                                <line x1="0" y1="280" x2="1200" y2="280" class="chart-grid-line" />
+                                <line x1="0" y1="210" x2="1200" y2="210" class="chart-grid-line" />
+                                <line x1="0" y1="140" x2="1200" y2="140" class="chart-grid-line" />
+                                <line x1="0" y1="70" x2="1200" y2="70" class="chart-grid-line" />
+                                <g id="gdp-per-capita-y-axis-labels"></g>
+                                <g id="gdp-per-capita-paths-group"></g>
+                                <g id="gdp-per-capita-data-points"></g>
+                                <g id="gdp-per-capita-x-axis-labels"></g>
+                            </svg>
+                        </div>
+                        <div class="chart-tooltip" id="gdp-per-capita-chart-tooltip">
+                            <div class="chart-tooltip-date" id="gdp-per-capita-tooltip-date"></div>
+                            <div id="gdp-per-capita-tooltip-content"></div>
+                        </div>
                     </main>
                 </div>
             </div>
@@ -408,10 +478,45 @@
                             <li onclick="switchProduct('global-stocks')">Global Stocks</li>
                         </ul>
                     </aside>
-                    <main class="tool-workspace" style="display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; min-height:400px;">
-                        <i class="fas fa-coins" style="font-size:3rem; color:#333; margin-bottom:1.5rem;"></i>
-                        <h2 style="margin-bottom:0.5rem;">GNI (Gross National Income)</h2>
-                        <p style="color:var(--text-sub);">GNI 데이터를 로드하고 있습니다...</p>
+                    <main class="tool-workspace">
+                        <div class="chart-header">
+                            <div class="chart-info">
+                                <h2 class="chart-title" id="gni-chart-main-title">GNI</h2>
+                                <div class="chart-value-container">
+                                    <span class="chart-value" id="gni-chart-main-value">-</span>
+                                </div>
+                            </div>
+                            <div class="chart-stats">
+                                <div class="stat-item"><span class="stat-label">High</span><span class="stat-value" id="gni-stat-high">-</span></div>
+                                <div class="stat-item"><span class="stat-label">Low</span><span class="stat-value" id="gni-stat-low">-</span></div>
+                                <div class="stat-item"><span class="stat-label">Average</span><span class="stat-value" id="gni-stat-average">-</span></div>
+                            </div>
+                        </div>
+                        <div class="chart-controls">
+                            <div class="date-range-control">
+                                <input type="number" class="date-input" id="gni-start-date" min="1960" />
+                                <span class="date-separator">~</span>
+                                <input type="number" class="date-input" id="gni-end-date" min="1960" />
+                            </div>
+                        </div>
+                        <div class="currency-toggle" id="gni-country-chips"></div>
+                        <div class="chart-area" id="gni-chart-container">
+                            <svg class="chart-svg" id="gni-chart-svg" viewBox="0 0 1200 400" preserveAspectRatio="none">
+                                <line x1="0" y1="350" x2="1200" y2="350" class="chart-grid-line" />
+                                <line x1="0" y1="280" x2="1200" y2="280" class="chart-grid-line" />
+                                <line x1="0" y1="210" x2="1200" y2="210" class="chart-grid-line" />
+                                <line x1="0" y1="140" x2="1200" y2="140" class="chart-grid-line" />
+                                <line x1="0" y1="70" x2="1200" y2="70" class="chart-grid-line" />
+                                <g id="gni-y-axis-labels"></g>
+                                <g id="gni-paths-group"></g>
+                                <g id="gni-data-points"></g>
+                                <g id="gni-x-axis-labels"></g>
+                            </svg>
+                        </div>
+                        <div class="chart-tooltip" id="gni-chart-tooltip">
+                            <div class="chart-tooltip-date" id="gni-tooltip-date"></div>
+                            <div id="gni-tooltip-content"></div>
+                        </div>
                     </main>
                 </div>
             </div>
@@ -434,10 +539,45 @@
                             <li onclick="switchProduct('global-stocks')">Global Stocks</li>
                         </ul>
                     </aside>
-                    <main class="tool-workspace" style="display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; min-height:400px;">
-                        <i class="fas fa-exchange-alt" style="font-size:3rem; color:#333; margin-bottom:1.5rem;"></i>
-                        <h2 style="margin-bottom:0.5rem;">Export x Import</h2>
-                        <p style="color:var(--text-sub);">무역 데이터를 로드하고 있습니다...</p>
+                    <main class="tool-workspace">
+                        <div class="chart-header">
+                            <div class="chart-info">
+                                <h2 class="chart-title" id="trade-chart-main-title">Export x Import</h2>
+                                <div class="chart-value-container">
+                                    <span class="chart-value" id="trade-chart-main-value">-</span>
+                                </div>
+                            </div>
+                            <div class="chart-stats">
+                                <div class="stat-item"><span class="stat-label">High</span><span class="stat-value" id="trade-stat-high">-</span></div>
+                                <div class="stat-item"><span class="stat-label">Low</span><span class="stat-value" id="trade-stat-low">-</span></div>
+                                <div class="stat-item"><span class="stat-label">Average</span><span class="stat-value" id="trade-stat-average">-</span></div>
+                            </div>
+                        </div>
+                        <div class="chart-controls">
+                            <div class="date-range-control">
+                                <input type="date" class="date-input" id="trade-start-date" />
+                                <span class="date-separator">~</span>
+                                <input type="date" class="date-input" id="trade-end-date" />
+                            </div>
+                        </div>
+                        <div class="currency-toggle" id="trade-indicator-toggles"></div>
+                        <div class="chart-area" id="trade-chart-container">
+                            <svg class="chart-svg" id="trade-chart-svg" viewBox="0 0 1200 400" preserveAspectRatio="none">
+                                <line x1="0" y1="350" x2="1200" y2="350" class="chart-grid-line" />
+                                <line x1="0" y1="280" x2="1200" y2="280" class="chart-grid-line" />
+                                <line x1="0" y1="210" x2="1200" y2="210" class="chart-grid-line" />
+                                <line x1="0" y1="140" x2="1200" y2="140" class="chart-grid-line" />
+                                <line x1="0" y1="70" x2="1200" y2="70" class="chart-grid-line" />
+                                <g id="trade-y-axis-labels"></g>
+                                <g id="trade-paths-group"></g>
+                                <g id="trade-data-points"></g>
+                                <g id="trade-x-axis-labels"></g>
+                            </svg>
+                        </div>
+                        <div class="chart-tooltip" id="trade-chart-tooltip">
+                            <div class="chart-tooltip-date" id="trade-tooltip-date"></div>
+                            <div id="trade-tooltip-content"></div>
+                        </div>
                     </main>
                 </div>
             </div>
@@ -460,10 +600,45 @@
                             <li onclick="switchProduct('global-stocks')">Global Stocks</li>
                         </ul>
                     </aside>
-                    <main class="tool-workspace" style="display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; min-height:400px;">
-                        <i class="fas fa-users" style="font-size:3rem; color:#333; margin-bottom:1.5rem;"></i>
-                        <h2 style="margin-bottom:0.5rem;">Unemployment Rate</h2>
-                        <p style="color:var(--text-sub);">고용 데이터를 로드하고 있습니다...</p>
+                    <main class="tool-workspace">
+                        <div class="chart-header">
+                            <div class="chart-info">
+                                <h2 class="chart-title" id="employment-chart-main-title">Unemployment Rate</h2>
+                                <div class="chart-value-container">
+                                    <span class="chart-value" id="employment-chart-main-value">-</span>
+                                </div>
+                            </div>
+                            <div class="chart-stats">
+                                <div class="stat-item"><span class="stat-label">High</span><span class="stat-value" id="employment-stat-high">-</span></div>
+                                <div class="stat-item"><span class="stat-label">Low</span><span class="stat-value" id="employment-stat-low">-</span></div>
+                                <div class="stat-item"><span class="stat-label">Average</span><span class="stat-value" id="employment-stat-average">-</span></div>
+                            </div>
+                        </div>
+                        <div class="chart-controls">
+                            <div class="date-range-control">
+                                <input type="date" class="date-input" id="employment-start-date" />
+                                <span class="date-separator">~</span>
+                                <input type="date" class="date-input" id="employment-end-date" />
+                            </div>
+                        </div>
+                        <div class="currency-toggle" id="employment-country-chips"></div>
+                        <div class="chart-area" id="employment-chart-container">
+                            <svg class="chart-svg" id="employment-chart-svg" viewBox="0 0 1200 400" preserveAspectRatio="none">
+                                <line x1="0" y1="350" x2="1200" y2="350" class="chart-grid-line" />
+                                <line x1="0" y1="280" x2="1200" y2="280" class="chart-grid-line" />
+                                <line x1="0" y1="210" x2="1200" y2="210" class="chart-grid-line" />
+                                <line x1="0" y1="140" x2="1200" y2="140" class="chart-grid-line" />
+                                <line x1="0" y1="70" x2="1200" y2="70" class="chart-grid-line" />
+                                <g id="employment-y-axis-labels"></g>
+                                <g id="employment-paths-group"></g>
+                                <g id="employment-data-points"></g>
+                                <g id="employment-x-axis-labels"></g>
+                            </svg>
+                        </div>
+                        <div class="chart-tooltip" id="employment-chart-tooltip">
+                            <div class="chart-tooltip-date" id="employment-tooltip-date"></div>
+                            <div id="employment-tooltip-content"></div>
+                        </div>
                     </main>
                 </div>
             </div>
@@ -486,10 +661,45 @@
                             <li onclick="switchProduct('global-stocks')">Global Stocks</li>
                         </ul>
                     </aside>
-                    <main class="tool-workspace" style="display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; min-height:400px;">
-                        <i class="fas fa-chart-line" style="font-size:3rem; color:#333; margin-bottom:1.5rem;"></i>
-                        <h2 style="margin-bottom:0.5rem;">Economy Growth Rate</h2>
-                        <p style="color:var(--text-sub);">경제성장률 데이터를 로드하고 있습니다...</p>
+                    <main class="tool-workspace">
+                        <div class="chart-header">
+                            <div class="chart-info">
+                                <h2 class="chart-title" id="gdp-growth-chart-main-title">Economy Growth Rate</h2>
+                                <div class="chart-value-container">
+                                    <span class="chart-value" id="gdp-growth-chart-main-value">-</span>
+                                </div>
+                            </div>
+                            <div class="chart-stats">
+                                <div class="stat-item"><span class="stat-label">High</span><span class="stat-value" id="gdp-growth-stat-high">-</span></div>
+                                <div class="stat-item"><span class="stat-label">Low</span><span class="stat-value" id="gdp-growth-stat-low">-</span></div>
+                                <div class="stat-item"><span class="stat-label">Average</span><span class="stat-value" id="gdp-growth-stat-average">-</span></div>
+                            </div>
+                        </div>
+                        <div class="chart-controls">
+                            <div class="date-range-control">
+                                <input type="number" class="date-input" id="gdp-growth-start-date" min="1960" />
+                                <span class="date-separator">~</span>
+                                <input type="number" class="date-input" id="gdp-growth-end-date" min="1960" />
+                            </div>
+                        </div>
+                        <div class="currency-toggle" id="gdp-growth-country-chips"></div>
+                        <div class="chart-area" id="gdp-growth-chart-container">
+                            <svg class="chart-svg" id="gdp-growth-chart-svg" viewBox="0 0 1200 400" preserveAspectRatio="none">
+                                <line x1="0" y1="350" x2="1200" y2="350" class="chart-grid-line" />
+                                <line x1="0" y1="280" x2="1200" y2="280" class="chart-grid-line" />
+                                <line x1="0" y1="210" x2="1200" y2="210" class="chart-grid-line" />
+                                <line x1="0" y1="140" x2="1200" y2="140" class="chart-grid-line" />
+                                <line x1="0" y1="70" x2="1200" y2="70" class="chart-grid-line" />
+                                <g id="gdp-growth-y-axis-labels"></g>
+                                <g id="gdp-growth-paths-group"></g>
+                                <g id="gdp-growth-data-points"></g>
+                                <g id="gdp-growth-x-axis-labels"></g>
+                            </svg>
+                        </div>
+                        <div class="chart-tooltip" id="gdp-growth-chart-tooltip">
+                            <div class="chart-tooltip-date" id="gdp-growth-tooltip-date"></div>
+                            <div id="gdp-growth-tooltip-content"></div>
+                        </div>
                     </main>
                 </div>
             </div>
@@ -512,10 +722,45 @@
                             <li class="selected" onclick="switchProduct('global-stocks')">Global Stocks</li>
                         </ul>
                     </aside>
-                    <main class="tool-workspace" style="display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; min-height:400px;">
-                        <i class="fas fa-chart-area" style="font-size:3rem; color:#333; margin-bottom:1.5rem;"></i>
-                        <h2 style="margin-bottom:0.5rem;">Global Stock Indices</h2>
-                        <p style="color:var(--text-sub);">글로벌 주가지수를 로드하고 있습니다...</p>
+                    <main class="tool-workspace">
+                        <div class="chart-header">
+                            <div class="chart-info">
+                                <h2 class="chart-title" id="global-stocks-chart-main-title">Global Stock Index</h2>
+                                <div class="chart-value-container">
+                                    <span class="chart-value" id="global-stocks-chart-main-value">-</span>
+                                </div>
+                            </div>
+                            <div class="chart-stats">
+                                <div class="stat-item"><span class="stat-label">High</span><span class="stat-value" id="global-stocks-stat-high">-</span></div>
+                                <div class="stat-item"><span class="stat-label">Low</span><span class="stat-value" id="global-stocks-stat-low">-</span></div>
+                                <div class="stat-item"><span class="stat-label">Average</span><span class="stat-value" id="global-stocks-stat-average">-</span></div>
+                            </div>
+                        </div>
+                        <div class="chart-controls">
+                            <div class="date-range-control">
+                                <input type="date" class="date-input" id="global-stocks-start-date" />
+                                <span class="date-separator">~</span>
+                                <input type="date" class="date-input" id="global-stocks-end-date" />
+                            </div>
+                        </div>
+                        <div class="currency-toggle" id="global-stocks-country-chips"></div>
+                        <div class="chart-area" id="global-stocks-chart-container">
+                            <svg class="chart-svg" id="global-stocks-chart-svg" viewBox="0 0 1200 400" preserveAspectRatio="none">
+                                <line x1="0" y1="350" x2="1200" y2="350" class="chart-grid-line" />
+                                <line x1="0" y1="280" x2="1200" y2="280" class="chart-grid-line" />
+                                <line x1="0" y1="210" x2="1200" y2="210" class="chart-grid-line" />
+                                <line x1="0" y1="140" x2="1200" y2="140" class="chart-grid-line" />
+                                <line x1="0" y1="70" x2="1200" y2="70" class="chart-grid-line" />
+                                <g id="global-stocks-y-axis-labels"></g>
+                                <g id="global-stocks-paths-group"></g>
+                                <g id="global-stocks-data-points"></g>
+                                <g id="global-stocks-x-axis-labels"></g>
+                            </svg>
+                        </div>
+                        <div class="chart-tooltip" id="global-stocks-chart-tooltip">
+                            <div class="chart-tooltip-date" id="global-stocks-tooltip-date"></div>
+                            <div id="global-stocks-tooltip-content"></div>
+                        </div>
                     </main>
                 </div>
             </div>
@@ -553,10 +798,12 @@
     <script src="../js/features/market/economy/interest-rate.js"></script>
     <script src="../js/features/market/economy/inflation.js"></script>
     <script src="../js/features/market/economy/gdp.js"></script>
+    <script src="../js/features/market/economy/gdp-per-capita.js"></script>
+    <script src="../js/features/market/economy/gni.js"></script>
     <script src="../js/features/market/economy/trade.js"></script>
-    <script src="../js/features/market/economy/employment.js"></script>
     <script src="../js/features/market/economy/gdp-growth.js"></script>
-    <script src="../js/features/market/economy/international-indicators.js"></script>
+    <script src="../js/features/market/economy/employment.js"></script>
+    <script src="../js/features/market/economy/global-stocks.js"></script>
     <script src="../js/features/market/logistics/logistics.js"></script>
     <script src="../js/main.js"></script>
 </body>
