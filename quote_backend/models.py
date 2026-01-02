@@ -322,6 +322,7 @@ class Forwarder(Base):
     name = Column(String(50), nullable=False)  # 담당자명
     email = Column(String(100), unique=True, nullable=False, index=True)
     phone = Column(String(30), nullable=False)
+    password_hash = Column(String(255), nullable=True)  # bcrypt 해시된 비밀번호
     is_verified = Column(Boolean, default=False)
     
     # Timestamps

@@ -166,9 +166,15 @@ const BiddingList = {
      */
     async submitAuth() {
         const email = document.getElementById('loginEmail').value.trim();
+        const password = document.getElementById('loginPassword').value;
         
         if (!email) {
             alert('이메일을 입력해주세요.');
+            return;
+        }
+        
+        if (!password) {
+            alert('비밀번호를 입력해주세요.');
             return;
         }
 
@@ -176,7 +182,7 @@ const BiddingList = {
             const response = await fetch(`${QUOTE_API_BASE}/api/forwarder/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email })
+                body: JSON.stringify({ email, password })
             });
 
             const data = await response.json();
@@ -186,6 +192,8 @@ const BiddingList = {
                     alert('등록되지 않은 이메일입니다. 신규 등록을 해주세요.');
                     this.showRegisterForm();
                     document.getElementById('regEmail').value = email;
+                } else if (response.status === 401) {
+                    alert('비밀번호가 일치하지 않습니다.');
                 } else {
                     throw new Error(data.detail || 'Login failed');
                 }
@@ -210,17 +218,32 @@ const BiddingList = {
      * Submit registration
      */
     async submitRegister() {
+        const password = document.getElementById('regPassword').value;
+        const passwordConfirm = document.getElementById('regPasswordConfirm').value;
+        
         const formData = {
             company: document.getElementById('regCompany').value.trim(),
             name: document.getElementById('regName').value.trim(),
             business_no: document.getElementById('regBusinessNo').value.trim() || null,
             email: document.getElementById('regEmail').value.trim(),
+            password: password,
             phone: document.getElementById('regPhone').value.trim()
         };
 
         // Validation
-        if (!formData.company || !formData.name || !formData.email || !formData.phone) {
+        if (!formData.company || !formData.name || !formData.email || !formData.password || !formData.phone) {
             alert('필수 항목을 모두 입력해주세요.');
+            return;
+        }
+        
+        // Password validation
+        if (password.length < 6) {
+            alert('비밀번호는 최소 6자 이상이어야 합니다.');
+            return;
+        }
+        
+        if (password !== passwordConfirm) {
+            alert('비밀번호가 일치하지 않습니다.');
             return;
         }
 

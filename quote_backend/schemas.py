@@ -281,11 +281,12 @@ class ForwarderBase(BaseModel):
 
 
 class ForwarderCreate(ForwarderBase):
-    pass
+    password: str = Field(..., min_length=6, max_length=100, description="비밀번호 (최소 6자)")
 
 
 class ForwarderLogin(BaseModel):
     email: str = Field(..., max_length=100)
+    password: str = Field(..., min_length=1, max_length=100, description="비밀번호")
 
 
 class ForwarderResponse(ForwarderBase):

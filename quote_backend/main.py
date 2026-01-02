@@ -30,6 +30,30 @@ from schemas import (
 from pdf_generator import RFQPDFGenerator
 import hashlib
 import secrets
+import bcrypt
+
+
+# ==========================================
+# PASSWORD UTILITY FUNCTIONS
+# ==========================================
+
+def hash_password(password: str) -> str:
+    """
+    비밀번호를 bcrypt로 해시화
+    """
+    salt = bcrypt.gensalt(rounds=12)
+    hashed = bcrypt.hashpw(password.encode('utf-8'), salt)
+    return hashed.decode('utf-8')
+
+
+def verify_password(password: str, password_hash: str) -> bool:
+    """
+    비밀번호 검증
+    """
+    try:
+        return bcrypt.checkpw(password.encode('utf-8'), password_hash.encode('utf-8'))
+    except Exception:
+        return False
 
 # Create tables
 Base.metadata.create_all(bind=engine)
@@ -696,14 +720,17 @@ def register_forwarder(
     """
     Register a new forwarder
     
-    이메일 기반 간단 인증 - 중복 이메일 체크
+    이메일 + 비밀번호 인증 방식
     """
     try:
         # Check if email already exists
         existing = db.query(Forwarder).filter(Forwarder.email == forwarder_data.email).first()
         
         if existing:
-            raise HTTPException(status_code=400, detail="Email already registered")
+            raise HTTPException(status_code=400, detail="이미 등록된 이메일입니다.")
+        
+        # Hash password
+        password_hashed = hash_password(forwarder_data.password)
         
         # Create new forwarder
         forwarder = Forwarder(
@@ -712,7 +739,8 @@ def register_forwarder(
             name=forwarder_data.name,
             email=forwarder_data.email,
             phone=forwarder_data.phone,
-            is_verified=True  # 간단 인증에서는 바로 verified 처리
+            password_hash=password_hashed,
+            is_verified=True
         )
         db.add(forwarder)
         db.commit()
@@ -723,7 +751,7 @@ def register_forwarder(
         
         return ForwarderAuthResponse(
             success=True,
-            message="Registration successful",
+            message="회원가입이 완료되었습니다.",
             forwarder=ForwarderResponse.model_validate(forwarder),
             token=token
         )
@@ -732,7 +760,7 @@ def register_forwarder(
         raise
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"Registration failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"등록 실패: {str(e)}")
 
 
 @app.post("/api/forwarder/login", response_model=ForwarderAuthResponse, tags=["Forwarder"])
@@ -741,21 +769,29 @@ def login_forwarder(
     db: Session = Depends(get_db)
 ):
     """
-    Login forwarder by email (간단 인증)
+    Login forwarder by email and password
     
-    실제 프로덕션에서는 비밀번호 또는 이메일 인증 필요
+    이메일 + 비밀번호 인증 방식
     """
     forwarder = db.query(Forwarder).filter(Forwarder.email == login_data.email).first()
     
     if not forwarder:
-        raise HTTPException(status_code=404, detail="Forwarder not found. Please register first.")
+        raise HTTPException(status_code=404, detail="등록되지 않은 이메일입니다. 회원가입을 해주세요.")
+    
+    # 기존에 password_hash가 없는 사용자 처리 (하위 호환)
+    if not forwarder.password_hash:
+        raise HTTPException(status_code=400, detail="비밀번호가 설정되지 않았습니다. 다시 등록해주세요.")
+    
+    # Verify password
+    if not verify_password(login_data.password, forwarder.password_hash):
+        raise HTTPException(status_code=401, detail="비밀번호가 일치하지 않습니다.")
     
     # Generate token
     token = generate_simple_token(forwarder.email)
     
     return ForwarderAuthResponse(
         success=True,
-        message="Login successful",
+        message="로그인 성공",
         forwarder=ForwarderResponse.model_validate(forwarder),
         token=token
     )
@@ -1364,5 +1400,6 @@ def health_check(db: Session = Depends(get_db)):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8001, reload=True)
+    # reload=False for subprocess compatibility
+    uvicorn.run(app, host="0.0.0.0", port=8001, reload=False)
 

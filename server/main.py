@@ -2,6 +2,9 @@ from flask import Flask, request, jsonify, send_from_directory, send_file
 from flask_cors import CORS
 import requests
 import os
+import sys
+import subprocess
+import signal
 from dotenv import load_dotenv
 from pathlib import Path
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -12,6 +15,11 @@ import bok_backend  # Import the BOK backend module
 import gdelt_backend  # Import the GDELT backend module
 from report_backend import report_bp  # Import the Report backend module
 from news_intelligence.api import news_bp  # Import the News Intelligence module
+from auth.auth_backend import auth_bp  # Import the Auth module
+from auth.models import init_db as init_auth_db  # Initialize auth database
+
+# Global variable to store quote_backend process
+quote_backend_process = None
 
 # Load environment variables
 load_dotenv()
@@ -27,6 +35,10 @@ CORS(app) # Enable CORS for all routes (for development)
 # Register Blueprints
 app.register_blueprint(report_bp)
 app.register_blueprint(news_bp)  # News Intelligence API
+app.register_blueprint(auth_bp)  # User Authentication API
+
+# Initialize Auth Database
+init_auth_db()
 
 # Disable caching for development
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
@@ -640,18 +652,175 @@ scheduler.add_job(
 # 스케줄러 시작
 scheduler.start()
 
-# 애플리케이션 종료 시 스케줄러 종료
-atexit.register(lambda: scheduler.shutdown())
+
+# ==========================================
+# QUOTE BACKEND MANAGEMENT
+# ==========================================
+
+def start_quote_backend():
+    """
+    Start quote_backend FastAPI server as a subprocess
+    """
+    global quote_backend_process
+    
+    quote_backend_dir = BASE_DIR / 'quote_backend'
+    quote_backend_main = quote_backend_dir / 'main.py'
+    
+    if not quote_backend_main.exists():
+        logger.warning(f"quote_backend not found at {quote_backend_main}")
+        return None
+    
+    try:
+        # Check if port 8001 is already in use
+        import socket
+        import time
+        
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        result = sock.connect_ex(('localhost', 8001))
+        sock.close()
+        
+        if result == 0:
+            logger.info("Quote Backend already running on port 8001")
+            return None
+        
+        # Start quote_backend as subprocess
+        logger.info("Starting Quote Backend on port 8001...")
+        
+        # Use the same Python interpreter
+        python_exe = sys.executable
+        
+        # Log file for Quote Backend output
+        log_file = BASE_DIR / 'quote_backend' / 'server.log'
+        
+        # Start subprocess with proper flags for Windows
+        if sys.platform == 'win32':
+            # Open log file for writing
+            log_handle = open(log_file, 'w')
+            quote_backend_process = subprocess.Popen(
+                [python_exe, str(quote_backend_main)],
+                cwd=str(quote_backend_dir),
+                stdout=log_handle,
+                stderr=subprocess.STDOUT,
+                creationflags=subprocess.CREATE_NEW_PROCESS_GROUP
+            )
+        else:
+            log_handle = open(log_file, 'w')
+            quote_backend_process = subprocess.Popen(
+                [python_exe, str(quote_backend_main)],
+                cwd=str(quote_backend_dir),
+                stdout=log_handle,
+                stderr=subprocess.STDOUT,
+                preexec_fn=os.setsid
+            )
+        
+        # Wait for the server to start (uvicorn needs a moment)
+        max_wait = 10
+        for i in range(max_wait):
+            time.sleep(1)
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            result = sock.connect_ex(('localhost', 8001))
+            sock.close()
+            
+            if result == 0:
+                logger.info(f"Quote Backend started successfully (PID: {quote_backend_process.pid})")
+                return quote_backend_process
+        
+        # If we get here, server didn't start
+        logger.warning(f"Quote Backend may not have started properly. Check {log_file}")
+        return quote_backend_process
+        
+    except Exception as e:
+        logger.error(f"Failed to start Quote Backend: {e}")
+        return None
+
+
+def stop_quote_backend():
+    """
+    Stop the quote_backend subprocess
+    """
+    global quote_backend_process
+    
+    if quote_backend_process:
+        try:
+            logger.info("Stopping Quote Backend...")
+            
+            if sys.platform == 'win32':
+                # Windows: terminate the process
+                quote_backend_process.terminate()
+            else:
+                # Unix: send SIGTERM to process group
+                os.killpg(os.getpgid(quote_backend_process.pid), signal.SIGTERM)
+            
+            quote_backend_process.wait(timeout=5)
+            logger.info("Quote Backend stopped successfully")
+            
+        except subprocess.TimeoutExpired:
+            logger.warning("Quote Backend did not stop gracefully, forcing kill...")
+            quote_backend_process.kill()
+        except Exception as e:
+            logger.error(f"Error stopping Quote Backend: {e}")
+        finally:
+            quote_backend_process = None
+
+
+def run_quote_seed_if_needed():
+    """
+    Run seed_data.py if the database is empty
+    """
+    quote_backend_dir = BASE_DIR / 'quote_backend'
+    quote_db = quote_backend_dir / 'quote.db'
+    seed_script = quote_backend_dir / 'seed_data.py'
+    
+    # If DB doesn't exist or is very small, run seed
+    if not quote_db.exists() or quote_db.stat().st_size < 10000:
+        if seed_script.exists():
+            logger.info("Running quote_backend seed_data.py...")
+            try:
+                result = subprocess.run(
+                    [sys.executable, str(seed_script)],
+                    cwd=str(quote_backend_dir),
+                    capture_output=True,
+                    text=True,
+                    timeout=30
+                )
+                if result.returncode == 0:
+                    logger.info("Quote Backend seed data initialized successfully")
+                else:
+                    logger.warning(f"Seed data warning: {result.stderr}")
+            except Exception as e:
+                logger.warning(f"Failed to run seed_data.py: {e}")
+
+
+# 애플리케이션 종료 시 정리
+def cleanup():
+    """Cleanup on application exit"""
+    scheduler.shutdown()
+    stop_quote_backend()
+
+atexit.register(cleanup)
+
 
 if __name__ == '__main__':
-    print("="*50)
-    print("Starting Flask Server on http://localhost:5000")
-    print(f"BASE_DIR: {BASE_DIR.resolve()}")
-    print(f"HTML file exists: {(BASE_DIR / 'frontend' / 'ai_studio_code_F2.html').exists()}")
-    print("GDELT auto-update: Every 15 minutes")
-    print("News Intelligence: Every 1 hour")
-    print("GDELT data path:", gdelt_backend.get_gdelt_base_path())
-    print("="*50)
+    print("="*60)
+    print("  AAL - All About Logistics Server")
+    print("="*60)
+    print()
+    
+    # Initialize seed data if needed
+    run_quote_seed_if_needed()
+    
+    # Start Quote Backend (FastAPI on port 8001)
+    start_quote_backend()
+    
+    print()
+    print("  [Main Server]     http://localhost:5000  (Flask)")
+    print("  [Quote Backend]   http://localhost:8001  (FastAPI)")
+    print()
+    print(f"  BASE_DIR: {BASE_DIR.resolve()}")
+    print(f"  GDELT auto-update: Every 15 minutes")
+    print(f"  News Intelligence: Every 1 hour")
+    print()
+    print("="*60)
     
     # 서버 시작 시 즉시 GDELT 데이터 업데이트 시도
     try:
@@ -665,4 +834,5 @@ if __name__ == '__main__':
     except Exception as e:
         logger.warning(f"Initial News Intelligence collection failed: {e}")
     
-    app.run(port=5000, debug=True)
+    # Start Flask server (use_reloader=False to prevent double subprocess)
+    app.run(port=5000, debug=True, use_reloader=False)

@@ -7,13 +7,20 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import os
+from pathlib import Path
 
-# Database URL - Change this for production
-# Local: sqlite:///./quote.db
-# MySQL: mysql+pymysql://user:password@host:3306/quote_db
-# PostgreSQL: postgresql://user:password@host:5432/quote_db
+# Database URL - Use SQLite with absolute path for reliability
+# Get the directory where this file is located
+DB_DIR = Path(__file__).parent
+DB_PATH = DB_DIR / "quote.db"
 
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./quote.db")
+# Force SQLite for local development (ignore DATABASE_URL env var if it's PostgreSQL)
+env_db_url = os.getenv("DATABASE_URL", "")
+if env_db_url.startswith("postgresql") or env_db_url.startswith("mysql"):
+    # Use SQLite instead for local development
+    DATABASE_URL = f"sqlite:///{DB_PATH}"
+else:
+    DATABASE_URL = env_db_url if env_db_url else f"sqlite:///{DB_PATH}"
 
 # Create engine with appropriate settings
 if DATABASE_URL.startswith("sqlite"):

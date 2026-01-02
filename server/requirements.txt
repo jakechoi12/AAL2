@@ -8,3 +8,4 @@ pydantic
 feedparser
 openai
 psycopg2-binary
+bcrypt
