@@ -1,0 +1,533 @@
+/* =====================================================
+   Unified Card Components - AAL Design System
+   통합 카드 컴포넌트 시스템
+   ===================================================== */
+
+/* ================================================
+   BASE CARD
+   ================================================ */
+.card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    transition: var(--transition-base);
+    overflow: hidden;
+}
+
+.card:hover {
+    border-color: var(--border-color-strong);
+}
+
+/* Card Variants */
+.card--elevated {
+    box-shadow: var(--shadow-md);
+}
+
+.card--elevated:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+}
+
+.card--bordered {
+    border-width: 2px;
+}
+
+.card--interactive {
+    cursor: pointer;
+}
+
+.card--interactive:hover {
+    background: var(--card-bg-hover);
+    border-color: var(--accent-color);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+}
+
+.card--compact .card-body {
+    padding: var(--space-md);
+}
+
+.card--flush {
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+}
+
+/* Accent Border Variants */
+.card--accent-left {
+    border-left: 3px solid var(--accent-color);
+}
+
+.card--accent-top {
+    border-top: 3px solid var(--accent-color);
+}
+
+/* Status Variants */
+.card--success {
+    border-left: 3px solid var(--color-success);
+}
+
+.card--warning {
+    border-left: 3px solid var(--color-warning);
+}
+
+.card--error {
+    border-left: 3px solid var(--color-error);
+}
+
+.card--info {
+    border-left: 3px solid var(--color-info);
+}
+
+/* ================================================
+   CARD HEADER
+   ================================================ */
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-lg);
+    border-bottom: 1px solid var(--border-color);
+    gap: var(--space-md);
+}
+
+.card-header--compact {
+    padding: var(--space-md);
+}
+
+.card-header--flush {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.card-title {
+    font-size: var(--text-lg);
+    font-weight: var(--font-semibold);
+    color: var(--text-main);
+    margin: 0;
+    line-height: var(--leading-tight);
+}
+
+.card-title--lg {
+    font-size: var(--text-xl);
+}
+
+.card-title--sm {
+    font-size: var(--text-base);
+}
+
+.card-subtitle {
+    font-size: var(--text-sm);
+    color: var(--text-sub);
+    margin-top: var(--space-xs);
+    font-weight: var(--font-normal);
+}
+
+.card-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    flex-shrink: 0;
+}
+
+/* ================================================
+   CARD BODY
+   ================================================ */
+.card-body {
+    padding: var(--space-lg);
+}
+
+.card-body--sm {
+    padding: var(--space-md);
+}
+
+.card-body--lg {
+    padding: var(--space-xl);
+}
+
+.card-body--flush {
+    padding: 0;
+}
+
+/* ================================================
+   CARD FOOTER
+   ================================================ */
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-md) var(--space-lg);
+    border-top: 1px solid var(--border-color);
+    background: rgba(255, 255, 255, 0.02);
+    gap: var(--space-md);
+}
+
+.card-footer--compact {
+    padding: var(--space-sm) var(--space-md);
+}
+
+/* ================================================
+   STAT CARD
+   ================================================ */
+.stat-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    transition: var(--transition-base);
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    opacity: 0.8;
+    background: var(--accent-color);
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--border-color-strong);
+    box-shadow: var(--shadow-md);
+}
+
+.stat-card__label {
+    font-size: var(--text-sm);
+    color: var(--text-sub);
+    margin-bottom: var(--space-sm);
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.stat-card__value {
+    font-size: var(--text-3xl);
+    font-weight: var(--font-bold);
+    line-height: var(--leading-tight);
+    color: var(--text-main);
+}
+
+.stat-card__change {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    font-size: var(--text-sm);
+    margin-top: var(--space-sm);
+}
+
+.stat-card__change--up {
+    color: var(--color-success);
+}
+
+.stat-card__change--down {
+    color: var(--color-error);
+}
+
+/* Stat Card Color Variants */
+.stat-card--purple::before { background: #a855f7; }
+.stat-card--purple .stat-card__value { color: #a855f7; }
+
+.stat-card--blue::before { background: var(--accent-color); }
+.stat-card--blue .stat-card__value { color: var(--accent-color); }
+
+.stat-card--amber::before { background: #f59e0b; }
+.stat-card--amber .stat-card__value { color: #f59e0b; }
+
+.stat-card--green::before { background: #22c55e; }
+.stat-card--green .stat-card__value { color: #22c55e; }
+
+.stat-card--gray::before { background: #6b7280; }
+.stat-card--gray .stat-card__value { color: #6b7280; }
+
+/* ================================================
+   FEATURE CARD
+   ================================================ */
+.feature-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    padding: var(--space-xl);
+    text-align: center;
+    transition: var(--transition-base);
+}
+
+.feature-card:hover {
+    border-color: var(--accent-color);
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+.feature-card__icon {
+    width: 64px;
+    height: 64px;
+    border-radius: var(--radius-xl);
+    background: var(--accent-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto var(--space-lg);
+}
+
+.feature-card__icon i {
+    font-size: var(--text-2xl);
+    color: var(--accent-color);
+}
+
+.feature-card__title {
+    font-size: var(--text-xl);
+    font-weight: var(--font-bold);
+    margin-bottom: var(--space-sm);
+    color: var(--text-main);
+}
+
+.feature-card__desc {
+    font-size: var(--text-sm);
+    color: var(--text-sub);
+    line-height: var(--leading-relaxed);
+}
+
+/* ================================================
+   PANEL (Sidebar Panels)
+   ================================================ */
+.panel {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+}
+
+.panel-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    font-size: var(--text-sm);
+    font-weight: var(--font-bold);
+    color: var(--text-sub);
+    margin-bottom: var(--space-lg);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.panel-header i {
+    font-size: var(--text-base);
+    color: var(--accent-color);
+}
+
+.panel-body {
+    /* No padding by default, use content spacing */
+}
+
+.panel--compact {
+    padding: var(--space-md);
+}
+
+.panel--flush {
+    padding: 0;
+}
+
+/* ================================================
+   WORKSPACE CARD (Tool/Chart Areas)
+   ================================================ */
+.workspace {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    padding: var(--space-xl);
+    position: relative;
+}
+
+.workspace-header {
+    margin-bottom: var(--space-xl);
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: var(--space-lg);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: var(--space-lg);
+}
+
+.workspace-title {
+    font-size: var(--text-2xl);
+    font-weight: var(--font-bold);
+    margin-bottom: var(--space-xs);
+}
+
+.workspace-subtitle {
+    font-size: var(--text-sm);
+    color: var(--text-sub);
+}
+
+/* ================================================
+   ALERT CARD
+   ================================================ */
+.alert-card {
+    padding: var(--space-md);
+    border-radius: var(--radius-md);
+    border-left: 3px solid transparent;
+    transition: var(--transition-base);
+    cursor: pointer;
+    margin-bottom: var(--space-xs);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.alert-card:hover {
+    background: rgba(255, 255, 255, 0.05);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.alert-card--extreme { border-left-color: var(--severity-extreme); }
+.alert-card--severe { border-left-color: var(--severity-severe); }
+.alert-card--high { border-left-color: var(--severity-high); }
+.alert-card--moderate { border-left-color: var(--severity-moderate); }
+.alert-card--low { border-left-color: var(--severity-low); }
+
+.alert-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--space-sm);
+}
+
+.alert-card__title {
+    font-size: var(--text-sm);
+    font-weight: var(--font-semibold);
+    color: var(--text-main);
+    line-height: var(--leading-normal);
+}
+
+.alert-card__meta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+}
+
+.alert-card__footer {
+    display: flex;
+    gap: var(--space-sm);
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    margin-top: var(--space-sm);
+}
+
+/* ================================================
+   NEWS CARD
+   ================================================ */
+.news-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--space-xl);
+    transition: var(--transition-base);
+}
+
+.news-card:hover {
+    border-color: var(--accent-color);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+}
+
+.news-card__meta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-md);
+    flex-wrap: wrap;
+}
+
+.news-card__title {
+    font-size: var(--text-xl);
+    font-weight: var(--font-bold);
+    margin-bottom: var(--space-md);
+    line-height: var(--leading-normal);
+    color: var(--text-main);
+}
+
+.news-card__title a:hover {
+    color: var(--accent-color);
+}
+
+.news-card__excerpt {
+    font-size: var(--text-base);
+    color: var(--text-sub);
+    line-height: var(--leading-relaxed);
+    margin-bottom: var(--space-lg);
+}
+
+.news-card__footer {
+    display: flex;
+    align-items: center;
+    gap: var(--space-lg);
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--border-color);
+}
+
+/* ================================================
+   CARD GRID LAYOUTS
+   ================================================ */
+.card-grid {
+    display: grid;
+    gap: var(--space-lg);
+}
+
+.card-grid--2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.card-grid--3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.card-grid--4 {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.card-grid--5 {
+    grid-template-columns: repeat(5, 1fr);
+}
+
+.card-grid--auto {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.card-grid--auto-sm {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+/* Responsive Grid */
+@media (max-width: 1400px) {
+    .card-grid--5 {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 1200px) {
+    .card-grid--4,
+    .card-grid--5 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 900px) {
+    .card-grid--3 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .card-grid--2,
+    .card-grid--3,
+    .card-grid--4,
+    .card-grid--5 {
+        grid-template-columns: 1fr;
+    }
+}

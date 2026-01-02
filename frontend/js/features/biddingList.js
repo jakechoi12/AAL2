@@ -416,9 +416,7 @@ const BiddingList = {
      * Render a table row
      */
     renderRow(item) {
-        const isUrgent = item.deadline && this.isWithin24Hours(item.deadline);
         const isExpired = item.deadline && this.isDeadlinePassed(item.deadline);
-        const deadlineFormatted = item.deadline ? this.formatDateTime(item.deadline) : '-';
         
         // Determine effective status (마감일이 지났으면 expired로 처리)
         let effectiveStatus = item.status;
@@ -458,6 +456,11 @@ const BiddingList = {
         // 마감 여부에 따른 행 클래스
         const rowClass = isExpired ? 'expired-row' : '';
 
+        // Format average bid price
+        const avgPriceFormatted = item.avg_bid_price 
+            ? `$${item.avg_bid_price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+            : '-';
+
         return `
             <tr class="${rowClass}">
                 <td>
@@ -480,12 +483,14 @@ const BiddingList = {
                     </span>
                 </td>
                 <td>${this.formatDate(item.etd)}</td>
-                <td class="deadline-cell ${isExpired ? 'expired' : (isUrgent ? 'urgent' : '')}">${deadlineFormatted}${isExpired ? ' <span class="expired-label">마감</span>' : ''}</td>
                 <td>
                     <span class="status-badge ${effectiveStatus}">${this.getStatusLabel(effectiveStatus)}</span>
                 </td>
                 <td>
                     <span class="bid-count">${item.bid_count}</span>
+                </td>
+                <td>
+                    <span class="avg-price">${avgPriceFormatted}</span>
                 </td>
                 <td>${actionBtn}</td>
             </tr>
@@ -630,10 +635,11 @@ const BiddingList = {
         // Cargo Details Table (동적 컬럼)
         this.populateCargoDetailsTable(detail);
 
-        // Transport Section - ETD 표시 (readonly)
+        // Transport Section - ETD 표시 (datetime-local 형식)
         const bidETD = document.getElementById('bidETD');
         if (bidETD) {
-            bidETD.value = detail.etd ? this.formatDate(detail.etd) : '-';
+            // datetime-local 형식으로 변환 (YYYY-MM-DDTHH:MM)
+            bidETD.value = detail.etd ? this.formatDateTimeLocal(detail.etd) : '';
         }
 
         // Carrier label 동적 변경
@@ -669,7 +675,24 @@ const BiddingList = {
     },
 
     /**
-     * Calculate Transit Time
+     * Format datetime for datetime-local input (YYYY-MM-DDTHH:MM)
+     */
+    formatDateTimeLocal(dateString) {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) return '';
+        
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        
+        return `${year}-${month}-${day}T${hours}:${minutes}`;
+    },
+
+    /**
+     * Calculate Transit Time (일 단위)
      */
     calculateTT() {
         const etdEl = document.getElementById('bidETD');
@@ -678,14 +701,18 @@ const BiddingList = {
         
         if (!etdEl || !etaEl || !ttEl) return;
         
-        const etdValue = this.currentBidding?.etd;
+        // ETD는 이제 입력 가능하므로 input 값 사용
+        const etdValue = etdEl.value;
         const etaValue = etaEl.value;
         
         if (etdValue && etaValue) {
             const etd = new Date(etdValue);
             const eta = new Date(etaValue);
-            const days = Math.ceil((eta - etd) / (1000 * 60 * 60 * 24));
-            ttEl.value = days > 0 ? `${days} Days` : '-';
+            // 일 단위 계산 (시간 무시, 날짜만 비교)
+            const etdDate = new Date(etd.getFullYear(), etd.getMonth(), etd.getDate());
+            const etaDate = new Date(eta.getFullYear(), eta.getMonth(), eta.getDate());
+            const days = Math.round((etaDate - etdDate) / (1000 * 60 * 60 * 24));
+            ttEl.value = days >= 0 ? `${days}` : '-';
         } else {
             ttEl.value = '-';
         }
@@ -921,12 +948,19 @@ const BiddingList = {
                 this.bidSaved = true; // 기존 데이터가 있으면 저장된 상태
                 
                 // Transport Details
+                const bidETD = document.getElementById('bidETD');
                 const bidETA = document.getElementById('bidETA');
                 const bidCarrier = document.getElementById('bidCarrier');
                 const bidValidity = document.getElementById('bidValidity');
                 const bidRemark = document.getElementById('bidRemark');
                 
-                if (bidETA) bidETA.value = detail.my_bid.eta ? detail.my_bid.eta.split('T')[0] : '';
+                // ETD: 포워더가 제안한 ETD 또는 원본 ETD (datetime-local 형식)
+                if (bidETD) {
+                    const etdValue = detail.my_bid.etd || detail.etd;
+                    bidETD.value = etdValue ? this.formatDateTimeLocal(etdValue) : '';
+                }
+                // ETA: datetime-local 형식으로 표시
+                if (bidETA) bidETA.value = detail.my_bid.eta ? this.formatDateTimeLocal(detail.my_bid.eta) : '';
                 if (bidCarrier) bidCarrier.value = detail.my_bid.carrier || '';
                 if (bidValidity) bidValidity.value = detail.my_bid.validity_date ? detail.my_bid.validity_date.split('T')[0] : '';
                 if (bidRemark) bidRemark.value = detail.my_bid.remark || '';
@@ -1008,13 +1042,16 @@ const BiddingList = {
                     }
                 ];
                 
-                // Clear transport fields
+                // Clear transport fields (ETD는 원본 값 유지)
+                const bidETD = document.getElementById('bidETD');
                 const bidETA = document.getElementById('bidETA');
                 const bidCarrier = document.getElementById('bidCarrier');
                 const bidValidity = document.getElementById('bidValidity');
                 const bidRemark = document.getElementById('bidRemark');
                 const bidTT = document.getElementById('bidTT');
                 
+                // ETD는 원본 요청 값으로 초기화 (수정 가능)
+                if (bidETD) bidETD.value = detail.etd ? this.formatDateTimeLocal(detail.etd) : '';
                 if (bidETA) bidETA.value = '';
                 if (bidCarrier) bidCarrier.value = '';
                 if (bidValidity) bidValidity.value = '';
@@ -1344,6 +1381,7 @@ const BiddingList = {
             local_charge: localCharge || null,
             other_charge: otherCharge || null,
             carrier: document.getElementById('bidCarrier')?.value.trim() || null,
+            etd: document.getElementById('bidETD')?.value || null,  // 포워더 제안 ETD
             eta: document.getElementById('bidETA')?.value || null,
             transit_time: document.getElementById('bidTT')?.value || null,
             validity_date: document.getElementById('bidValidity')?.value || null,

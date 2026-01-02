@@ -1,0 +1,527 @@
+/* =====================================================
+   Unified Button Components - AAL Design System
+   통합 버튼 컴포넌트 시스템
+   ===================================================== */
+
+/* ================================================
+   BASE BUTTON
+   ================================================ */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-lg);
+    font-size: var(--text-sm);
+    font-weight: var(--font-semibold);
+    font-family: inherit;
+    line-height: var(--leading-tight);
+    border-radius: var(--radius-md);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: var(--transition-base);
+    text-decoration: none;
+    white-space: nowrap;
+    user-select: none;
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.btn i {
+    font-size: 1em;
+}
+
+/* ================================================
+   BUTTON VARIANTS
+   ================================================ */
+
+/* Primary Button */
+.btn--primary {
+    background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-hover) 100%);
+    color: white;
+    border-color: var(--accent-color);
+    box-shadow: var(--shadow-sm);
+}
+
+.btn--primary:hover {
+    background: linear-gradient(135deg, var(--accent-hover) 0%, #1d4ed8 100%);
+    box-shadow: var(--shadow-md), var(--shadow-glow);
+    transform: translateY(-1px);
+}
+
+.btn--primary:active {
+    transform: translateY(0);
+}
+
+/* Secondary Button */
+.btn--secondary {
+    background: transparent;
+    color: var(--text-main);
+    border-color: var(--border-color);
+}
+
+.btn--secondary:hover {
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+    background: var(--accent-light);
+}
+
+/* Ghost Button (Minimal) */
+.btn--ghost {
+    background: transparent;
+    color: var(--text-sub);
+    border-color: transparent;
+}
+
+.btn--ghost:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-main);
+}
+
+/* Outline Button */
+.btn--outline {
+    background: transparent;
+    color: var(--accent-color);
+    border-color: var(--accent-color);
+}
+
+.btn--outline:hover {
+    background: var(--accent-color);
+    color: white;
+}
+
+/* Soft Button */
+.btn--soft {
+    background: var(--accent-light);
+    color: var(--accent-color);
+    border-color: transparent;
+}
+
+.btn--soft:hover {
+    background: rgba(59, 130, 246, 0.25);
+}
+
+/* ================================================
+   STATUS VARIANTS
+   ================================================ */
+.btn--success {
+    background: var(--color-success);
+    color: white;
+    border-color: var(--color-success);
+}
+
+.btn--success:hover {
+    background: #16a34a;
+}
+
+.btn--success.btn--soft {
+    background: var(--color-success-bg);
+    color: var(--color-success);
+}
+
+.btn--warning {
+    background: var(--color-warning);
+    color: white;
+    border-color: var(--color-warning);
+}
+
+.btn--warning:hover {
+    background: #d97706;
+}
+
+.btn--warning.btn--soft {
+    background: var(--color-warning-bg);
+    color: var(--color-warning);
+}
+
+.btn--error,
+.btn--danger {
+    background: var(--color-error);
+    color: white;
+    border-color: var(--color-error);
+}
+
+.btn--error:hover,
+.btn--danger:hover {
+    background: #dc2626;
+}
+
+.btn--error.btn--soft,
+.btn--danger.btn--soft {
+    background: var(--color-error-bg);
+    color: var(--color-error);
+}
+
+/* ================================================
+   SIZE VARIANTS
+   ================================================ */
+.btn--xs {
+    padding: var(--space-xs) var(--space-sm);
+    font-size: var(--text-xs);
+    border-radius: var(--radius-sm);
+}
+
+.btn--sm {
+    padding: var(--space-xs) var(--space-md);
+    font-size: var(--text-sm);
+}
+
+.btn--lg {
+    padding: var(--space-md) var(--space-xl);
+    font-size: var(--text-base);
+    border-radius: var(--radius-lg);
+}
+
+.btn--xl {
+    padding: var(--space-lg) var(--space-2xl);
+    font-size: var(--text-lg);
+    border-radius: var(--radius-lg);
+}
+
+/* Icon Only Button */
+.btn--icon {
+    padding: var(--space-sm);
+    width: 36px;
+    height: 36px;
+}
+
+.btn--icon.btn--sm {
+    width: 28px;
+    height: 28px;
+    padding: var(--space-xs);
+}
+
+.btn--icon.btn--lg {
+    width: 44px;
+    height: 44px;
+    padding: var(--space-md);
+}
+
+/* Full Width Button */
+.btn--block {
+    width: 100%;
+}
+
+/* Rounded Button */
+.btn--rounded {
+    border-radius: var(--radius-full);
+}
+
+/* ================================================
+   CTA BUTTONS (Call to Action)
+   ================================================ */
+.cta-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-md) var(--space-xl);
+    font-size: var(--text-lg);
+    font-weight: var(--font-semibold);
+    border-radius: var(--radius-full);
+    text-decoration: none;
+    transition: var(--transition-base);
+    cursor: pointer;
+    border: none;
+}
+
+.cta-btn--primary {
+    background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-hover) 100%);
+    color: white;
+    box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
+}
+
+.cta-btn--primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(59, 130, 246, 0.5);
+}
+
+.cta-btn--secondary {
+    background: transparent;
+    color: var(--text-main);
+    border: 2px solid var(--border-color);
+}
+
+.cta-btn--secondary:hover {
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+}
+
+/* ================================================
+   CHIP / TAG BUTTONS
+   ================================================ */
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-xs) var(--space-md);
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    border-radius: var(--radius-sm);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    color: var(--text-sub);
+    cursor: pointer;
+    transition: var(--transition-base);
+}
+
+.chip:hover {
+    border-color: var(--accent-color);
+    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.chip.active,
+.chip--active {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+    color: white;
+}
+
+.chip--rounded {
+    border-radius: var(--radius-full);
+}
+
+.chip--sm {
+    padding: 2px var(--space-sm);
+    font-size: var(--text-xs);
+}
+
+.chip--lg {
+    padding: var(--space-sm) var(--space-lg);
+    font-size: var(--text-base);
+}
+
+/* ================================================
+   TAB BUTTONS
+   ================================================ */
+.tab-btn {
+    padding: var(--space-sm) var(--space-lg);
+    font-size: var(--text-sm);
+    font-weight: var(--font-semibold);
+    color: var(--text-sub);
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: var(--transition-base);
+}
+
+.tab-btn:hover {
+    border-color: var(--accent-color);
+    color: var(--text-main);
+}
+
+.tab-btn.active,
+.tab-btn--active {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+    color: white;
+}
+
+/* Tab Container */
+.tab-container {
+    display: flex;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+}
+
+/* ================================================
+   PERIOD / TOGGLE BUTTONS
+   ================================================ */
+.period-btn {
+    padding: var(--space-xs) var(--space-md);
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    color: var(--text-sub);
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.period-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-main);
+}
+
+.period-btn.active,
+.period-btn--active {
+    background: var(--accent-color);
+    color: white;
+}
+
+/* Period Buttons Container */
+.period-buttons {
+    display: flex;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius-md);
+    padding: var(--space-xs);
+    gap: var(--space-xs);
+}
+
+/* ================================================
+   ACTION BUTTONS (Table/List Actions)
+   ================================================ */
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-xs) var(--space-md);
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition-fast);
+    border: 1px solid transparent;
+    background: transparent;
+}
+
+.action-btn--primary {
+    background: var(--accent-color);
+    color: white;
+}
+
+.action-btn--primary:hover {
+    background: var(--accent-hover);
+}
+
+.action-btn--secondary {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-main);
+    border-color: var(--border-color);
+}
+
+.action-btn--secondary:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.action-btn--success {
+    background: var(--color-success-bg);
+    color: var(--color-success);
+    border-color: rgba(34, 197, 94, 0.3);
+}
+
+.action-btn--success:hover {
+    background: rgba(34, 197, 94, 0.25);
+}
+
+.action-btn--danger {
+    background: var(--color-error-bg);
+    color: var(--color-error);
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.action-btn--danger:hover {
+    background: rgba(239, 68, 68, 0.25);
+}
+
+/* ================================================
+   BUTTON GROUPS
+   ================================================ */
+.btn-group {
+    display: inline-flex;
+    gap: 0;
+}
+
+.btn-group .btn {
+    border-radius: 0;
+}
+
+.btn-group .btn:first-child {
+    border-radius: var(--radius-md) 0 0 var(--radius-md);
+}
+
+.btn-group .btn:last-child {
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+
+.btn-group .btn:not(:last-child) {
+    border-right: none;
+}
+
+/* Spaced Button Group */
+.btn-group--spaced {
+    gap: var(--space-sm);
+}
+
+.btn-group--spaced .btn {
+    border-radius: var(--radius-md);
+}
+
+.btn-group--spaced .btn:not(:last-child) {
+    border-right: 1px solid var(--border-color);
+}
+
+/* ================================================
+   FILTER INPUTS (Select/Input styled as buttons)
+   ================================================ */
+.filter-select,
+.filter-input {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: var(--space-sm) var(--space-md);
+    color: var(--text-main);
+    font-size: var(--text-sm);
+    font-family: inherit;
+    min-width: 140px;
+    transition: var(--transition-base);
+}
+
+.filter-select:focus,
+.filter-input:focus {
+    border-color: var(--accent-color);
+    outline: none;
+    box-shadow: 0 0 0 2px var(--accent-light);
+}
+
+.filter-input::placeholder {
+    color: var(--text-muted);
+}
+
+/* ================================================
+   LOADING STATE
+   ================================================ */
+.btn--loading {
+    position: relative;
+    pointer-events: none;
+    color: transparent !important;
+}
+
+.btn--loading::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border: 2px solid transparent;
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: btn-spin 0.6s linear infinite;
+}
+
+@keyframes btn-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ================================================
+   RESPONSIVE
+   ================================================ */
+@media (max-width: 768px) {
+    .cta-btn {
+        padding: var(--space-sm) var(--space-lg);
+        font-size: var(--text-base);
+    }
+    
+    .btn--lg {
+        padding: var(--space-sm) var(--space-lg);
+    }
+    
+    .btn-group {
+        flex-wrap: wrap;
+    }
+}

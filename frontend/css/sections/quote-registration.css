@@ -37,7 +37,7 @@
 }
 
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: 'Inter', 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
     font-size: 13px;
     background: var(--qr-bg);
     color: var(--qr-text-primary);
@@ -112,6 +112,7 @@ body {
 .qr-container {
     display: grid;
     grid-template-columns: 220px 1fr 260px;
+    padding-top: 80px; /* 플랫폼 공통 헤더 높이 */
     gap: 1.5rem;
     padding: 1.5rem;
     max-width: 1800px;

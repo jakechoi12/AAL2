@@ -951,6 +951,17 @@ def get_bidding_list(
             Bid.status == "submitted"
         ).count()
         
+        # Calculate average bid price
+        avg_bid_price = None
+        if bid_count > 0:
+            from sqlalchemy import func
+            avg_result = db.query(func.avg(Bid.total_price)).filter(
+                Bid.bidding_id == b.id,
+                Bid.status == "submitted",
+                Bid.total_price.isnot(None)
+            ).scalar()
+            avg_bid_price = round(float(avg_result), 2) if avg_result else None
+        
         # Check if forwarder has already bid
         my_bid_status = None
         if forwarder_id:
@@ -979,6 +990,7 @@ def get_bidding_list(
             deadline=b.deadline,
             status=effective_status,
             bid_count=bid_count,
+            avg_bid_price=avg_bid_price,
             my_bid_status=my_bid_status
         ))
     

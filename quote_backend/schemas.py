@@ -369,6 +369,7 @@ class BiddingListItem(BaseModel):
     deadline: Optional[datetime] = None
     status: str
     bid_count: int = 0
+    avg_bid_price: Optional[float] = None  # 평균 입찰가
     my_bid_status: Optional[str] = None  # 포워더 본인의 입찰 상태
     
     class Config:

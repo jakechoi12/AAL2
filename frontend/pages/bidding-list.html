@@ -13,10 +13,15 @@
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Styles -->
+    <!-- Styles - Design System -->
     <link rel="stylesheet" href="../css/variables.css">
     <link rel="stylesheet" href="../css/base.css">
+    <link rel="stylesheet" href="../css/utilities.css">
+    <!-- Components -->
     <link rel="stylesheet" href="../css/components/header.css">
+    <link rel="stylesheet" href="../css/components/unified-cards.css">
+    <link rel="stylesheet" href="../css/components/unified-buttons.css">
+    <!-- Sections -->
     <link rel="stylesheet" href="../css/sections/bidding-list.css">
 </head>
 <body>
@@ -139,9 +144,9 @@
                         <th>구간</th>
                         <th>운송타입</th>
                         <th>ETD</th>
-                        <th>마감일시</th>
                         <th>상태</th>
                         <th>입찰기업</th>
+                        <th>평균 입찰가</th>
                         <th>입찰참여</th>
                     </tr>
                 </thead>
@@ -425,19 +430,19 @@
                     <h4 class="qr-section-title">Transport Details</h4>
                     <div class="transport-grid">
                         <div class="transport-item">
-                            <label class="transport-label">ETD</label>
-                            <input type="text" class="transport-input readonly" id="bidETD" readonly>
+                            <label class="transport-label">ETD (제안)</label>
+                            <input type="datetime-local" class="transport-input" id="bidETD" onchange="BiddingList.calculateTT()">
                         </div>
                         <div class="transport-item">
                             <label class="transport-label">ETA (예정)</label>
-                            <input type="date" class="transport-input" id="bidETA" onchange="BiddingList.calculateTT()">
+                            <input type="datetime-local" class="transport-input" id="bidETA" onchange="BiddingList.calculateTT()">
                         </div>
                         <div class="transport-item">
                             <label class="transport-label" id="carrierLabel">Carrier</label>
                             <input type="text" class="transport-input" id="bidCarrier" placeholder="선사/항공사명">
                         </div>
                         <div class="transport-item">
-                            <label class="transport-label">T/T</label>
+                            <label class="transport-label">T/T (일)</label>
                             <input type="text" class="transport-input readonly" id="bidTT" readonly placeholder="자동계산">
                         </div>
                         <div class="transport-item">

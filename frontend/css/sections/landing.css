@@ -1,5 +1,5 @@
 /* =====================================================
-   Landing Page Styles
+   Landing Page Styles - Refactored with Design Tokens
    소개 섹션, 아이콘 플로우, CTA 버튼 전용 스타일
    ===================================================== */
 
@@ -8,12 +8,12 @@
     max-width: 1600px;
     width: 95%;
     margin: 0 auto;
-    padding: 0 2rem;
+    padding: 0 var(--space-xl);
 }
 
 /* --- Section Base Styles --- */
 .landing-section {
-    padding: 6rem 0;
+    padding: var(--space-3xl) 0;
     position: relative;
 }
 
@@ -23,13 +23,13 @@
 
 .landing-section .section-header {
     text-align: center;
-    margin-bottom: 3rem;
+    margin-bottom: var(--space-2xl);
 }
 
 .landing-section .section-title {
-    font-size: 3.5rem;
-    font-weight: 800;
-    margin-bottom: 0.75rem;
+    font-size: var(--text-5xl);
+    font-weight: var(--font-extrabold);
+    margin-bottom: var(--space-sm);
     background: linear-gradient(135deg, var(--text-main) 0%, var(--accent-color) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -37,20 +37,20 @@
 }
 
 .landing-section .section-subtitle {
-    font-size: 0.85rem;
+    font-size: var(--text-sm);
     color: var(--accent-color);
     letter-spacing: 4px;
     text-transform: uppercase;
-    font-weight: 600;
-    margin-top: 0.5rem;
+    font-weight: var(--font-semibold);
+    margin-top: var(--space-sm);
 }
 
 .landing-section .section-description {
     max-width: 900px;
-    margin: 2rem auto 3rem;
+    margin: var(--space-xl) auto var(--space-2xl);
     text-align: center;
-    font-size: 1.2rem;
-    line-height: 1.8;
+    font-size: var(--text-xl);
+    line-height: var(--leading-relaxed);
     color: var(--text-sub);
 }
 
@@ -60,7 +60,7 @@
     justify-content: center;
     align-items: flex-start;
     gap: 0;
-    padding: 3rem 0;
+    padding: var(--space-2xl) 0;
     flex-wrap: wrap;
     max-width: 1200px;
     margin: 0 auto;
@@ -80,27 +80,27 @@
 .icon-flow-icon {
     width: 90px;
     height: 90px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--card-bg) 0%, rgba(59, 130, 246, 0.1) 100%);
+    border-radius: var(--radius-full);
+    background: linear-gradient(135deg, var(--card-bg) 0%, var(--accent-light) 100%);
     border: 2px solid var(--border-color);
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 1.25rem;
-    transition: all 0.3s ease;
+    margin-bottom: var(--space-lg);
+    transition: var(--transition-base);
     position: relative;
     z-index: 2;
 }
 
 .icon-flow-icon i {
-    font-size: 2rem;
+    font-size: var(--text-3xl);
     color: var(--accent-color);
 }
 
 .icon-flow-step:hover .icon-flow-icon {
     transform: translateY(-5px);
     border-color: var(--accent-color);
-    box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+    box-shadow: var(--shadow-lg), var(--shadow-glow);
 }
 
 .icon-flow-step-number {
@@ -109,11 +109,11 @@
     right: -8px;
     width: 28px;
     height: 28px;
-    border-radius: 50%;
+    border-radius: var(--radius-full);
     background: var(--accent-color);
     color: white;
-    font-size: 0.8rem;
-    font-weight: 700;
+    font-size: var(--text-sm);
+    font-weight: var(--font-bold);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -121,16 +121,16 @@
 }
 
 .icon-flow-title {
-    font-size: 1.1rem;
-    font-weight: 700;
+    font-size: var(--text-lg);
+    font-weight: var(--font-bold);
     color: var(--text-main);
-    margin-bottom: 0.5rem;
+    margin-bottom: var(--space-sm);
 }
 
 .icon-flow-desc {
-    font-size: 0.9rem;
+    font-size: var(--text-sm);
     color: var(--text-sub);
-    line-height: 1.6;
+    line-height: var(--leading-relaxed);
 }
 
 /* Flow Connector Arrow */
@@ -138,7 +138,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0 1.5rem;
+    padding: 0 var(--space-lg);
     margin-top: 30px;
 }
 
@@ -158,31 +158,31 @@
     border-bottom: 6px solid transparent;
 }
 
-/* --- CTA Button Styles --- */
+/* --- CTA Button Styles (Preserved for backward compatibility) --- */
 .cta-container {
     display: flex;
     justify-content: center;
-    gap: 1.5rem;
-    margin-top: 3rem;
+    gap: var(--space-lg);
+    margin-top: var(--space-2xl);
     flex-wrap: wrap;
 }
 
 .cta-btn {
     display: inline-flex;
     align-items: center;
-    gap: 0.75rem;
-    padding: 1rem 2.5rem;
-    font-size: 1.1rem;
-    font-weight: 600;
-    border-radius: 50px;
+    gap: var(--space-sm);
+    padding: var(--space-md) var(--space-xl);
+    font-size: var(--text-lg);
+    font-weight: var(--font-semibold);
+    border-radius: var(--radius-full);
     text-decoration: none;
-    transition: all 0.3s ease;
+    transition: var(--transition-base);
     cursor: pointer;
     border: none;
 }
 
 .cta-btn-primary {
-    background: linear-gradient(135deg, var(--accent-color) 0%, #2563eb 100%);
+    background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-hover) 100%);
     color: white;
     box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
 }
@@ -204,15 +204,15 @@
 }
 
 .cta-btn i {
-    font-size: 1rem;
+    font-size: var(--text-base);
 }
 
 /* --- Feature Cards for Landing --- */
 .landing-features {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 2rem;
-    margin-top: 3rem;
+    gap: var(--space-lg);
+    margin-top: var(--space-2xl);
     max-width: 1400px;
     margin-left: auto;
     margin-right: auto;
@@ -221,45 +221,45 @@
 .landing-feature-card {
     background: var(--card-bg);
     border: 1px solid var(--border-color);
-    border-radius: 16px;
-    padding: 2rem;
+    border-radius: var(--radius-xl);
+    padding: var(--space-xl);
     text-align: center;
-    transition: all 0.3s ease;
+    transition: var(--transition-base);
 }
 
 .landing-feature-card:hover {
     border-color: var(--accent-color);
     transform: translateY(-5px);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--shadow-lg);
 }
 
 .landing-feature-icon {
     width: 64px;
     height: 64px;
-    border-radius: 16px;
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.2) 100%);
+    border-radius: var(--radius-xl);
+    background: var(--accent-light);
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto 1.5rem;
+    margin: 0 auto var(--space-lg);
 }
 
 .landing-feature-icon i {
-    font-size: 1.5rem;
+    font-size: var(--text-2xl);
     color: var(--accent-color);
 }
 
 .landing-feature-card h3 {
-    font-size: 1.25rem;
-    font-weight: 700;
-    margin-bottom: 0.75rem;
+    font-size: var(--text-xl);
+    font-weight: var(--font-bold);
+    margin-bottom: var(--space-sm);
     color: var(--text-main);
 }
 
 .landing-feature-card p {
-    font-size: 0.95rem;
+    font-size: var(--text-base);
     color: var(--text-sub);
-    line-height: 1.6;
+    line-height: var(--leading-relaxed);
 }
 
 /* --- Hero Section Enhancement --- */
@@ -276,9 +276,9 @@
 
 .hero-enhanced h1 {
     font-size: clamp(3rem, 8vw, 6rem);
-    font-weight: 900;
-    line-height: 1.1;
-    margin-bottom: 1.5rem;
+    font-weight: var(--font-extrabold);
+    line-height: var(--leading-tight);
+    margin-bottom: var(--space-lg);
 }
 
 .hero-enhanced h1 span {
@@ -286,29 +286,29 @@
 }
 
 .hero-enhanced .hero-description {
-    font-size: 1.25rem;
+    font-size: var(--text-xl);
     color: var(--text-sub);
     max-width: 700px;
-    margin: 0 auto 2rem;
-    line-height: 1.8;
+    margin: 0 auto var(--space-xl);
+    line-height: var(--leading-relaxed);
 }
 
 .hero-scroll-indicator {
     position: absolute;
-    bottom: 2rem;
+    bottom: var(--space-xl);
     left: 50%;
     transform: translateX(-50%);
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--space-sm);
     color: var(--text-sub);
-    font-size: 0.85rem;
+    font-size: var(--text-sm);
     animation: bounce 2s infinite;
 }
 
 .hero-scroll-indicator i {
-    font-size: 1.25rem;
+    font-size: var(--text-xl);
 }
 
 @keyframes bounce {
@@ -321,7 +321,7 @@
 .landing-two-col {
     display: grid;
     grid-template-columns: 1.2fr 0.8fr;
-    gap: 5rem;
+    gap: var(--space-3xl);
     align-items: center;
     max-width: 1400px;
     margin: 0 auto;
@@ -336,10 +336,10 @@
 }
 
 .landing-col-content h2 {
-    font-size: 3rem;
-    font-weight: 800;
-    margin-bottom: 0.5rem;
-    line-height: 1.2;
+    font-size: var(--text-5xl);
+    font-weight: var(--font-extrabold);
+    margin-bottom: var(--space-sm);
+    line-height: var(--leading-tight);
     background: linear-gradient(135deg, var(--text-main) 0%, var(--accent-color) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -351,19 +351,19 @@
 }
 
 .landing-col-content .section-subtitle {
-    font-size: 0.85rem;
+    font-size: var(--text-sm);
     color: var(--accent-color);
     letter-spacing: 4px;
     text-transform: uppercase;
-    font-weight: 600;
-    margin-bottom: 1.5rem;
+    font-weight: var(--font-semibold);
+    margin-bottom: var(--space-lg);
 }
 
 .landing-col-content p {
-    font-size: 1.15rem;
+    font-size: var(--text-lg);
     color: var(--text-sub);
-    line-height: 1.8;
-    margin-bottom: 1.5rem;
+    line-height: var(--leading-relaxed);
+    margin-bottom: var(--space-lg);
 }
 
 .landing-col-visual {
@@ -374,49 +374,49 @@
 .highlight-list {
     list-style: none;
     padding: 0;
-    margin: 1.5rem 0;
+    margin: var(--space-lg) 0;
 }
 
 .highlight-list li {
     display: flex;
     align-items: flex-start;
-    gap: 1rem;
-    padding: 0.75rem 0;
-    font-size: 1rem;
+    gap: var(--space-md);
+    padding: var(--space-sm) 0;
+    font-size: var(--text-base);
     color: var(--text-main);
 }
 
 .highlight-list li i {
     color: var(--accent-color);
-    font-size: 1.1rem;
-    margin-top: 0.15rem;
+    font-size: var(--text-lg);
+    margin-top: 2px;
 }
 
 /* --- Risk Level Preview (War Room) --- */
 .risk-levels-preview {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: var(--space-sm);
     background: var(--card-bg);
     border: 1px solid var(--border-color);
-    border-radius: 16px;
-    padding: 2rem;
+    border-radius: var(--radius-xl);
+    padding: var(--space-xl);
 }
 
 .risk-level-item {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 0.75rem 1rem;
-    border-radius: 8px;
+    gap: var(--space-md);
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-md);
     background: rgba(255, 255, 255, 0.02);
 }
 
 .risk-badge {
-    padding: 0.35rem 0.75rem;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    font-weight: 700;
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--radius-sm);
+    font-size: var(--text-xs);
+    font-weight: var(--font-bold);
     text-transform: uppercase;
     min-width: 80px;
     text-align: center;
@@ -430,15 +430,15 @@
 
 .risk-level-item span:last-child {
     color: var(--text-sub);
-    font-size: 0.9rem;
+    font-size: var(--text-sm);
 }
 
 /* --- Tool Cards (Smart Tools) --- */
 .tool-showcase {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 2.5rem;
-    margin-top: 3rem;
+    gap: var(--space-xl);
+    margin-top: var(--space-2xl);
     max-width: 1400px;
     margin-left: auto;
     margin-right: auto;
@@ -447,72 +447,72 @@
 .tool-showcase-card {
     background: var(--card-bg);
     border: 1px solid var(--border-color);
-    border-radius: 20px;
+    border-radius: var(--radius-2xl);
     overflow: hidden;
-    transition: all 0.3s ease;
+    transition: var(--transition-base);
 }
 
 .tool-showcase-card:hover {
     border-color: var(--accent-color);
     transform: translateY(-5px);
-    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--shadow-xl);
 }
 
 .tool-showcase-header {
-    padding: 2rem;
+    padding: var(--space-xl);
     border-bottom: 1px solid var(--border-color);
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: var(--space-md);
 }
 
 .tool-showcase-icon {
     width: 56px;
     height: 56px;
-    border-radius: 14px;
-    background: linear-gradient(135deg, var(--accent-color) 0%, #2563eb 100%);
+    border-radius: var(--radius-lg);
+    background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-hover) 100%);
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
 .tool-showcase-icon i {
-    font-size: 1.5rem;
+    font-size: var(--text-2xl);
     color: white;
 }
 
 .tool-showcase-header h3 {
-    font-size: 1.35rem;
-    font-weight: 700;
+    font-size: var(--text-xl);
+    font-weight: var(--font-bold);
     margin: 0;
 }
 
 .tool-showcase-body {
-    padding: 2rem;
+    padding: var(--space-xl);
 }
 
 .tool-showcase-body p {
     color: var(--text-sub);
-    line-height: 1.7;
-    margin-bottom: 1.5rem;
+    line-height: var(--leading-relaxed);
+    margin-bottom: var(--space-lg);
 }
 
 .tool-mini-flow {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--space-sm);
     flex-wrap: wrap;
-    margin-top: 1rem;
+    margin-top: var(--space-md);
 }
 
 .tool-mini-step {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    background: rgba(59, 130, 246, 0.1);
-    border-radius: 8px;
-    font-size: 0.85rem;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    background: var(--accent-light);
+    border-radius: var(--radius-md);
+    font-size: var(--text-sm);
     color: var(--text-main);
 }
 
@@ -528,8 +528,8 @@
 .report-categories {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 2rem;
-    margin-top: 3rem;
+    gap: var(--space-lg);
+    margin-top: var(--space-2xl);
     max-width: 1200px;
     margin-left: auto;
     margin-right: auto;
@@ -538,22 +538,23 @@
 .report-category-card {
     background: var(--card-bg);
     border: 1px solid var(--border-color);
-    border-radius: 16px;
-    padding: 2rem;
+    border-radius: var(--radius-xl);
+    padding: var(--space-xl);
     text-align: center;
-    transition: all 0.3s ease;
+    transition: var(--transition-base);
 }
 
 .report-category-card:hover {
     border-color: var(--accent-color);
     transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
 }
 
 .report-category-icon {
     width: 72px;
     height: 72px;
-    border-radius: 50%;
-    margin: 0 auto 1.25rem;
+    border-radius: var(--radius-full);
+    margin: 0 auto var(--space-lg);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -564,7 +565,7 @@
 .report-category-icon.company { background: linear-gradient(135deg, rgba(168, 85, 247, 0.2) 0%, rgba(168, 85, 247, 0.1) 100%); }
 
 .report-category-icon i {
-    font-size: 1.75rem;
+    font-size: var(--text-3xl);
 }
 
 .report-category-icon.research i { color: #3b82f6; }
@@ -572,21 +573,22 @@
 .report-category-icon.company i { color: #a855f7; }
 
 .report-category-card h3 {
-    font-size: 1.1rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
+    font-size: var(--text-lg);
+    font-weight: var(--font-bold);
+    margin-bottom: var(--space-sm);
 }
 
 .report-category-card p {
-    font-size: 0.9rem;
+    font-size: var(--text-sm);
     color: var(--text-sub);
+    line-height: var(--leading-relaxed);
 }
 
 /* --- Responsive --- */
 @media (max-width: 1200px) {
     .container-wide {
         width: 92%;
-        padding: 0 1.5rem;
+        padding: 0 var(--space-lg);
     }
     
     .landing-features {
@@ -597,7 +599,7 @@
 @media (max-width: 1024px) {
     .landing-two-col {
         grid-template-columns: 1fr;
-        gap: 3rem;
+        gap: var(--space-2xl);
     }
     
     .landing-two-col.reverse {
@@ -620,15 +622,19 @@
 @media (max-width: 768px) {
     .container-wide {
         width: 100%;
-        padding: 0 1rem;
+        padding: 0 var(--space-md);
     }
     
     .landing-section {
-        padding: 4rem 0;
+        padding: var(--space-2xl) 0;
     }
     
     .landing-section .section-title {
-        font-size: 2.5rem;
+        font-size: var(--text-4xl);
+    }
+    
+    .landing-section .section-description {
+        font-size: var(--text-lg);
     }
     
     .icon-flow {
@@ -642,7 +648,7 @@
     
     .icon-flow-connector {
         transform: rotate(90deg);
-        padding: 0.5rem 0;
+        padding: var(--space-sm) 0;
         margin-top: 0;
     }
     
@@ -658,10 +664,19 @@
     }
     
     .landing-col-content h2 {
-        font-size: 2.25rem;
+        font-size: var(--text-3xl);
     }
     
     .landing-features {
         grid-template-columns: 1fr;
+    }
+    
+    .hero-enhanced h1 {
+        font-size: clamp(2.5rem, 6vw, 4rem);
+    }
+    
+    .hero-enhanced .hero-description {
+        font-size: var(--text-lg);
+        padding: 0 var(--space-md);
     }
 }
