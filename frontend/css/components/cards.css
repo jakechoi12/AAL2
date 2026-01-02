@@ -44,6 +44,20 @@
     display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;
 }
 
+/* Rates Table Container */
+.rates-table-container {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.rates-table-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: 1.5rem;
+}
+
 .currency-rate-item {
     background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px;
     padding: 1rem; transition: var(--transition);

@@ -11,6 +11,7 @@ import logging
 import bok_backend  # Import the BOK backend module
 import gdelt_backend  # Import the GDELT backend module
 from report_backend import report_bp  # Import the Report backend module
+from news_intelligence.api import news_bp  # Import the News Intelligence module
 
 # Load environment variables
 load_dotenv()
@@ -23,8 +24,9 @@ BASE_DIR = Path(__file__).parent.parent
 app = Flask(__name__)
 CORS(app) # Enable CORS for all routes (for development)
 
-# Register Report Blueprint
+# Register Blueprints
 app.register_blueprint(report_bp)
+app.register_blueprint(news_bp)  # News Intelligence API
 
 # Disable caching for development
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
@@ -511,6 +513,111 @@ def update_gdelt_data_job():
     except Exception as e:
         logger.error(f"Error in GDELT update job: {e}", exc_info=True)
 
+
+def update_news_intelligence_job():
+    """1시간마다 실행되는 뉴스 인텔리전스 수집 작업"""
+    try:
+        logger.info("Starting News Intelligence collection...")
+        from news_intelligence.collectors import NewsCollectorManager
+        from news_intelligence.models import NewsArticle, get_session
+        
+        # Run collection (fast, no blocking)
+        manager = NewsCollectorManager()
+        result = manager.run_collection()
+        
+        new_count = result.get('new_articles', 0)
+        logger.info(f"News collection completed: {new_count} new articles")
+        
+        # Start background analysis if new articles found
+        if new_count > 0:
+            import threading
+            analysis_thread = threading.Thread(
+                target=_background_analysis_job,
+                name="NewsAnalysisThread",
+                daemon=True
+            )
+            analysis_thread.start()
+            logger.info("Background analysis started")
+            
+    except Exception as e:
+        logger.error(f"Error in News Intelligence job: {e}", exc_info=True)
+
+
+def _background_analysis_job():
+    """
+    백그라운드에서 실행되는 뉴스 분석 작업
+    
+    최적화 전략:
+    1. 규칙 기반 우선 처리 (빠름, API 비용 없음)
+    2. 불확실한 기사만 AI 배치 처리
+    3. 서버 성능에 영향 없도록 비동기 처리
+    """
+    try:
+        from news_intelligence.analyzer import NewsAnalyzer
+        from news_intelligence.models import NewsArticle, get_session
+        import time
+        
+        logger.info("Background analysis job started")
+        start_time = time.time()
+        
+        session = get_session()
+        try:
+            # Get unprocessed articles
+            articles = session.query(NewsArticle).filter(
+                NewsArticle.category.is_(None)
+            ).limit(100).all()  # Process up to 100 articles per run
+            
+            if not articles:
+                logger.info("No articles to analyze")
+                return
+            
+            logger.info(f"Analyzing {len(articles)} articles (optimized batch mode)...")
+            
+            # Initialize analyzer
+            analyzer = NewsAnalyzer()
+            analyzer.reset_stats()
+            
+            # Prepare articles for batch analysis
+            article_dicts = [
+                {
+                    'id': a.id,
+                    'title': a.title,
+                    'content_summary': a.content_summary
+                }
+                for a in articles
+            ]
+            
+            # Run optimized batch analysis (rule-based first + AI for uncertain)
+            analyzed = analyzer.analyze_batch(article_dicts)
+            
+            # Update database
+            for article_data in analyzed:
+                article = next((a for a in articles if a.id == article_data['id']), None)
+                if article:
+                    article.category = article_data.get('category', 'ETC')
+                    article.country_tags = article_data.get('country_tags', [])
+                    article.keywords = article_data.get('keywords', [])
+                    article.is_crisis = article_data.get('is_crisis', False)
+            
+            session.commit()
+            
+            # Log statistics
+            elapsed = time.time() - start_time
+            stats = analyzer.get_stats()
+            logger.info(
+                f"Analysis completed in {elapsed:.1f}s: "
+                f"{stats['total_analyzed']} articles, "
+                f"Rule-based: {stats['rule_based_count']} ({stats['ai_reduction_percent']}% AI saved), "
+                f"AI batches: {stats['batch_count']}"
+            )
+            
+        finally:
+            session.close()
+            
+    except Exception as e:
+        logger.error(f"Error in background analysis job: {e}", exc_info=True)
+
+
 # 서버 시작 시 즉시 한 번 실행 (초기 데이터 다운로드)
 # 그리고 15분마다 실행
 scheduler.add_job(
@@ -518,6 +625,15 @@ scheduler.add_job(
     trigger=IntervalTrigger(minutes=15),
     id='gdelt_update_job',
     name='Update GDELT data every 15 minutes',
+    replace_existing=True
+)
+
+# News Intelligence: 1시간마다 실행
+scheduler.add_job(
+    func=update_news_intelligence_job,
+    trigger=IntervalTrigger(hours=1),
+    id='news_intelligence_job',
+    name='Collect news every 1 hour',
     replace_existing=True
 )
 
@@ -533,6 +649,7 @@ if __name__ == '__main__':
     print(f"BASE_DIR: {BASE_DIR.resolve()}")
     print(f"HTML file exists: {(BASE_DIR / 'frontend' / 'ai_studio_code_F2.html').exists()}")
     print("GDELT auto-update: Every 15 minutes")
+    print("News Intelligence: Every 1 hour")
     print("GDELT data path:", gdelt_backend.get_gdelt_base_path())
     print("="*50)
     
@@ -541,5 +658,11 @@ if __name__ == '__main__':
         update_gdelt_data_job()
     except Exception as e:
         logger.warning(f"Initial GDELT update failed: {e}")
+    
+    # 서버 시작 시 즉시 뉴스 인텔리전스 수집 시도
+    try:
+        update_news_intelligence_job()
+    except Exception as e:
+        logger.warning(f"Initial News Intelligence collection failed: {e}")
     
     app.run(port=5000, debug=True)

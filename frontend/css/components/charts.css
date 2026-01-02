@@ -181,6 +181,34 @@
 .chart-path.visible { opacity: 1; }
 .chart-path:hover { stroke-width: 3.5; }
 
+/* Currency Toggle Container */
+.currency-toggle {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 1.5rem;
+}
+
+/* Date Range Control */
+.date-range-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.date-separator {
+    color: var(--text-sub);
+}
+
+/* Period Buttons */
+.period-buttons {
+    display: flex;
+    background: rgba(255,255,255,0.05);
+    border-radius: 6px;
+    padding: 4px;
+    gap: 4px;
+}
+
 /* 막대 그래프 스타일 */
 .trade-bar {
     cursor: pointer;

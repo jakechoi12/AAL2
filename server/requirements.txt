@@ -3,3 +3,8 @@ requests
 python-dotenv
 flask-cors
 APScheduler
+sqlalchemy
+pydantic
+feedparser
+openai
+psycopg2-binary
