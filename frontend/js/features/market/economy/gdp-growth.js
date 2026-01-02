@@ -42,19 +42,44 @@ const gdpGrowthState = {
 // ============================================================
 
 const gdpGrowthCountryMap = [
-    { keywords: ['호주', 'aus', 'australia'], name: 'Australia', color: 'var(--c-interest-aus)' },
-    { keywords: ['브라질', 'bra', 'brazil'], name: 'Brazil', color: 'var(--c-interest-bra)' },
+    { keywords: ['호주', '오스트레일리아', 'aus', 'australia'], name: 'Australia', color: 'var(--c-interest-aus)' },
+    { keywords: ['오스트리아', 'aut', 'austria'], name: 'Austria', color: '#E74C3C' },
+    { keywords: ['벨기에', 'bel', 'belgium'], name: 'Belgium', color: '#F39C12' },
     { keywords: ['캐나다', 'can', 'canada'], name: 'Canada', color: 'var(--c-interest-can)' },
+    { keywords: ['스위스', 'che', 'switzerland'], name: 'Switzerland', color: 'var(--c-interest-che)' },
+    { keywords: ['칠레', 'chl', 'chile'], name: 'Chile', color: 'var(--c-interest-chl)' },
     { keywords: ['중국', 'chn', 'china'], name: 'China', color: 'var(--c-interest-chn)' },
+    { keywords: ['체코', 'cze', 'czech'], name: 'Czech Republic', color: 'var(--c-interest-cze)' },
     { keywords: ['독일', 'deu', 'germany'], name: 'Germany', color: 'var(--c-interest-deu)' },
+    { keywords: ['덴마크', 'dnk', 'denmark'], name: 'Denmark', color: 'var(--c-interest-dnk)' },
+    { keywords: ['에스토니아', 'est', 'estonia'], name: 'Estonia', color: '#1ABC9C' },
+    { keywords: ['스페인', 'esp', 'spain'], name: 'Spain', color: 'var(--c-interest-esp)' },
+    { keywords: ['핀란드', 'fin', 'finland'], name: 'Finland', color: '#3498DB' },
     { keywords: ['프랑스', 'fra', 'france'], name: 'France', color: 'var(--c-interest-fra)' },
-    { keywords: ['영국', 'gbr', 'uk'], name: 'UK', color: 'var(--c-interest-gbr)' },
-    { keywords: ['인도', 'ind', 'india'], name: 'India', color: 'var(--c-interest-ind)' },
+    { keywords: ['영국', 'gbr', 'uk', 'united kingdom'], name: 'UK', color: 'var(--c-interest-gbr)' },
+    { keywords: ['그리스', 'grc', 'greece'], name: 'Greece', color: '#2980B9' },
+    { keywords: ['헝가리', 'hun', 'hungary'], name: 'Hungary', color: 'var(--c-interest-hun)' },
+    { keywords: ['아이슬란드', 'isl', 'iceland'], name: 'Iceland', color: '#7FB3D5' },
+    { keywords: ['인도네시아', 'idn', 'indonesia'], name: 'Indonesia', color: 'var(--c-interest-idn)' },
+    { keywords: ['아일랜드', 'irl', 'ireland'], name: 'Ireland', color: '#27AE60' },
+    { keywords: ['이스라엘', 'isr', 'israel'], name: 'Israel', color: 'var(--c-interest-isr)' },
+    { keywords: ['이탈리아', 'ita', 'italy'], name: 'Italy', color: 'var(--c-interest-ita)' },
     { keywords: ['일본', 'jpn', 'japan'], name: 'Japan', color: 'var(--c-interest-jpn)' },
     { keywords: ['한국', 'kor', 'korea'], name: 'Korea', color: 'var(--c-interest-kor)' },
+    { keywords: ['라트비아', 'lva', 'latvia'], name: 'Latvia', color: '#A569BD' },
+    { keywords: ['룩셈부르크', 'lux', 'luxembourg'], name: 'Luxembourg', color: '#F5B041' },
     { keywords: ['멕시코', 'mex', 'mexico'], name: 'Mexico', color: 'var(--c-interest-mex)' },
+    { keywords: ['네덜란드', 'nld', 'netherlands'], name: 'Netherlands', color: '#E67E22' },
+    { keywords: ['노르웨이', 'nor', 'norway'], name: 'Norway', color: 'var(--c-interest-nor)' },
+    { keywords: ['뉴질랜드', 'nzl', 'zealand'], name: 'New Zealand', color: 'var(--c-interest-nzl)' },
+    { keywords: ['폴란드', 'pol', 'poland'], name: 'Poland', color: 'var(--c-interest-pol)' },
+    { keywords: ['포르투갈', 'prt', 'portugal'], name: 'Portugal', color: '#9B59B6' },
     { keywords: ['러시아', 'rus', 'russia'], name: 'Russia', color: 'var(--c-interest-rus)' },
-    { keywords: ['미국', 'usa', 'us '], name: 'USA', color: 'var(--c-interest-usa)' }
+    { keywords: ['슬로바키아', 'svk', 'slovakia'], name: 'Slovakia', color: '#34495E' },
+    { keywords: ['슬로베니아', 'svn', 'slovenia'], name: 'Slovenia', color: '#16A085' },
+    { keywords: ['스웨덴', 'swe', 'sweden'], name: 'Sweden', color: 'var(--c-interest-swe)' },
+    { keywords: ['튀르키예', '터키', 'tur', 'turkey', 'turkiye'], name: 'Turkey', color: 'var(--c-interest-tur)' },
+    { keywords: ['미국', 'usa', 'us ', 'united states'], name: 'USA', color: 'var(--c-interest-usa)' }
 ];
 
 function getGDPGrowthCountryName(koreanName) {
@@ -331,19 +356,36 @@ function renderGDPGrowthXAxis(dates) {
     });
 }
 
+let gdpGrowthCrosshairX = null;
+let gdpGrowthCrosshairY = null;
+
 function setupGDPGrowthInteractivity() {
     const prefix = GDP_GROWTH_CONFIG.chartPrefix;
     const container = document.getElementById(`${prefix}-chart-container`);
     const tooltip = document.getElementById(`${prefix}-chart-tooltip`);
-    if (!container || !tooltip) return;
+    const svg = document.getElementById(`${prefix}-chart-svg`);
+    if (!container || !tooltip || !svg) return;
     
     if (tooltip.parentElement !== document.body) document.body.appendChild(tooltip);
+    
+    // Create crosshair elements
+    const { width, height } = getSvgViewBoxSize(svg);
+    const padding = { top: 20, bottom: 30, left: 60, right: 20 };
+    const chartWidth = width - padding.left - padding.right;
+    const chartHeight = height - padding.top - padding.bottom;
+    
+    const crosshairs = createCrosshairElements(svg, padding, chartWidth, chartHeight);
+    gdpGrowthCrosshairX = crosshairs.crosshairX;
+    gdpGrowthCrosshairY = crosshairs.crosshairY;
     
     const newC = container.cloneNode(true);
     container.parentNode.replaceChild(newC, container);
     
     newC.addEventListener('mousemove', e => showGDPGrowthTooltip(e));
-    newC.addEventListener('mouseleave', () => hideGDPGrowthTooltip());
+    newC.addEventListener('mouseleave', () => {
+        hideGDPGrowthTooltip();
+        hideCrosshair(gdpGrowthCrosshairX, gdpGrowthCrosshairY);
+    });
 }
 
 function showGDPGrowthTooltip(event) {
@@ -355,13 +397,45 @@ function showGDPGrowthTooltip(event) {
     const allDates = new Set();
     Object.values(gdpGrowthState.countryData).forEach(d => d.forEach(i => allDates.add(i.date)));
     const dates = Array.from(allDates).sort((a, b) => parseInt(a) - parseInt(b));
-    if (!dates.length) return;
+    if (!dates.length) {
+        hideCrosshair(gdpGrowthCrosshairX, gdpGrowthCrosshairY);
+        return;
+    }
     
     const rect = svg.getBoundingClientRect();
-    const { width } = getSvgViewBoxSize(svg);
+    const { width, height } = getSvgViewBoxSize(svg);
+    const pad = { top: 20, bottom: 30, left: 60, right: 20 };
+    const cw = width - pad.left - pad.right;
+    const ch = height - pad.top - pad.bottom;
     const x = event.clientX - rect.left;
     const idx = Math.round(((x / rect.width * width) - 60) / (width - 80) * (dates.length - 1));
-    const date = dates[Math.max(0, Math.min(dates.length - 1, idx))];
+    const clampedIdx = Math.max(0, Math.min(dates.length - 1, idx));
+    const date = dates[clampedIdx];
+    
+    // Update crosshair X position
+    const crosshairXPos = pad.left + (clampedIdx / (dates.length - 1 || 1)) * cw;
+    if (gdpGrowthCrosshairX) {
+        gdpGrowthCrosshairX.setAttribute('x1', crosshairXPos);
+        gdpGrowthCrosshairX.setAttribute('x2', crosshairXPos);
+        gdpGrowthCrosshairX.style.opacity = '1';
+    }
+    
+    // Calculate average Y for crosshair
+    let sumY = 0, countY = 0;
+    gdpGrowthState.activeCountries.forEach(code => {
+        const item = gdpGrowthState.countryData[code]?.find(d => d.date === date);
+        if (item && Number.isFinite(item.value)) { sumY += item.value; countY++; }
+    });
+    
+    if (countY > 0 && gdpGrowthCrosshairY) {
+        const avgVal = sumY / countY;
+        const { min, max } = gdpGrowthState.yAxisRange;
+        const normY = (avgVal - min) / (max - min || 1);
+        const crosshairYPos = pad.top + (1 - normY) * ch;
+        gdpGrowthCrosshairY.setAttribute('y1', crosshairYPos);
+        gdpGrowthCrosshairY.setAttribute('y2', crosshairYPos);
+        gdpGrowthCrosshairY.style.opacity = '1';
+    }
     
     let content = '';
     gdpGrowthState.activeCountries.forEach(code => {
@@ -389,6 +463,7 @@ function showGDPGrowthTooltip(event) {
 function hideGDPGrowthTooltip() {
     const t = document.getElementById(`${GDP_GROWTH_CONFIG.chartPrefix}-chart-tooltip`);
     if (t) { t.classList.remove('visible'); t.style.visibility = 'hidden'; }
+    hideCrosshair(gdpGrowthCrosshairX, gdpGrowthCrosshairY);
 }
 
 function updateGDPGrowthHeader() {

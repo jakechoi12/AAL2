@@ -529,8 +529,13 @@ async function loadCriticalAlerts() {
                 else if (alert.goldstein_scale <= -4) severityClass = 'severity-high';
             }
             
+            // Make the alert clickable if URL is available
+            const hasUrl = alert.url && alert.url.trim();
+            const clickableClass = hasUrl ? 'clickable' : '';
+            const clickHandler = hasUrl ? `onclick="window.open('${escapeHtml(alert.url)}', '_blank', 'noopener,noreferrer')"` : '';
+            
             return `
-                <div class="critical-alert-item ${severityClass}">
+                <div class="critical-alert-item ${severityClass} ${clickableClass}" ${clickHandler}>
                     <div class="alert-title">${escapeHtml(alert.title)}</div>
                     <div class="alert-summary">${escapeHtml(alert.content_summary?.substring(0, 100) || '')}...</div>
                     <div class="alert-meta">

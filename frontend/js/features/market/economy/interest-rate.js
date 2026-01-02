@@ -220,8 +220,9 @@ async function fetchInterestRateData() {
         startDate = `${startYear}0101`;
         endDate = `${endYear}1231`;
     } else {
-        startDate = formatDateForAPI(startDateInputEl.value);
-        endDate = formatDateForAPI(endDateInputEl.value);
+        // YYYY-MM 형식을 YYYYMM01 형식으로 변환 (API는 YYYYMMDD 형식 기대)
+        startDate = formatInterestDateForAPI(startDateInputEl.value);
+        endDate = formatInterestDateForAPI(endDateInputEl.value);
     }
     
     const chartContainer = document.getElementById('interest-chart-container');
@@ -1046,6 +1047,9 @@ function renderInterestDataPointsMulti(sortedDates) {
     }
 }
 
+let interestCrosshairX = null;
+let interestCrosshairY = null;
+
 function setupInterestChartInteractivityMulti() {
     const chartContainer = document.getElementById('interest-chart-container');
     const svg = document.getElementById('interest-chart-svg');
@@ -1058,6 +1062,16 @@ function setupInterestChartInteractivityMulti() {
             document.body.appendChild(tooltip);
         }
     }
+    
+    // Create crosshair elements
+    const { width, height } = getSvgViewBoxSize(svg);
+    const padding = { top: 20, bottom: 30, left: 40, right: 20 };
+    const chartWidth = width - padding.left - padding.right;
+    const chartHeight = height - padding.top - padding.bottom;
+    
+    const crosshairs = createCrosshairElements(svg, padding, chartWidth, chartHeight);
+    interestCrosshairX = crosshairs.crosshairX;
+    interestCrosshairY = crosshairs.crosshairY;
     
     // 기존 이벤트 리스너 제거
     if (interestMouseMoveHandler) {
@@ -1084,6 +1098,7 @@ function setupInterestChartInteractivityMulti() {
             rafId = null;
         }
         hideInterestTooltip();
+        hideCrosshair(interestCrosshairX, interestCrosshairY);
     };
     
     chartContainer.addEventListener('mousemove', interestMouseMoveHandler);
@@ -1099,8 +1114,9 @@ function showInterestTooltipMulti(event) {
     
     const svgRect = svg.getBoundingClientRect();
     const { width: vbWidth, height: vbHeight } = getSvgViewBoxSize(svg);
-    const chartPadding = { left: 40, right: 20 };
+    const chartPadding = { left: 40, right: 20, top: 20, bottom: 30 };
     const chartWidth = vbWidth - chartPadding.left - chartPadding.right;
+    const chartHeight = vbHeight - chartPadding.top - chartPadding.bottom;
     
     // 픽셀 좌표를 viewBox 좌표로 변환
     const pixelX = event.clientX - svgRect.left;
@@ -1120,12 +1136,43 @@ function showInterestTooltipMulti(event) {
         return compareInterestDates(a, b, interestCycle || 'M');
     });
     
-    if (sortedDates.length === 0) return;
+    if (sortedDates.length === 0) {
+        hideCrosshair(interestCrosshairX, interestCrosshairY);
+        return;
+    }
     
     // 비율로 날짜 인덱스 찾기
     const dateIndex = Math.round(ratio * (sortedDates.length - 1));
     const dateIndexClamped = Math.max(0, Math.min(sortedDates.length - 1, dateIndex));
     const date = sortedDates[dateIndexClamped];
+    
+    // Update crosshair X position
+    const crosshairXPos = chartPadding.left + (dateIndexClamped / (sortedDates.length - 1 || 1)) * chartWidth;
+    if (interestCrosshairX) {
+        interestCrosshairX.setAttribute('x1', crosshairXPos);
+        interestCrosshairX.setAttribute('x2', crosshairXPos);
+        interestCrosshairX.style.opacity = '1';
+    }
+    
+    // Calculate average Y for crosshair
+    let sumY = 0, countY = 0;
+    activeInterestCountries.forEach(itemCode => {
+        const data = interestCountryData[itemCode];
+        if (data) {
+            const item = data.find(d => d.date === date);
+            if (item && Number.isFinite(item.value)) { sumY += item.value; countY++; }
+        }
+    });
+    
+    if (countY > 0 && interestCrosshairY) {
+        const avgVal = sumY / countY;
+        const { min, max } = interestYAxisRange;
+        const normY = (avgVal - min) / (max - min || 1);
+        const crosshairYPos = chartPadding.top + (1 - normY) * chartHeight;
+        interestCrosshairY.setAttribute('y1', crosshairYPos);
+        interestCrosshairY.setAttribute('y2', crosshairYPos);
+        interestCrosshairY.style.opacity = '1';
+    }
     
     // 날짜 포맷팅 (X축과 동일한 형식: YY.MM)
     let dateLabel = date;
@@ -1485,6 +1532,7 @@ function hideInterestTooltip() {
         tooltip.classList.remove('visible');
         tooltip.style.visibility = 'hidden';
     }
+    hideCrosshair(interestCrosshairX, interestCrosshairY);
 }
 
 function generateInterestSVGPath(data) {

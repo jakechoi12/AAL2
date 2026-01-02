@@ -941,6 +941,9 @@ function renderInflationDataPoints(displaySeries, itemCode) {
 // CHART INTERACTIVITY
 // ============================================================
 
+let inflationCrosshairX = null;
+let inflationCrosshairY = null;
+
 function setupInflationChartInteractivity() {
     const chartContainer = document.getElementById('inflation-chart-container');
     const svg = document.getElementById('inflation-chart-svg');
@@ -952,6 +955,16 @@ function setupInflationChartInteractivity() {
     if (tooltip && tooltip.parentElement !== document.body) {
         document.body.appendChild(tooltip);
     }
+    
+    // Create crosshair elements
+    const { width, height } = getSvgViewBoxSize(svg);
+    const padding = { top: 20, bottom: 30, left: 40, right: 20 };
+    const chartWidth = width - padding.left - padding.right;
+    const chartHeight = height - padding.top - padding.bottom;
+    
+    const crosshairs = createCrosshairElements(svg, padding, chartWidth, chartHeight);
+    inflationCrosshairX = crosshairs.crosshairX;
+    inflationCrosshairY = crosshairs.crosshairY;
     
     // Remove existing listeners if they exist
     if (inflationMouseMoveHandler) {
@@ -974,6 +987,7 @@ function setupInflationChartInteractivity() {
             const data = [...raw].sort((a, b) => compareInflationDates(a.date, b.date, inflationCycle));
             if (!firstItem || data.length === 0) {
                 hideInflationTooltip();
+                hideCrosshair(inflationCrosshairX, inflationCrosshairY);
                 return;
             }
             
@@ -981,13 +995,32 @@ function setupInflationChartInteractivity() {
             const x = e.clientX - rect.left;
             const svgX = (x / rect.width) * 1200; // viewBox width
             
-            const padding = { left: 40, right: 20 };
-            const chartWidth = 1200 - padding.left - padding.right;
-            const dataIndex = Math.round(((svgX - padding.left) / chartWidth) * (data.length - 1));
+            const svgPadding = { left: 40, right: 20, top: 20, bottom: 30 };
+            const svgChartWidth = 1200 - svgPadding.left - svgPadding.right;
+            const svgChartHeight = 400 - svgPadding.top - svgPadding.bottom;
+            const dataIndex = Math.round(((svgX - svgPadding.left) / svgChartWidth) * (data.length - 1));
             
             if (dataIndex >= 0 && dataIndex < data.length) {
                 const dataPoint = data[dataIndex];
                 const prevPoint = dataIndex > 0 ? data[dataIndex - 1] : null;
+                
+                // Update crosshair X position
+                const crosshairXPos = svgPadding.left + (dataIndex / (data.length - 1 || 1)) * svgChartWidth;
+                if (inflationCrosshairX) {
+                    inflationCrosshairX.setAttribute('x1', crosshairXPos);
+                    inflationCrosshairX.setAttribute('x2', crosshairXPos);
+                    inflationCrosshairX.style.opacity = '1';
+                }
+                
+                // Update crosshair Y position
+                if (dataPoint && Number.isFinite(dataPoint.value) && inflationCrosshairY) {
+                    const { min, max } = inflationYAxisRange;
+                    const normY = (dataPoint.value - min) / (max - min || 1);
+                    const crosshairYPos = svgPadding.top + (1 - normY) * svgChartHeight;
+                    inflationCrosshairY.setAttribute('y1', crosshairYPos);
+                    inflationCrosshairY.setAttribute('y2', crosshairYPos);
+                    inflationCrosshairY.style.opacity = '1';
+                }
                 
                 // 활성화된 국가들의 데이터도 찾기
                 const countryDataPoints = {};
@@ -1015,12 +1048,14 @@ function setupInflationChartInteractivity() {
                 showInflationTooltip(e, dataPoint, firstItem, prevPoint, countryDataPoints);
             } else {
                 hideInflationTooltip();
+                hideCrosshair(inflationCrosshairX, inflationCrosshairY);
             }
         });
     };
     
     inflationMouseLeaveHandler = () => {
         hideInflationTooltip();
+        hideCrosshair(inflationCrosshairX, inflationCrosshairY);
     };
     
     chartContainer.addEventListener('mousemove', inflationMouseMoveHandler);
@@ -1091,6 +1126,7 @@ function hideInflationTooltip() {
         tooltip.classList.remove('visible');
         tooltip.style.visibility = 'hidden';
     }
+    hideCrosshair(inflationCrosshairX, inflationCrosshairY);
 }
 
 // ============================================================

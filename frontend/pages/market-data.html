@@ -59,13 +59,14 @@
                 </div>
             </div>
 
-            <!-- Economy Panel -->
-            <div id="economy-panel" class="market-content active reveal">
+            <!-- Exchange Rate KRW Panel -->
+            <div id="exchange-rate-krw-panel" class="market-content active reveal">
                 <div class="product-grid">
                     <aside class="product-sidebar">
                         <h3>Financial Products</h3>
                         <ul class="product-menu">
-                            <li class="selected" onclick="switchProduct('exchange-rate')">Exchange Rate</li>
+                            <li class="selected" onclick="switchProduct('exchange-rate-krw')">Exchange Rate (KRW)</li>
+                            <li onclick="switchProduct('exchange-rate-usd')">Exchange Rate (USD)</li>
                             <li onclick="switchProduct('interest-rates')">Interest Rates</li>
                             <li onclick="switchProduct('inflation')">Inflation</li>
                             <li onclick="switchProduct('gdp-indicator')">GDP</li>
@@ -122,21 +123,55 @@
 
                         <!-- Multi-Currency Toggle -->
                         <div class="currency-toggle" id="currency-toggle">
-                            <button class="currency-btn chip active" data-curr="USD" onclick="toggleCurrency('USD')">
-                                <span class="currency-flag">🇺🇸</span> USD
-                            </button>
-                            <button class="currency-btn chip" data-curr="EUR" onclick="toggleCurrency('EUR')">
-                                <span class="currency-flag">🇪🇺</span> EUR
-                            </button>
-                            <button class="currency-btn chip" data-curr="JPY" onclick="toggleCurrency('JPY')">
-                                <span class="currency-flag">🇯🇵</span> JPY
-                            </button>
-                            <button class="currency-btn chip" data-curr="CNY" onclick="toggleCurrency('CNY')">
-                                <span class="currency-flag">🇨🇳</span> CNY
-                            </button>
-                            <button class="currency-btn chip" data-curr="GBP" onclick="toggleCurrency('GBP')">
-                                <span class="currency-flag">🇬🇧</span> GBP
-                            </button>
+                            <!-- Major Currencies -->
+                            <button class="currency-btn chip active" data-curr="USD" onclick="toggleCurrency('USD')">🇺🇸 USD</button>
+                            <button class="currency-btn chip" data-curr="EUR" onclick="toggleCurrency('EUR')">🇪🇺 EUR</button>
+                            <button class="currency-btn chip" data-curr="JPY" onclick="toggleCurrency('JPY')">🇯🇵 JPY</button>
+                            <button class="currency-btn chip" data-curr="CNY" onclick="toggleCurrency('CNY')">🇨🇳 CNY</button>
+                            <button class="currency-btn chip" data-curr="GBP" onclick="toggleCurrency('GBP')">🇬🇧 GBP</button>
+                            <button class="currency-btn chip" data-curr="CHF" onclick="toggleCurrency('CHF')">🇨🇭 CHF</button>
+                            <button class="currency-btn chip" data-curr="CAD" onclick="toggleCurrency('CAD')">🇨🇦 CAD</button>
+                            <button class="currency-btn chip" data-curr="AUD" onclick="toggleCurrency('AUD')">🇦🇺 AUD</button>
+                            <!-- Asia Pacific -->
+                            <button class="currency-btn chip" data-curr="HKD" onclick="toggleCurrency('HKD')">🇭🇰 HKD</button>
+                            <button class="currency-btn chip" data-curr="TWD" onclick="toggleCurrency('TWD')">🇹🇼 TWD</button>
+                            <button class="currency-btn chip" data-curr="SGD" onclick="toggleCurrency('SGD')">🇸🇬 SGD</button>
+                            <button class="currency-btn chip" data-curr="THB" onclick="toggleCurrency('THB')">🇹🇭 THB</button>
+                            <button class="currency-btn chip" data-curr="MYR" onclick="toggleCurrency('MYR')">🇲🇾 MYR</button>
+                            <button class="currency-btn chip" data-curr="IDR" onclick="toggleCurrency('IDR')">🇮🇩 IDR</button>
+                            <button class="currency-btn chip" data-curr="PHP" onclick="toggleCurrency('PHP')">🇵🇭 PHP</button>
+                            <button class="currency-btn chip" data-curr="VND" onclick="toggleCurrency('VND')">🇻🇳 VND</button>
+                            <button class="currency-btn chip" data-curr="INR" onclick="toggleCurrency('INR')">🇮🇳 INR</button>
+                            <button class="currency-btn chip" data-curr="PKR" onclick="toggleCurrency('PKR')">🇵🇰 PKR</button>
+                            <button class="currency-btn chip" data-curr="BDT" onclick="toggleCurrency('BDT')">🇧🇩 BDT</button>
+                            <button class="currency-btn chip" data-curr="NZD" onclick="toggleCurrency('NZD')">🇳🇿 NZD</button>
+                            <button class="currency-btn chip" data-curr="MNT" onclick="toggleCurrency('MNT')">🇲🇳 MNT</button>
+                            <button class="currency-btn chip" data-curr="KZT" onclick="toggleCurrency('KZT')">🇰🇿 KZT</button>
+                            <button class="currency-btn chip" data-curr="BND" onclick="toggleCurrency('BND')">🇧🇳 BND</button>
+                            <!-- Europe -->
+                            <button class="currency-btn chip" data-curr="SEK" onclick="toggleCurrency('SEK')">🇸🇪 SEK</button>
+                            <button class="currency-btn chip" data-curr="DKK" onclick="toggleCurrency('DKK')">🇩🇰 DKK</button>
+                            <button class="currency-btn chip" data-curr="NOK" onclick="toggleCurrency('NOK')">🇳🇴 NOK</button>
+                            <button class="currency-btn chip" data-curr="RUB" onclick="toggleCurrency('RUB')">🇷🇺 RUB</button>
+                            <button class="currency-btn chip" data-curr="HUF" onclick="toggleCurrency('HUF')">🇭🇺 HUF</button>
+                            <button class="currency-btn chip" data-curr="PLN" onclick="toggleCurrency('PLN')">🇵🇱 PLN</button>
+                            <button class="currency-btn chip" data-curr="CZK" onclick="toggleCurrency('CZK')">🇨🇿 CZK</button>
+                            <!-- Americas -->
+                            <button class="currency-btn chip" data-curr="MXN" onclick="toggleCurrency('MXN')">🇲🇽 MXN</button>
+                            <button class="currency-btn chip" data-curr="BRL" onclick="toggleCurrency('BRL')">🇧🇷 BRL</button>
+                            <button class="currency-btn chip" data-curr="ARS" onclick="toggleCurrency('ARS')">🇦🇷 ARS</button>
+                            <!-- Middle East -->
+                            <button class="currency-btn chip" data-curr="SAR" onclick="toggleCurrency('SAR')">🇸🇦 SAR</button>
+                            <button class="currency-btn chip" data-curr="AED" onclick="toggleCurrency('AED')">🇦🇪 AED</button>
+                            <button class="currency-btn chip" data-curr="QAR" onclick="toggleCurrency('QAR')">🇶🇦 QAR</button>
+                            <button class="currency-btn chip" data-curr="KWD" onclick="toggleCurrency('KWD')">🇰🇼 KWD</button>
+                            <button class="currency-btn chip" data-curr="BHD" onclick="toggleCurrency('BHD')">🇧🇭 BHD</button>
+                            <button class="currency-btn chip" data-curr="JOD" onclick="toggleCurrency('JOD')">🇯🇴 JOD</button>
+                            <button class="currency-btn chip" data-curr="ILS" onclick="toggleCurrency('ILS')">🇮🇱 ILS</button>
+                            <button class="currency-btn chip" data-curr="TRY" onclick="toggleCurrency('TRY')">🇹🇷 TRY</button>
+                            <!-- Africa -->
+                            <button class="currency-btn chip" data-curr="ZAR" onclick="toggleCurrency('ZAR')">🇿🇦 ZAR</button>
+                            <button class="currency-btn chip" data-curr="EGP" onclick="toggleCurrency('EGP')">🇪🇬 EGP</button>
                         </div>
 
                         <div class="chart-area" id="chart-container">
@@ -162,6 +197,9 @@
                                 </g>
                                 <g id="data-points"></g>
                                 <g id="x-axis-labels"></g>
+                                <!-- Crosshair lines -->
+                                <line id="crosshair-x" class="chart-crosshair-line" x1="0" y1="0" x2="0" y2="400" style="display:none;" />
+                                <line id="crosshair-y" class="chart-crosshair-line" x1="0" y1="0" x2="1200" y2="0" style="display:none;" />
                             </svg>
                         </div>
                         <div class="chart-tooltip" id="chart-tooltip">
@@ -180,13 +218,153 @@
                 </div>
             </div>
 
+            <!-- Exchange Rate USD Panel -->
+            <div id="exchange-rate-usd-panel" class="market-content reveal" style="display:none;">
+                <div class="product-grid">
+                    <aside class="product-sidebar">
+                        <h3>Financial Products</h3>
+                        <ul class="product-menu">
+                            <li onclick="switchProduct('exchange-rate-krw')">Exchange Rate (KRW)</li>
+                            <li class="selected" onclick="switchProduct('exchange-rate-usd')">Exchange Rate (USD)</li>
+                            <li onclick="switchProduct('interest-rates')">Interest Rates</li>
+                            <li onclick="switchProduct('inflation')">Inflation</li>
+                            <li onclick="switchProduct('gdp-indicator')">GDP</li>
+                            <li onclick="switchProduct('gdp-per-capita')">GDP per Capita</li>
+                            <li onclick="switchProduct('gni')">GNI</li>
+                            <li onclick="switchProduct('trade')">Export x Import</li>
+                            <li onclick="switchProduct('gdp-growth')">Economy Growth Rate</li>
+                            <li onclick="switchProduct('employment')">Unemployment</li>
+                            <li onclick="switchProduct('global-stocks')">Global Stocks</li>
+                        </ul>
+                    </aside>
+
+                    <main class="tool-workspace">
+                        <!-- Exchange Rate USD -->
+                        <div class="chart-controls">
+                            <div class="date-range-control">
+                                <input type="date" class="date-input" id="usd-startDate" />
+                                <span class="date-separator">~</span>
+                                <input type="date" class="date-input" id="usd-endDate" />
+                            </div>
+                            <div class="period-buttons">
+                                <button class="period-btn" onclick="handleUsdPeriodClick('1W')">1W</button>
+                                <button class="period-btn" onclick="handleUsdPeriodClick('1M')">1M</button>
+                                <button class="period-btn active" onclick="handleUsdPeriodClick('3M')">3M</button>
+                                <button class="period-btn" onclick="handleUsdPeriodClick('1Y')">1Y</button>
+                            </div>
+                        </div>
+
+                        <!-- Chart Header -->
+                        <div class="chart-header" id="usd-chart-header">
+                            <div class="chart-title-section">
+                                <h2 class="chart-main-title" id="usd-chart-main-title">JPY/USD</h2>
+                                <div class="chart-value-container">
+                                    <span class="chart-value" id="usd-chart-main-value">-</span>
+                                    <span class="chart-change" id="usd-change-value">-</span>
+                                    <span class="chart-change-percent" id="usd-change-percent">(-)</span>
+                                </div>
+                            </div>
+                            <div class="chart-stats-inline" id="usd-chart-stats-inline">
+                                <div class="stat-item">
+                                    <span class="stat-label">High</span>
+                                    <span class="stat-value" id="usd-stat-high">-</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Low</span>
+                                    <span class="stat-value" id="usd-stat-low">-</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Average</span>
+                                    <span class="stat-value" id="usd-stat-average">-</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Multi-Currency Toggle -->
+                        <div class="currency-toggle" id="usd-currency-toggle">
+                            <!-- Major Currencies -->
+                            <button class="currency-btn chip active" data-curr="JPY" onclick="toggleUsdCurrency('JPY')">🇯🇵 JPY</button>
+                            <button class="currency-btn chip" data-curr="EUR" onclick="toggleUsdCurrency('EUR')">🇪🇺 EUR</button>
+                            <button class="currency-btn chip" data-curr="GBP" onclick="toggleUsdCurrency('GBP')">🇬🇧 GBP</button>
+                            <button class="currency-btn chip" data-curr="CNY" onclick="toggleUsdCurrency('CNY')">🇨🇳 CNY</button>
+                            <button class="currency-btn chip" data-curr="CHF" onclick="toggleUsdCurrency('CHF')">🇨🇭 CHF</button>
+                            <button class="currency-btn chip" data-curr="CAD" onclick="toggleUsdCurrency('CAD')">🇨🇦 CAD</button>
+                            <button class="currency-btn chip" data-curr="AUD" onclick="toggleUsdCurrency('AUD')">🇦🇺 AUD</button>
+                            <!-- Asia Pacific -->
+                            <button class="currency-btn chip" data-curr="HKD" onclick="toggleUsdCurrency('HKD')">🇭🇰 HKD</button>
+                            <button class="currency-btn chip" data-curr="TWD" onclick="toggleUsdCurrency('TWD')">🇹🇼 TWD</button>
+                            <button class="currency-btn chip" data-curr="SGD" onclick="toggleUsdCurrency('SGD')">🇸🇬 SGD</button>
+                            <button class="currency-btn chip" data-curr="THB" onclick="toggleUsdCurrency('THB')">🇹🇭 THB</button>
+                            <button class="currency-btn chip" data-curr="MYR" onclick="toggleUsdCurrency('MYR')">🇲🇾 MYR</button>
+                            <button class="currency-btn chip" data-curr="IDR" onclick="toggleUsdCurrency('IDR')">🇮🇩 IDR</button>
+                            <button class="currency-btn chip" data-curr="PHP" onclick="toggleUsdCurrency('PHP')">🇵🇭 PHP</button>
+                            <button class="currency-btn chip" data-curr="VND" onclick="toggleUsdCurrency('VND')">🇻🇳 VND</button>
+                            <button class="currency-btn chip" data-curr="INR" onclick="toggleUsdCurrency('INR')">🇮🇳 INR</button>
+                            <button class="currency-btn chip" data-curr="PKR" onclick="toggleUsdCurrency('PKR')">🇵🇰 PKR</button>
+                            <button class="currency-btn chip" data-curr="BDT" onclick="toggleUsdCurrency('BDT')">🇧🇩 BDT</button>
+                            <button class="currency-btn chip" data-curr="NZD" onclick="toggleUsdCurrency('NZD')">🇳🇿 NZD</button>
+                            <button class="currency-btn chip" data-curr="MNT" onclick="toggleUsdCurrency('MNT')">🇲🇳 MNT</button>
+                            <button class="currency-btn chip" data-curr="KZT" onclick="toggleUsdCurrency('KZT')">🇰🇿 KZT</button>
+                            <button class="currency-btn chip" data-curr="BND" onclick="toggleUsdCurrency('BND')">🇧🇳 BND</button>
+                            <!-- Europe -->
+                            <button class="currency-btn chip" data-curr="SEK" onclick="toggleUsdCurrency('SEK')">🇸🇪 SEK</button>
+                            <button class="currency-btn chip" data-curr="DKK" onclick="toggleUsdCurrency('DKK')">🇩🇰 DKK</button>
+                            <button class="currency-btn chip" data-curr="NOK" onclick="toggleUsdCurrency('NOK')">🇳🇴 NOK</button>
+                            <button class="currency-btn chip" data-curr="RUB" onclick="toggleUsdCurrency('RUB')">🇷🇺 RUB</button>
+                            <button class="currency-btn chip" data-curr="HUF" onclick="toggleUsdCurrency('HUF')">🇭🇺 HUF</button>
+                            <button class="currency-btn chip" data-curr="PLN" onclick="toggleUsdCurrency('PLN')">🇵🇱 PLN</button>
+                            <button class="currency-btn chip" data-curr="CZK" onclick="toggleUsdCurrency('CZK')">🇨🇿 CZK</button>
+                            <!-- Americas -->
+                            <button class="currency-btn chip" data-curr="MXN" onclick="toggleUsdCurrency('MXN')">🇲🇽 MXN</button>
+                            <button class="currency-btn chip" data-curr="BRL" onclick="toggleUsdCurrency('BRL')">🇧🇷 BRL</button>
+                            <button class="currency-btn chip" data-curr="ARS" onclick="toggleUsdCurrency('ARS')">🇦🇷 ARS</button>
+                            <!-- Middle East -->
+                            <button class="currency-btn chip" data-curr="SAR" onclick="toggleUsdCurrency('SAR')">🇸🇦 SAR</button>
+                            <button class="currency-btn chip" data-curr="AED" onclick="toggleUsdCurrency('AED')">🇦🇪 AED</button>
+                            <button class="currency-btn chip" data-curr="QAR" onclick="toggleUsdCurrency('QAR')">🇶🇦 QAR</button>
+                            <button class="currency-btn chip" data-curr="KWD" onclick="toggleUsdCurrency('KWD')">🇰🇼 KWD</button>
+                            <button class="currency-btn chip" data-curr="BHD" onclick="toggleUsdCurrency('BHD')">🇧🇭 BHD</button>
+                            <button class="currency-btn chip" data-curr="JOD" onclick="toggleUsdCurrency('JOD')">🇯🇴 JOD</button>
+                            <button class="currency-btn chip" data-curr="ILS" onclick="toggleUsdCurrency('ILS')">🇮🇱 ILS</button>
+                            <button class="currency-btn chip" data-curr="TRY" onclick="toggleUsdCurrency('TRY')">🇹🇷 TRY</button>
+                            <!-- Africa -->
+                            <button class="currency-btn chip" data-curr="ZAR" onclick="toggleUsdCurrency('ZAR')">🇿🇦 ZAR</button>
+                            <button class="currency-btn chip" data-curr="EGP" onclick="toggleUsdCurrency('EGP')">🇪🇬 EGP</button>
+                        </div>
+
+                        <div class="chart-area" id="usd-chart-container">
+                            <svg class="chart-svg" id="usd-chart-svg" viewBox="0 0 1200 400" preserveAspectRatio="none">
+                                <line x1="0" y1="350" x2="1200" y2="350" class="chart-grid-line" />
+                                <line x1="0" y1="280" x2="1200" y2="280" class="chart-grid-line" />
+                                <line x1="0" y1="210" x2="1200" y2="210" class="chart-grid-line" />
+                                <line x1="0" y1="140" x2="1200" y2="140" class="chart-grid-line" />
+                                <line x1="0" y1="70" x2="1200" y2="70" class="chart-grid-line" />
+                                
+                                <g id="usd-y-axis-labels"></g>
+                                <g id="usd-paths-group"></g>
+                                <g id="usd-data-points"></g>
+                                <g id="usd-x-axis-labels"></g>
+                                <!-- Crosshair lines -->
+                                <line id="usd-crosshair-x" class="chart-crosshair-line" x1="0" y1="0" x2="0" y2="400" style="display:none;" />
+                                <line id="usd-crosshair-y" class="chart-crosshair-line" x1="0" y1="0" x2="1200" y2="0" style="display:none;" />
+                            </svg>
+                        </div>
+                        <div class="chart-tooltip" id="usd-chart-tooltip">
+                            <div class="chart-tooltip-date" id="usd-tooltip-date"></div>
+                            <div id="usd-tooltip-content"></div>
+                        </div>
+                    </main>
+                </div>
+            </div>
+
             <!-- Interest Rates Panel -->
             <div id="interest-rates-panel" class="market-content reveal" style="display:none;">
                 <div class="product-grid">
                     <aside class="product-sidebar">
                         <h3>Financial Products</h3>
                         <ul class="product-menu">
-                            <li onclick="switchProduct('exchange-rate')">Exchange Rate</li>
+                            <li onclick="switchProduct('exchange-rate-krw')">Exchange Rate (KRW)</li>
+                            <li onclick="switchProduct('exchange-rate-usd')">Exchange Rate (USD)</li>
                             <li class="selected" onclick="switchProduct('interest-rates')">Interest Rates</li>
                             <li onclick="switchProduct('inflation')">Inflation</li>
                             <li onclick="switchProduct('gdp-indicator')">GDP</li>
@@ -219,14 +397,12 @@
                         <!-- Controls -->
                         <div class="chart-controls">
                             <div class="date-range-control">
-                                <input type="date" class="date-input" id="interest-start-date" />
+                                <input type="month" class="date-input" id="interest-start-date" />
                                 <span class="date-separator">~</span>
-                                <input type="date" class="date-input" id="interest-end-date" />
+                                <input type="month" class="date-input" id="interest-end-date" />
                             </div>
                             <div class="period-buttons">
-                                <button class="period-btn interest-cycle-btn active" data-cycle="M">월별</button>
-                                <button class="period-btn interest-cycle-btn" data-cycle="Q">분기별</button>
-                                <button class="period-btn interest-cycle-btn" data-cycle="A">연별</button>
+                                <button class="period-btn interest-cycle-btn active" data-cycle="M">Monthly</button>
                             </div>
                         </div>
 
@@ -263,7 +439,8 @@
                     <aside class="product-sidebar">
                         <h3>Financial Products</h3>
                         <ul class="product-menu">
-                            <li onclick="switchProduct('exchange-rate')">Exchange Rate</li>
+                            <li onclick="switchProduct('exchange-rate-krw')">Exchange Rate (KRW)</li>
+                            <li onclick="switchProduct('exchange-rate-usd')">Exchange Rate (USD)</li>
                             <li onclick="switchProduct('interest-rates')">Interest Rates</li>
                             <li class="selected" onclick="switchProduct('inflation')">Inflation</li>
                             <li onclick="switchProduct('gdp-indicator')">GDP</li>
@@ -301,8 +478,9 @@
                                 <input type="date" class="date-input" id="inflation-end-date" />
                             </div>
                             <div class="period-buttons">
-                                <button class="period-btn inflation-cycle-btn active" data-cycle="M">월별</button>
-                                <button class="period-btn inflation-cycle-btn" data-cycle="Q">분기별</button>
+                                <button class="period-btn inflation-cycle-btn active" data-cycle="M">Monthly</button>
+                                <button class="period-btn inflation-cycle-btn" data-cycle="Q">Quarterly</button>
+                                <button class="period-btn inflation-cycle-btn" data-cycle="A">Annually</button>
                             </div>
                         </div>
 
@@ -344,7 +522,8 @@
                     <aside class="product-sidebar">
                         <h3>Financial Products</h3>
                         <ul class="product-menu">
-                            <li onclick="switchProduct('exchange-rate')">Exchange Rate</li>
+                            <li onclick="switchProduct('exchange-rate-krw')">Exchange Rate (KRW)</li>
+                            <li onclick="switchProduct('exchange-rate-usd')">Exchange Rate (USD)</li>
                             <li onclick="switchProduct('interest-rates')">Interest Rates</li>
                             <li onclick="switchProduct('inflation')">Inflation</li>
                             <li class="selected" onclick="switchProduct('gdp-indicator')">GDP</li>
@@ -405,7 +584,8 @@
                     <aside class="product-sidebar">
                         <h3>Financial Products</h3>
                         <ul class="product-menu">
-                            <li onclick="switchProduct('exchange-rate')">Exchange Rate</li>
+                            <li onclick="switchProduct('exchange-rate-krw')">Exchange Rate (KRW)</li>
+                            <li onclick="switchProduct('exchange-rate-usd')">Exchange Rate (USD)</li>
                             <li onclick="switchProduct('interest-rates')">Interest Rates</li>
                             <li onclick="switchProduct('inflation')">Inflation</li>
                             <li onclick="switchProduct('gdp-indicator')">GDP</li>
@@ -466,7 +646,8 @@
                     <aside class="product-sidebar">
                         <h3>Financial Products</h3>
                         <ul class="product-menu">
-                            <li onclick="switchProduct('exchange-rate')">Exchange Rate</li>
+                            <li onclick="switchProduct('exchange-rate-krw')">Exchange Rate (KRW)</li>
+                            <li onclick="switchProduct('exchange-rate-usd')">Exchange Rate (USD)</li>
                             <li onclick="switchProduct('interest-rates')">Interest Rates</li>
                             <li onclick="switchProduct('inflation')">Inflation</li>
                             <li onclick="switchProduct('gdp-indicator')">GDP</li>
@@ -527,7 +708,8 @@
                     <aside class="product-sidebar">
                         <h3>Financial Products</h3>
                         <ul class="product-menu">
-                            <li onclick="switchProduct('exchange-rate')">Exchange Rate</li>
+                            <li onclick="switchProduct('exchange-rate-krw')">Exchange Rate (KRW)</li>
+                            <li onclick="switchProduct('exchange-rate-usd')">Exchange Rate (USD)</li>
                             <li onclick="switchProduct('interest-rates')">Interest Rates</li>
                             <li onclick="switchProduct('inflation')">Inflation</li>
                             <li onclick="switchProduct('gdp-indicator')">GDP</li>
@@ -559,8 +741,14 @@
                                 <span class="date-separator">~</span>
                                 <input type="date" class="date-input" id="trade-end-date" />
                             </div>
+                            <div class="period-buttons">
+                                <button class="period-btn trade-cycle-btn active" data-cycle="M">Monthly</button>
+                                <button class="period-btn trade-cycle-btn" data-cycle="Q">Quarterly</button>
+                                <button class="period-btn trade-cycle-btn" data-cycle="A">Annually</button>
+                            </div>
                         </div>
                         <div class="currency-toggle" id="trade-indicator-toggles"></div>
+                        <div class="currency-toggle" id="trade-country-chips"></div>
                         <div class="chart-area" id="trade-chart-container">
                             <svg class="chart-svg" id="trade-chart-svg" viewBox="0 0 1200 400" preserveAspectRatio="none">
                                 <line x1="0" y1="350" x2="1200" y2="350" class="chart-grid-line" />
@@ -588,7 +776,8 @@
                     <aside class="product-sidebar">
                         <h3>Financial Products</h3>
                         <ul class="product-menu">
-                            <li onclick="switchProduct('exchange-rate')">Exchange Rate</li>
+                            <li onclick="switchProduct('exchange-rate-krw')">Exchange Rate (KRW)</li>
+                            <li onclick="switchProduct('exchange-rate-usd')">Exchange Rate (USD)</li>
                             <li onclick="switchProduct('interest-rates')">Interest Rates</li>
                             <li onclick="switchProduct('inflation')">Inflation</li>
                             <li onclick="switchProduct('gdp-indicator')">GDP</li>
@@ -620,6 +809,11 @@
                                 <span class="date-separator">~</span>
                                 <input type="date" class="date-input" id="employment-end-date" />
                             </div>
+                            <div class="period-buttons">
+                                <button class="period-btn employment-cycle-btn active" data-cycle="M">Monthly</button>
+                                <button class="period-btn employment-cycle-btn" data-cycle="Q">Quarterly</button>
+                                <button class="period-btn employment-cycle-btn" data-cycle="A">Annually</button>
+                            </div>
                         </div>
                         <div class="currency-toggle" id="employment-country-chips"></div>
                         <div class="chart-area" id="employment-chart-container">
@@ -649,7 +843,8 @@
                     <aside class="product-sidebar">
                         <h3>Financial Products</h3>
                         <ul class="product-menu">
-                            <li onclick="switchProduct('exchange-rate')">Exchange Rate</li>
+                            <li onclick="switchProduct('exchange-rate-krw')">Exchange Rate (KRW)</li>
+                            <li onclick="switchProduct('exchange-rate-usd')">Exchange Rate (USD)</li>
                             <li onclick="switchProduct('interest-rates')">Interest Rates</li>
                             <li onclick="switchProduct('inflation')">Inflation</li>
                             <li onclick="switchProduct('gdp-indicator')">GDP</li>
@@ -681,6 +876,10 @@
                                 <span class="date-separator">~</span>
                                 <input type="number" class="date-input" id="gdp-growth-end-date" min="1960" />
                             </div>
+                            <div class="period-buttons">
+                                <button class="period-btn gdp-growth-cycle-btn active" data-cycle="Q">Quarterly</button>
+                                <button class="period-btn gdp-growth-cycle-btn" data-cycle="A">Annually</button>
+                            </div>
                         </div>
                         <div class="currency-toggle" id="gdp-growth-country-chips"></div>
                         <div class="chart-area" id="gdp-growth-chart-container">
@@ -710,7 +909,8 @@
                     <aside class="product-sidebar">
                         <h3>Financial Products</h3>
                         <ul class="product-menu">
-                            <li onclick="switchProduct('exchange-rate')">Exchange Rate</li>
+                            <li onclick="switchProduct('exchange-rate-krw')">Exchange Rate (KRW)</li>
+                            <li onclick="switchProduct('exchange-rate-usd')">Exchange Rate (USD)</li>
                             <li onclick="switchProduct('interest-rates')">Interest Rates</li>
                             <li onclick="switchProduct('inflation')">Inflation</li>
                             <li onclick="switchProduct('gdp-indicator')">GDP</li>
@@ -741,6 +941,11 @@
                                 <input type="date" class="date-input" id="global-stocks-start-date" />
                                 <span class="date-separator">~</span>
                                 <input type="date" class="date-input" id="global-stocks-end-date" />
+                            </div>
+                            <div class="period-buttons">
+                                <button class="period-btn global-stocks-cycle-btn active" data-cycle="M">Monthly</button>
+                                <button class="period-btn global-stocks-cycle-btn" data-cycle="Q">Quarterly</button>
+                                <button class="period-btn global-stocks-cycle-btn" data-cycle="A">Annually</button>
                             </div>
                         </div>
                         <div class="currency-toggle" id="global-stocks-country-chips"></div>
@@ -795,6 +1000,7 @@
     <script src="../js/config/constants.js"></script>
     <script src="../js/utils/helpers.js"></script>
     <script src="../js/features/market/economy/exchange-rate.js"></script>
+    <script src="../js/features/market/economy/exchange-rate-usd.js"></script>
     <script src="../js/features/market/economy/interest-rate.js"></script>
     <script src="../js/features/market/economy/inflation.js"></script>
     <script src="../js/features/market/economy/gdp.js"></script>

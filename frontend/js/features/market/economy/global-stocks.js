@@ -42,18 +42,28 @@ const globalStocksState = {
 // ============================================================
 
 const globalStocksCountryMap = [
-    { keywords: ['호주', 'aus', 'australia'], name: 'Australia', color: 'var(--c-interest-aus)' },
-    { keywords: ['브라질', 'bra', 'brazil'], name: 'Brazil', color: 'var(--c-interest-bra)' },
-    { keywords: ['캐나다', 'can', 'canada'], name: 'Canada', color: 'var(--c-interest-can)' },
-    { keywords: ['중국', 'chn', 'china'], name: 'China', color: 'var(--c-interest-chn)' },
-    { keywords: ['독일', 'deu', 'germany', 'dax'], name: 'Germany', color: 'var(--c-interest-deu)' },
-    { keywords: ['프랑스', 'fra', 'france', 'cac'], name: 'France', color: 'var(--c-interest-fra)' },
-    { keywords: ['영국', 'gbr', 'uk', 'ftse'], name: 'UK', color: 'var(--c-interest-gbr)' },
-    { keywords: ['인도', 'ind', 'india', 'sensex'], name: 'India', color: 'var(--c-interest-ind)' },
-    { keywords: ['일본', 'jpn', 'japan', 'nikkei'], name: 'Japan', color: 'var(--c-interest-jpn)' },
     { keywords: ['한국', 'kor', 'korea', 'kospi'], name: 'Korea', color: 'var(--c-interest-kor)' },
-    { keywords: ['미국', 'usa', 'us ', 'dow', 's&p', 'nasdaq'], name: 'USA', color: 'var(--c-interest-usa)' },
-    { keywords: ['유럽', 'eur', 'euro', 'stoxx'], name: 'Europe', color: 'var(--c-interest-eur)' }
+    { keywords: ['미국', 'usa', 'us ', 'united states', 'dow', 's&p', 'nasdaq'], name: 'USA', color: 'var(--c-interest-usa)' },
+    { keywords: ['중국', 'chn', 'china'], name: 'China', color: 'var(--c-interest-chn)' },
+    { keywords: ['일본', 'jpn', 'japan', 'nikkei'], name: 'Japan', color: 'var(--c-interest-jpn)' },
+    { keywords: ['독일', 'deu', 'germany', 'dax'], name: 'Germany', color: 'var(--c-interest-deu)' },
+    { keywords: ['인도', 'ind', 'india', 'sensex'], name: 'India', color: 'var(--c-interest-ind)' },
+    { keywords: ['영국', 'gbr', 'uk', 'ftse'], name: 'UK', color: 'var(--c-interest-gbr)' },
+    { keywords: ['프랑스', 'fra', 'france', 'cac'], name: 'France', color: 'var(--c-interest-fra)' },
+    { keywords: ['러시아', 'rus', 'russia'], name: 'Russia', color: 'var(--c-interest-rus)' },
+    { keywords: ['캐나다', 'can', 'canada'], name: 'Canada', color: 'var(--c-interest-can)' },
+    { keywords: ['이탈리아', 'ita', 'italy'], name: 'Italy', color: 'var(--c-interest-ita)' },
+    { keywords: ['브라질', 'bra', 'brazil'], name: 'Brazil', color: 'var(--c-interest-bra)' },
+    { keywords: ['호주', '오스트레일리아', 'aus', 'australia'], name: 'Australia', color: 'var(--c-interest-aus)' },
+    { keywords: ['멕시코', 'mex', 'mexico'], name: 'Mexico', color: 'var(--c-interest-mex)' },
+    { keywords: ['인도네시아', 'idn', 'indonesia'], name: 'Indonesia', color: 'var(--c-interest-idn)' },
+    { keywords: ['튀르키예', '터키', 'tur', 'turkey'], name: 'Turkey', color: 'var(--c-interest-tur)' },
+    { keywords: ['스위스', 'che', 'switzerland'], name: 'Switzerland', color: 'var(--c-interest-che)' },
+    { keywords: ['스웨덴', 'swe', 'sweden'], name: 'Sweden', color: 'var(--c-interest-swe)' },
+    { keywords: ['노르웨이', 'nor', 'norway'], name: 'Norway', color: 'var(--c-interest-nor)' },
+    { keywords: ['남아프리카', 'zaf', 'south africa'], name: 'South Africa', color: 'var(--c-interest-zaf)' },
+    { keywords: ['덴마크', 'dnk', 'denmark'], name: 'Denmark', color: 'var(--c-interest-dnk)' },
+    { keywords: ['뉴질랜드', 'nzl', 'new zealand'], name: 'New Zealand', color: 'var(--c-interest-nzl)' }
 ];
 
 function getGlobalStocksCountryName(koreanName) {
@@ -331,19 +341,36 @@ function renderGlobalStocksXAxis(dates) {
     });
 }
 
+let globalStocksCrosshairX = null;
+let globalStocksCrosshairY = null;
+
 function setupGlobalStocksInteractivity() {
     const prefix = GLOBAL_STOCKS_CONFIG.chartPrefix;
     const container = document.getElementById(`${prefix}-chart-container`);
     const tooltip = document.getElementById(`${prefix}-chart-tooltip`);
-    if (!container || !tooltip) return;
+    const svg = document.getElementById(`${prefix}-chart-svg`);
+    if (!container || !tooltip || !svg) return;
     
     if (tooltip.parentElement !== document.body) document.body.appendChild(tooltip);
+    
+    // Create crosshair elements
+    const { width, height } = getSvgViewBoxSize(svg);
+    const padding = { top: 20, bottom: 30, left: 60, right: 20 };
+    const chartWidth = width - padding.left - padding.right;
+    const chartHeight = height - padding.top - padding.bottom;
+    
+    const crosshairs = createCrosshairElements(svg, padding, chartWidth, chartHeight);
+    globalStocksCrosshairX = crosshairs.crosshairX;
+    globalStocksCrosshairY = crosshairs.crosshairY;
     
     const newC = container.cloneNode(true);
     container.parentNode.replaceChild(newC, container);
     
     newC.addEventListener('mousemove', e => showGlobalStocksTooltip(e));
-    newC.addEventListener('mouseleave', () => hideGlobalStocksTooltip());
+    newC.addEventListener('mouseleave', () => {
+        hideGlobalStocksTooltip();
+        hideCrosshair(globalStocksCrosshairX, globalStocksCrosshairY);
+    });
 }
 
 function showGlobalStocksTooltip(event) {
@@ -355,13 +382,45 @@ function showGlobalStocksTooltip(event) {
     const allDates = new Set();
     Object.values(globalStocksState.countryData).forEach(d => d.forEach(i => allDates.add(i.date)));
     const dates = Array.from(allDates).sort();
-    if (!dates.length) return;
+    if (!dates.length) {
+        hideCrosshair(globalStocksCrosshairX, globalStocksCrosshairY);
+        return;
+    }
     
     const rect = svg.getBoundingClientRect();
-    const { width } = getSvgViewBoxSize(svg);
+    const { width, height } = getSvgViewBoxSize(svg);
+    const pad = { top: 20, bottom: 30, left: 60, right: 20 };
+    const cw = width - pad.left - pad.right;
+    const ch = height - pad.top - pad.bottom;
     const x = event.clientX - rect.left;
     const idx = Math.round(((x / rect.width * width) - 60) / (width - 80) * (dates.length - 1));
-    const date = dates[Math.max(0, Math.min(dates.length - 1, idx))];
+    const clampedIdx = Math.max(0, Math.min(dates.length - 1, idx));
+    const date = dates[clampedIdx];
+    
+    // Update crosshair X position
+    const crosshairXPos = pad.left + (clampedIdx / (dates.length - 1 || 1)) * cw;
+    if (globalStocksCrosshairX) {
+        globalStocksCrosshairX.setAttribute('x1', crosshairXPos);
+        globalStocksCrosshairX.setAttribute('x2', crosshairXPos);
+        globalStocksCrosshairX.style.opacity = '1';
+    }
+    
+    // Calculate average Y for crosshair
+    let sumY = 0, countY = 0;
+    globalStocksState.activeCountries.forEach(code => {
+        const item = globalStocksState.countryData[code]?.find(d => d.date === date);
+        if (item && Number.isFinite(item.value)) { sumY += item.value; countY++; }
+    });
+    
+    if (countY > 0 && globalStocksCrosshairY) {
+        const avgVal = sumY / countY;
+        const { min, max } = globalStocksState.yAxisRange;
+        const normY = (avgVal - min) / (max - min || 1);
+        const crosshairYPos = pad.top + (1 - normY) * ch;
+        globalStocksCrosshairY.setAttribute('y1', crosshairYPos);
+        globalStocksCrosshairY.setAttribute('y2', crosshairYPos);
+        globalStocksCrosshairY.style.opacity = '1';
+    }
     
     let content = '';
     globalStocksState.activeCountries.forEach(code => {
@@ -390,6 +449,7 @@ function showGlobalStocksTooltip(event) {
 function hideGlobalStocksTooltip() {
     const t = document.getElementById(`${GLOBAL_STOCKS_CONFIG.chartPrefix}-chart-tooltip`);
     if (t) { t.classList.remove('visible'); t.style.visibility = 'hidden'; }
+    hideCrosshair(globalStocksCrosshairX, globalStocksCrosshairY);
 }
 
 function updateGlobalStocksHeader() {

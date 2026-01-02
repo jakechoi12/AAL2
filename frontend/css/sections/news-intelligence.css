@@ -132,6 +132,24 @@
     margin-bottom: 0;
 }
 
+.critical-alert-item.clickable {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.critical-alert-item.clickable:hover {
+    transform: translateX(4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.critical-alert-item.clickable:hover .alert-title {
+    color: var(--accent-color);
+}
+
+.critical-alert-item.clickable:active {
+    transform: translateX(2px);
+}
+
 .critical-alert-item.severity-extreme {
     background: rgba(220, 38, 38, 0.1);
     border-color: var(--severity-extreme);

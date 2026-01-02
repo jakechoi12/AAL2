@@ -849,6 +849,93 @@ function buildXAxisTargets(rangeKey, dates, endDateOverride = null) {
     return [];
 }
 
+// ============================================================
+// CROSSHAIR UTILITY FUNCTIONS (공유 함수)
+// ============================================================
+
+/**
+ * Crosshair 요소 생성 (SVG 내부에 추가)
+ * @param {SVGElement} svg - SVG 요소
+ * @param {object} padding - 패딩 객체 { left, right, top, bottom }
+ * @param {number} chartWidth - 차트 너비
+ * @param {number} chartHeight - 차트 높이
+ * @returns {object} - { crosshairX, crosshairY }
+ */
+function createCrosshairElements(svg, padding, chartWidth, chartHeight) {
+    // 기존 crosshair 제거
+    const existingX = svg.querySelector('.crosshair-x');
+    const existingY = svg.querySelector('.crosshair-y');
+    if (existingX) existingX.remove();
+    if (existingY) existingY.remove();
+    
+    const vb = getSvgViewBoxSize(svg);
+    const vbHeight = vb.height;
+    
+    // 수직선 (X축 방향)
+    const crosshairX = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    crosshairX.classList.add('crosshair-x');
+    crosshairX.setAttribute('x1', padding.left);
+    crosshairX.setAttribute('y1', padding.top);
+    crosshairX.setAttribute('x2', padding.left);
+    crosshairX.setAttribute('y2', vbHeight - padding.bottom);
+    crosshairX.setAttribute('stroke', 'var(--text-sub, #666)');
+    crosshairX.setAttribute('stroke-width', '1');
+    crosshairX.setAttribute('stroke-dasharray', '4 4');
+    crosshairX.style.opacity = '0';
+    crosshairX.style.pointerEvents = 'none';
+    
+    // 수평선 (Y축 방향)
+    const crosshairY = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    crosshairY.classList.add('crosshair-y');
+    crosshairY.setAttribute('x1', padding.left);
+    crosshairY.setAttribute('y1', padding.top);
+    crosshairY.setAttribute('x2', padding.left + chartWidth);
+    crosshairY.setAttribute('y2', padding.top);
+    crosshairY.setAttribute('stroke', 'var(--text-sub, #666)');
+    crosshairY.setAttribute('stroke-width', '1');
+    crosshairY.setAttribute('stroke-dasharray', '4 4');
+    crosshairY.style.opacity = '0';
+    crosshairY.style.pointerEvents = 'none';
+    
+    svg.appendChild(crosshairX);
+    svg.appendChild(crosshairY);
+    
+    return { crosshairX, crosshairY };
+}
+
+/**
+ * Crosshair 위치 업데이트
+ * @param {SVGLineElement} crosshairX - 수직선 요소
+ * @param {SVGLineElement} crosshairY - 수평선 요소
+ * @param {number} x - X 좌표
+ * @param {number} y - Y 좌표
+ * @param {object} padding - 패딩 객체
+ * @param {number} chartWidth - 차트 너비
+ * @param {number} chartHeight - 차트 높이
+ */
+function updateCrosshairPosition(crosshairX, crosshairY, x, y, padding, chartWidth, chartHeight) {
+    if (crosshairX) {
+        crosshairX.setAttribute('x1', x);
+        crosshairX.setAttribute('x2', x);
+        crosshairX.style.opacity = '1';
+    }
+    if (crosshairY) {
+        crosshairY.setAttribute('y1', y);
+        crosshairY.setAttribute('y2', y);
+        crosshairY.style.opacity = '1';
+    }
+}
+
+/**
+ * Crosshair 숨기기
+ * @param {SVGLineElement} crosshairX - 수직선 요소
+ * @param {SVGLineElement} crosshairY - 수평선 요소
+ */
+function hideCrosshair(crosshairX, crosshairY) {
+    if (crosshairX) crosshairX.style.opacity = '0';
+    if (crosshairY) crosshairY.style.opacity = '0';
+}
+
 // Expose to window for backwards compatibility
 window.formatDateForAPI = formatDateForAPI;
 window.formatInterestDateForAPI = formatInterestDateForAPI;
@@ -879,6 +966,11 @@ window.fillMissingDates = fillMissingDates;
 window.findClosestDate = findClosestDate;
 window.dedupeAndSortTargets = dedupeAndSortTargets;
 window.buildXAxisTargets = buildXAxisTargets;
+
+// Crosshair functions
+window.createCrosshairElements = createCrosshairElements;
+window.updateCrosshairPosition = updateCrosshairPosition;
+window.hideCrosshair = hideCrosshair;
 
 console.log('✅ AAL Helpers loaded');
 

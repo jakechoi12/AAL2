@@ -1,9 +1,10 @@
 /**
- * AAL Application - Exchange Rate Module
- * 환율 관련 기능 모듈
+ * AAL Application - Exchange Rate KRW Module
+ * 대원화 환율 관련 기능 모듈
  * 
- * 담당 패널: #economy-panel
- * 주요 기능: 환율 차트, 통화 비교, 환율 계산기
+ * 담당 패널: #exchange-rate-krw-panel
+ * 주요 기능: KRW 기준 환율 차트, 통화 비교
+ * API: 731Y001 (대원화 환율)
  */
 
 // ============================================================
@@ -33,7 +34,7 @@ if (typeof window.currentRangeKey === 'undefined') {
  */
 function initDateInputs() {
     // Exchange Rate 패널의 날짜 입력 필드만 선택
-    const economyPanel = document.getElementById('economy-panel');
+    const economyPanel = document.getElementById('exchange-rate-krw-panel');
     if (!economyPanel) return;
     
     const dateInputs = economyPanel.querySelectorAll('.date-input');
@@ -58,7 +59,7 @@ function initDateInputs() {
  */
 function validateDateRange() {
     // Exchange Rate 패널의 날짜 입력 필드만 확인
-    const economyPanel = document.getElementById('economy-panel');
+    const economyPanel = document.getElementById('exchange-rate-krw-panel');
     if (!economyPanel) return false;
     
     const dateInputs = economyPanel.querySelectorAll('.date-input');
@@ -82,7 +83,7 @@ function validateDateRange() {
  */
 function setDateRange(days, periodKey = null) {
     // Exchange Rate 패널의 날짜 입력 필드만 선택
-    const economyPanel = document.getElementById('economy-panel');
+    const economyPanel = document.getElementById('exchange-rate-krw-panel');
     if (!economyPanel) return;
     
     const dateInputs = economyPanel.querySelectorAll('.date-input');
@@ -145,7 +146,7 @@ async function fetchExchangeRateData() {
     if (!validateDateRange()) return;
     
     // Exchange Rate 패널의 날짜 입력 필드만 선택
-    const economyPanel = document.getElementById('economy-panel');
+    const economyPanel = document.getElementById('exchange-rate-krw-panel');
     if (!economyPanel) return;
     
     const dateInputs = economyPanel.querySelectorAll('.date-input');
@@ -317,7 +318,7 @@ function processExchangeRateData(results) {
     chartData = {};
     
     // 조회 기간 가져오기
-    const economyPanel = document.getElementById('economy-panel');
+    const economyPanel = document.getElementById('exchange-rate-krw-panel');
     let startDateStr = '';
     let endDateStr = '';
     
@@ -480,7 +481,7 @@ function generateSVGPath(currency, data) {
  * @returns {string|null} - 기간 키 ('1W', '1M', '3M', '1Y') 또는 null
  */
 function inferRangeKeyFromInputs() {
-    const economyPanel = document.getElementById('economy-panel');
+    const economyPanel = document.getElementById('exchange-rate-krw-panel');
     if (!economyPanel) return null;
     
     const inputs = economyPanel.querySelectorAll('.date-input');
@@ -510,7 +511,7 @@ function getActiveRangeKey() {
         window.currentRangeKey === '3M' || window.currentRangeKey === '1Y') {
         return window.currentRangeKey;
     }
-    const economyPanel = document.getElementById('economy-panel');
+    const economyPanel = document.getElementById('exchange-rate-krw-panel');
     const btn = economyPanel ? economyPanel.querySelector('.period-btn.active') : null;
     const key = btn ? btn.textContent.trim() : null;
     if (key === '1W' || key === '1M' || key === '3M' || key === '1Y') return key;
@@ -727,7 +728,7 @@ function toggleCurrency(curr) {
         // 활성 통화가 있으면 첫 번째 통화의 통계 정보 업데이트
         if (activeCurrencies.length > 0) {
             const primaryCurrency = activeCurrencies[0];
-            const economyPanel = document.getElementById('economy-panel');
+            const economyPanel = document.getElementById('exchange-rate-krw-panel');
             if (economyPanel) {
                 const dateInputs = economyPanel.querySelectorAll('.date-input');
                 if (dateInputs.length >= 2) {
@@ -947,6 +948,9 @@ function ensureTooltipInBody() {
     }
 }
 
+let exchangeRateCrosshairX = null;
+let exchangeRateCrosshairY = null;
+
 /**
  * 차트 인터랙티브 기능 설정
  */
@@ -962,6 +966,16 @@ function setupChartInteractivity() {
     // Portal 보장
     ensureTooltipInBody();
     
+    // Create crosshair elements
+    const { width, height } = getSvgViewBoxSize(svg);
+    const padding = { top: 20, bottom: 30, left: 60, right: 20 };
+    const chartWidth = width - padding.left - padding.right;
+    const chartHeight = height - padding.top - padding.bottom;
+    
+    const crosshairs = createCrosshairElements(svg, padding, chartWidth, chartHeight);
+    exchangeRateCrosshairX = crosshairs.crosshairX;
+    exchangeRateCrosshairY = crosshairs.crosshairY;
+    
     // mousemove rAF 스로틀링
     let rafId = null;
     let lastPoint = null;
@@ -972,13 +986,49 @@ function setupChartInteractivity() {
         const tooltipCache = window.tooltipCache;
         if (!tooltipCache || !tooltipCache.allDates || tooltipCache.allDates.length === 0) {
             hideTooltip();
+            hideCrosshair(exchangeRateCrosshairX, exchangeRateCrosshairY);
             return;
         }
 
         const fakeEvent = { clientX: lastPoint.x, clientY: lastPoint.y };
         const date = getDateFromMouseX(lastPoint.x, chartContainer.getBoundingClientRect());
-        if (date) showTooltip(fakeEvent, date);
-        else hideTooltip();
+        if (date) {
+            showTooltip(fakeEvent, date);
+            // Update crosshair X position
+            const allDates = tooltipCache.allDates;
+            const dateIdx = allDates.indexOf(date);
+            if (dateIdx >= 0) {
+                const crosshairXPos = padding.left + (dateIdx / (allDates.length - 1 || 1)) * chartWidth;
+                if (exchangeRateCrosshairX) {
+                    exchangeRateCrosshairX.setAttribute('x1', crosshairXPos);
+                    exchangeRateCrosshairX.setAttribute('x2', crosshairXPos);
+                    exchangeRateCrosshairX.style.opacity = '1';
+                }
+                
+                // Calculate average Y for crosshair
+                let sumY = 0, countY = 0;
+                activeCurrencies.forEach(currency => {
+                    const currData = chartData[currency];
+                    if (currData) {
+                        const item = currData.find(d => d.date === date);
+                        if (item && Number.isFinite(item.value)) { sumY += item.value; countY++; }
+                    }
+                });
+                
+                if (countY > 0 && exchangeRateCrosshairY) {
+                    const avgVal = sumY / countY;
+                    const { min, max } = yAxisRange;
+                    const normY = (avgVal - min) / (max - min || 1);
+                    const crosshairYPos = padding.top + (1 - normY) * chartHeight;
+                    exchangeRateCrosshairY.setAttribute('y1', crosshairYPos);
+                    exchangeRateCrosshairY.setAttribute('y2', crosshairYPos);
+                    exchangeRateCrosshairY.style.opacity = '1';
+                }
+            }
+        } else {
+            hideTooltip();
+            hideCrosshair(exchangeRateCrosshairX, exchangeRateCrosshairY);
+        }
     };
 
     chartContainer.addEventListener('mousemove', (event) => {
@@ -990,11 +1040,18 @@ function setupChartInteractivity() {
     // 마우스가 차트 영역을 벗어날 때
     chartContainer.addEventListener('mouseleave', () => {
         hideTooltip();
+        hideCrosshair(exchangeRateCrosshairX, exchangeRateCrosshairY);
     });
 
     // 스크롤/리사이즈 시 툴팁 숨김
-    window.addEventListener('scroll', hideTooltip, true);
-    window.addEventListener('resize', hideTooltip);
+    window.addEventListener('scroll', () => {
+        hideTooltip();
+        hideCrosshair(exchangeRateCrosshairX, exchangeRateCrosshairY);
+    }, true);
+    window.addEventListener('resize', () => {
+        hideTooltip();
+        hideCrosshair(exchangeRateCrosshairX, exchangeRateCrosshairY);
+    });
     
     chartInteractivitySetup = true;
 }
@@ -1222,7 +1279,7 @@ function initExchangeRate() {
     initDateInputs();
     
     // 현재 period 상태 초기화
-    const economyPanel = document.getElementById('economy-panel');
+    const economyPanel = document.getElementById('exchange-rate-krw-panel');
     const activeBtn = economyPanel ? economyPanel.querySelector('.period-btn.active') : null;
     const initialKey = activeBtn ? activeBtn.textContent.trim() : null;
     window.currentRangeKey = (initialKey === '1W' || initialKey === '1M' || initialKey === '3M' || initialKey === '1Y') ? initialKey : null;

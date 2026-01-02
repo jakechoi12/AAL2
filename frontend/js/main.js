@@ -37,7 +37,8 @@ function switchProduct(productName) {
     
     // Product display names mapping
     const productDisplayNames = {
-        'exchange-rate': 'Exchange Rate',
+        'exchange-rate-krw': 'Exchange Rate (KRW)',
+        'exchange-rate-usd': 'Exchange Rate (USD)',
         'interest-rates': 'Interest Rates',
         'inflation': 'Inflation',
         'gdp-indicator': 'GDP',
@@ -59,7 +60,8 @@ function switchProduct(productName) {
     
     // Hide all product panels and submenu
     const panels = {
-        'exchange-rate': document.getElementById('economy-panel'),
+        'exchange-rate-krw': document.getElementById('exchange-rate-krw-panel'),
+        'exchange-rate-usd': document.getElementById('exchange-rate-usd-panel'),
         'interest-rates': document.getElementById('interest-rates-panel'),
         'inflation': document.getElementById('inflation-panel'),
         'gdp-indicator': document.getElementById('gdp-indicator-panel'),
@@ -83,8 +85,18 @@ function switchProduct(productName) {
     if (gdpSubmenu) gdpSubmenu.classList.remove('show');
     
     // Show selected panel and initialize if needed
-    if (productName === 'exchange-rate' && panels['exchange-rate']) {
-        panels['exchange-rate'].style.display = 'block';
+    if (productName === 'exchange-rate-krw' && panels['exchange-rate-krw']) {
+        panels['exchange-rate-krw'].style.display = 'block';
+        if (!window.exchangeRateKrwDataLoaded && typeof initExchangeRate === 'function') {
+            initExchangeRate();
+            window.exchangeRateKrwDataLoaded = true;
+        }
+    } else if (productName === 'exchange-rate-usd' && panels['exchange-rate-usd']) {
+        panels['exchange-rate-usd'].style.display = 'block';
+        if (!window.exchangeRateUsdDataLoaded && typeof initExchangeRateUsd === 'function') {
+            initExchangeRateUsd();
+            window.exchangeRateUsdDataLoaded = true;
+        }
     } else if (productName === 'interest-rates' && panels['interest-rates']) {
         panels['interest-rates'].style.display = 'block';
         if (!window.interestDataLoaded && typeof initInterestRates === 'function') {

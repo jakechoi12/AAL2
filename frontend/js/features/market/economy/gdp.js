@@ -56,12 +56,14 @@ const gdpCountryInfoMap = [
     { keywords: ['체코', 'cze', 'czech'], englishName: 'Czech Republic', color: 'var(--c-interest-cze)' },
     { keywords: ['독일', 'deu', 'germany'], englishName: 'Germany', color: 'var(--c-interest-deu)' },
     { keywords: ['덴마크', 'dnk', 'denmark'], englishName: 'Denmark', color: 'var(--c-interest-dnk)' },
+    { keywords: ['에스토니아', 'est', 'estonia'], englishName: 'Estonia', color: '#1ABC9C' },
     { keywords: ['스페인', 'esp', 'spain'], englishName: 'Spain', color: 'var(--c-interest-esp)' },
     { keywords: ['핀란드', 'fin', 'finland'], englishName: 'Finland', color: '#3498DB' },
     { keywords: ['프랑스', 'fra', 'france'], englishName: 'France', color: 'var(--c-interest-fra)' },
     { keywords: ['영국', 'gbr', 'uk', 'united kingdom'], englishName: 'UK', color: 'var(--c-interest-gbr)' },
     { keywords: ['그리스', 'grc', 'greece'], englishName: 'Greece', color: '#2980B9' },
     { keywords: ['헝가리', 'hun', 'hungary'], englishName: 'Hungary', color: 'var(--c-interest-hun)' },
+    { keywords: ['아이슬란드', 'isl', 'iceland'], englishName: 'Iceland', color: '#7FB3D5' },
     { keywords: ['인도네시아', 'idn', 'indonesia'], englishName: 'Indonesia', color: 'var(--c-interest-idn)' },
     { keywords: ['아일랜드', 'irl', 'ireland'], englishName: 'Ireland', color: '#27AE60' },
     { keywords: ['이스라엘', 'isr', 'israel'], englishName: 'Israel', color: 'var(--c-interest-isr)' },
@@ -69,12 +71,17 @@ const gdpCountryInfoMap = [
     { keywords: ['이탈리아', 'ita', 'italy'], englishName: 'Italy', color: 'var(--c-interest-ita)' },
     { keywords: ['일본', 'jpn', 'japan'], englishName: 'Japan', color: 'var(--c-interest-jpn)' },
     { keywords: ['한국', 'kor', 'korea'], englishName: 'Korea', color: 'var(--c-interest-kor)' },
+    { keywords: ['라트비아', 'lva', 'latvia'], englishName: 'Latvia', color: '#A569BD' },
+    { keywords: ['룩셈부르크', 'lux', 'luxembourg'], englishName: 'Luxembourg', color: '#F5B041' },
     { keywords: ['멕시코', 'mex', 'mexico'], englishName: 'Mexico', color: 'var(--c-interest-mex)' },
     { keywords: ['네덜란드', 'nld', 'netherlands'], englishName: 'Netherlands', color: '#E67E22' },
     { keywords: ['노르웨이', 'nor', 'norway'], englishName: 'Norway', color: 'var(--c-interest-nor)' },
     { keywords: ['뉴질랜드', 'nzl', 'zealand'], englishName: 'New Zealand', color: 'var(--c-interest-nzl)' },
     { keywords: ['폴란드', 'pol', 'poland'], englishName: 'Poland', color: 'var(--c-interest-pol)' },
+    { keywords: ['포르투갈', 'prt', 'portugal'], englishName: 'Portugal', color: '#9B59B6' },
     { keywords: ['러시아', 'rus', 'russia'], englishName: 'Russia', color: 'var(--c-interest-rus)' },
+    { keywords: ['슬로바키아', 'svk', 'slovakia'], englishName: 'Slovakia', color: '#34495E' },
+    { keywords: ['슬로베니아', 'svn', 'slovenia'], englishName: 'Slovenia', color: '#16A085' },
     { keywords: ['스웨덴', 'swe', 'sweden'], englishName: 'Sweden', color: 'var(--c-interest-swe)' },
     { keywords: ['튀르키예', '터키', 'tur', 'turkey', 'turkiye'], englishName: 'Turkey', color: 'var(--c-interest-tur)' },
     { keywords: ['미국', 'usa', 'us ', 'united states'], englishName: 'USA', color: 'var(--c-interest-usa)' },
@@ -608,16 +615,30 @@ function renderGDPXAxisLabels(sortedDates) {
 // CHART INTERACTIVITY
 // ============================================================
 
+let gdpCrosshairX = null;
+let gdpCrosshairY = null;
+
 function setupGDPChartInteractivity() {
     const prefix = GDP_CONFIG.chartPrefix;
     const chartContainer = document.getElementById(`${prefix}-chart-container`);
     const tooltip = document.getElementById(`${prefix}-chart-tooltip`);
+    const svg = document.getElementById(`${prefix}-chart-svg`);
     
-    if (!chartContainer || !tooltip) return;
+    if (!chartContainer || !tooltip || !svg) return;
     
     if (tooltip.parentElement !== document.body) {
         document.body.appendChild(tooltip);
     }
+    
+    // Create crosshair elements
+    const { width, height } = getSvgViewBoxSize(svg);
+    const padding = { top: 20, bottom: 30, left: 60, right: 20 };
+    const chartWidth = width - padding.left - padding.right;
+    const chartHeight = height - padding.top - padding.bottom;
+    
+    const crosshairs = createCrosshairElements(svg, padding, chartWidth, chartHeight);
+    gdpCrosshairX = crosshairs.crosshairX;
+    gdpCrosshairY = crosshairs.crosshairY;
     
     const newContainer = chartContainer.cloneNode(true);
     chartContainer.parentNode.replaceChild(newContainer, chartContainer);
@@ -638,6 +659,7 @@ function setupGDPChartInteractivity() {
             rafId = null;
         }
         hideGDPTooltip();
+        hideCrosshair(gdpCrosshairX, gdpCrosshairY);
     });
 }
 
@@ -650,9 +672,10 @@ function showGDPTooltip(event) {
     const rect = svg.getBoundingClientRect();
     const x = event.clientX - rect.left;
     
-    const { width } = getSvgViewBoxSize(svg);
-    const chartPadding = { left: 60, right: 20 };
+    const { width, height } = getSvgViewBoxSize(svg);
+    const chartPadding = { left: 60, right: 20, top: 20, bottom: 30 };
     const chartWidth = width - chartPadding.left - chartPadding.right;
+    const chartHeight = height - chartPadding.top - chartPadding.bottom;
     
     const allDates = new Set();
     Object.values(gdpState.countryData).forEach(data => {
@@ -660,11 +683,45 @@ function showGDPTooltip(event) {
     });
     const sortedDates = Array.from(allDates).sort((a, b) => compareGDPDates(a, b));
     
-    if (sortedDates.length === 0) return;
+    if (sortedDates.length === 0) {
+        hideCrosshair(gdpCrosshairX, gdpCrosshairY);
+        return;
+    }
     
     const dateIndex = Math.round(((x / rect.width * width) - chartPadding.left) / chartWidth * (sortedDates.length - 1));
     const dateIndexClamped = Math.max(0, Math.min(sortedDates.length - 1, dateIndex));
     const date = sortedDates[dateIndexClamped];
+    
+    // Update crosshair X position
+    const crosshairXPos = chartPadding.left + (dateIndexClamped / (sortedDates.length - 1 || 1)) * chartWidth;
+    if (gdpCrosshairX) {
+        gdpCrosshairX.setAttribute('x1', crosshairXPos);
+        gdpCrosshairX.setAttribute('x2', crosshairXPos);
+        gdpCrosshairX.style.opacity = '1';
+    }
+    
+    // Calculate average Y for crosshair
+    let sumY = 0;
+    let countY = 0;
+    gdpState.activeCountries.forEach(itemCode => {
+        const data = gdpState.countryData[itemCode];
+        if (data) {
+            const item = data.find(d => d.date === date);
+            if (item && Number.isFinite(item.value)) {
+                sumY += item.value;
+                countY++;
+            }
+        }
+    });
+    
+    if (countY > 0 && gdpCrosshairY) {
+        const avgValue = sumY / countY;
+        const normalizedY = (avgValue - gdpState.yAxisRange.min) / (gdpState.yAxisRange.max - gdpState.yAxisRange.min || 1);
+        const crosshairYPos = chartPadding.top + (1 - normalizedY) * chartHeight;
+        gdpCrosshairY.setAttribute('y1', crosshairYPos);
+        gdpCrosshairY.setAttribute('y2', crosshairYPos);
+        gdpCrosshairY.style.opacity = '1';
+    }
     
     let content = '';
     gdpState.activeCountries.forEach(itemCode => {
@@ -743,6 +800,7 @@ function hideGDPTooltip() {
         tooltip.classList.remove('visible');
         tooltip.style.visibility = 'hidden';
     }
+    hideCrosshair(gdpCrosshairX, gdpCrosshairY);
 }
 
 function updateGDPChartHeader() {
