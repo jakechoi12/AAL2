@@ -142,7 +142,7 @@
                         <th>마감일시</th>
                         <th>상태</th>
                         <th>입찰기업</th>
-                        <th>입찰참여여</th>
+                        <th>입찰참여</th>
                     </tr>
                 </thead>
                 <tbody id="biddingTableBody">
@@ -248,78 +248,225 @@
         </div>
     </div>
 
-    <!-- Bid Submit Modal -->
+    <!-- Bid Submit Modal (Quote Registration - 견적 등록) -->
     <div class="modal-overlay bid-modal" id="bidModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">입찰하기 - <span id="bidModalBiddingNo">EXSEA00000</span></h3>
+        <div class="modal-content quote-reg-modal">
+            <!-- 헤더: Bidding No + Deadline -->
+            <div class="modal-header quote-header">
+                <div class="header-left">
+                    <h3 class="modal-title">견적 등록</h3>
+                    <span class="modal-bidding-no" id="bidModalBiddingNo">EXSEA00000</span>
+                </div>
+                <div class="header-deadline">
+                    <i class="fas fa-clock"></i>
+                    <span class="deadline-label">Deadline</span>
+                    <span class="deadline-datetime" id="headerDeadline">-</span>
+                    <span class="deadline-dday" id="headerDday">D-0</span>
+                </div>
                 <button class="modal-close" onclick="BiddingList.closeBidModal()">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
+
             <div class="modal-body">
-                <!-- Bidding Info Card -->
-                <div class="bid-info-card">
-                    <div class="bid-info-row">
-                        <span class="bid-info-label">구간</span>
-                        <span class="bid-info-value" id="bidInfoRoute">KRPUS → USLAX</span>
+                <!-- Request Information (통합 그리드) -->
+                <section class="qr-section request-info-section">
+                    <h4 class="qr-section-title">Request Information</h4>
+                    <div class="request-info-grid">
+                        <div class="info-cell">
+                            <span class="cell-label">Customer</span>
+                            <span class="cell-value" id="reqCustomer">-</span>
+                        </div>
+                        <div class="info-cell">
+                            <span class="cell-label">Trade</span>
+                            <span class="cell-value" id="reqTradeMode">-</span>
+                        </div>
+                        <div class="info-cell">
+                            <span class="cell-label">Shipping</span>
+                            <span class="cell-value highlight" id="reqShippingMode">-</span>
+                        </div>
+                        <div class="info-cell">
+                            <span class="cell-label">Load Type</span>
+                            <span class="cell-value" id="reqLoadType">-</span>
+                        </div>
+                        <div class="info-cell">
+                            <span class="cell-label">Incoterms</span>
+                            <span class="cell-value" id="reqIncoterms">-</span>
+                        </div>
+                        <div class="info-cell">
+                            <span class="cell-label">DG</span>
+                            <span class="cell-value" id="reqDG">-</span>
+                        </div>
+                        <div class="info-cell span-3">
+                            <span class="cell-label">Origin (POL)</span>
+                            <span class="cell-value" id="reqPOL">-</span>
+                        </div>
+                        <div class="info-cell span-3">
+                            <span class="cell-label">Destination (POD)</span>
+                            <span class="cell-value" id="reqPOD">-</span>
+                        </div>
+                        <div class="info-cell">
+                            <span class="cell-label">ETD</span>
+                            <span class="cell-value date-value" id="reqETD">-</span>
+                        </div>
+                        <div class="info-cell">
+                            <span class="cell-label">ETA</span>
+                            <span class="cell-value date-value" id="reqETA">-</span>
+                        </div>
+                        <div class="info-cell span-2">
+                            <span class="cell-label">Invoice Value</span>
+                            <span class="cell-value invoice-value" id="reqInvoice">-</span>
+                        </div>
                     </div>
-                    <div class="bid-info-row">
-                        <span class="bid-info-label">운송타입</span>
-                        <span class="bid-info-value" id="bidInfoType">Ocean / FCL</span>
-                    </div>
-                    <div class="bid-info-row">
-                        <span class="bid-info-label">ETD</span>
-                        <span class="bid-info-value" id="bidInfoEtd">2026-01-15</span>
-                    </div>
-                    <div class="bid-info-row">
-                        <span class="bid-info-label">마감일시</span>
-                        <span class="bid-info-value" id="bidInfoDeadline">2026-01-11 18:00</span>
-                    </div>
-                </div>
+                </section>
 
-                <!-- Bid Form -->
-                <div class="form-group">
-                    <label class="form-label required">운임 (Freight) - USD</label>
-                    <input type="number" class="form-input" id="bidFreight" placeholder="0.00" step="0.01" onchange="BiddingList.calculateTotal()">
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label">로컬비용 - USD</label>
-                        <input type="number" class="form-input" id="bidLocal" placeholder="0.00" step="0.01" onchange="BiddingList.calculateTotal()">
+                <!-- Cargo Details 테이블 (운송타입별 동적) -->
+                <section class="qr-section cargo-section">
+                    <h4 class="qr-section-title">Cargo Details</h4>
+                    <div class="cargo-table-wrapper">
+                        <table class="cargo-table" id="cargoTable">
+                            <thead id="cargoTableHead">
+                                <!-- 동적 생성 -->
+                            </thead>
+                            <tbody id="cargoDetailsBody">
+                                <tr><td colspan="8" class="no-data">No cargo details</td></tr>
+                            </tbody>
+                        </table>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">기타비용 - USD</label>
-                        <input type="number" class="form-input" id="bidOther" placeholder="0.00" step="0.01" onchange="BiddingList.calculateTotal()">
-                    </div>
-                </div>
+                </section>
 
-                <div class="amount-summary">
-                    <span class="amount-label">총 입찰금액</span>
-                    <span class="amount-value">$ <span id="bidTotalAmount">0.00</span></span>
-                </div>
-
-                <div class="form-row" style="margin-top: 1.5rem;">
-                    <div class="form-group">
-                        <label class="form-label">예상 운송기간</label>
-                        <input type="text" class="form-input" id="bidTransitTime" placeholder="예: 14-18일">
+                <!-- Additional Services (태그 표시) -->
+                <section class="qr-section services-section">
+                    <div class="services-header" onclick="BiddingList.toggleAdditionalInfo()">
+                        <h4 class="qr-section-title">Additional Services</h4>
+                        <div class="service-tags">
+                            <span class="svc-tag" id="tagExportCC">Export CC</span>
+                            <span class="svc-tag" id="tagImportCC">Import CC</span>
+                            <span class="svc-tag" id="tagInsurance">Insurance</span>
+                            <span class="svc-tag" id="tagPickup">Pickup</span>
+                            <span class="svc-tag" id="tagDelivery">Delivery</span>
+                        </div>
+                        <i class="fas fa-chevron-down toggle-icon" id="additionalToggleIcon"></i>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">견적 유효기간</label>
-                        <input type="date" class="form-input" id="bidValidity">
+                    <div class="services-content" id="additionalInfoContent">
+                        <div class="services-grid">
+                            <div class="svc-item">
+                                <span class="svc-label">Export CC</span>
+                                <span class="svc-value" id="addExportCC">-</span>
+                            </div>
+                            <div class="svc-item">
+                                <span class="svc-label">Import CC</span>
+                                <span class="svc-value" id="addImportCC">-</span>
+                            </div>
+                            <div class="svc-item">
+                                <span class="svc-label">Insurance</span>
+                                <span class="svc-value" id="addInsurance">-</span>
+                            </div>
+                            <div class="svc-item">
+                                <span class="svc-label">Pickup</span>
+                                <span class="svc-value" id="addPickup">-</span>
+                                <span class="svc-addr" id="addPickupAddr"></span>
+                            </div>
+                            <div class="svc-item">
+                                <span class="svc-label">Delivery</span>
+                                <span class="svc-value" id="addDelivery">-</span>
+                                <span class="svc-addr" id="addDeliveryAddr"></span>
+                            </div>
+                        </div>
                     </div>
-                </div>
+                </section>
 
-                <div class="form-group">
-                    <label class="form-label">비고/조건</label>
-                    <textarea class="form-textarea" id="bidRemark" placeholder="추가 조건이나 비고 사항을 입력하세요..."></textarea>
-                </div>
+                <!-- Special Remarks -->
+                <section class="qr-section remarks-section" id="remarksSection" style="display: none;">
+                    <h4 class="qr-section-title">Special Remarks</h4>
+                    <div class="remarks-content" id="reqRemarks">-</div>
+                </section>
+
+                <!-- Rates 입력 테이블 -->
+                <section class="qr-section rates-section">
+                    <div class="rates-header">
+                        <h4 class="qr-section-title"><span class="required-mark">*</span> Rates</h4>
+                        <button type="button" class="btn-add-row" onclick="BiddingList.addLineItem()">
+                            <i class="fas fa-plus"></i> Add Row
+                        </button>
+                    </div>
+                    
+                    <div class="rates-table-wrapper">
+                        <table class="rates-table">
+                            <thead>
+                                <tr class="header-row">
+                                    <th class="col-del"></th>
+                                    <th class="col-code">Code</th>
+                                    <th class="col-category">Category</th>
+                                    <th class="col-unit">Unit</th>
+                                    <th class="col-qty-sm">Qty</th>
+                                    <th class="col-rate">Rate</th>
+                                    <th class="col-currency">Curr</th>
+                                    <th class="col-tax">Tax</th>
+                                    <th class="col-vat">VAT%</th>
+                                    <th class="col-amount-lg">Amount (USD)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bidLineItemsBody">
+                                <!-- 동적 생성 -->
+                            </tbody>
+                            <tfoot>
+                                <tr class="total-row">
+                                    <td colspan="9" class="total-label">Total Amount (USD)</td>
+                                    <td class="total-amount">$ <span id="bidTotalAmount">0.00</span></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- 운송 정보 입력 -->
+                <section class="qr-section transport-section">
+                    <h4 class="qr-section-title">Transport Details</h4>
+                    <div class="transport-grid">
+                        <div class="transport-item">
+                            <label class="transport-label">ETD</label>
+                            <input type="text" class="transport-input readonly" id="bidETD" readonly>
+                        </div>
+                        <div class="transport-item">
+                            <label class="transport-label">ETA (예정)</label>
+                            <input type="date" class="transport-input" id="bidETA" onchange="BiddingList.calculateTT()">
+                        </div>
+                        <div class="transport-item">
+                            <label class="transport-label" id="carrierLabel">Carrier</label>
+                            <input type="text" class="transport-input" id="bidCarrier" placeholder="선사/항공사명">
+                        </div>
+                        <div class="transport-item">
+                            <label class="transport-label">T/T</label>
+                            <input type="text" class="transport-input readonly" id="bidTT" readonly placeholder="자동계산">
+                        </div>
+                        <div class="transport-item">
+                            <label class="transport-label">견적 유효기간</label>
+                            <input type="date" class="transport-input" id="bidValidity">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 비고 -->
+                <section class="qr-section remark-input-section">
+                    <h4 class="qr-section-title">Remarks</h4>
+                    <textarea class="remark-textarea" id="bidRemark" placeholder="추가 조건이나 비고 사항..."></textarea>
+                </section>
             </div>
-            <div class="modal-footer">
-                <button class="action-btn secondary" onclick="BiddingList.closeBidModal()">취소</button>
-                <button class="action-btn primary" id="bidSubmitBtn" onclick="BiddingList.submitBid()">
-                    <i class="fas fa-gavel"></i> 입찰 제출
+
+            <!-- Footer: SAVE / SUBMIT -->
+            <div class="modal-footer quote-footer">
+                <button class="action-btn cancel-btn" onclick="BiddingList.closeBidModal()">
+                    <i class="fas fa-times"></i> Cancel
                 </button>
+                <div class="footer-actions">
+                    <button class="action-btn save-btn" id="bidSaveBtn" onclick="BiddingList.saveBid()">
+                        <i class="fas fa-save"></i> <span id="saveBtnText">Save</span>
+                    </button>
+                    <button class="action-btn submit-btn" id="bidSubmitBtn" onclick="BiddingList.submitBid()" disabled>
+                        <i class="fas fa-paper-plane"></i> Submit
+                    </button>
+                </div>
             </div>
         </div>
     </div>

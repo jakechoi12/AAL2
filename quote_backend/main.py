@@ -7,6 +7,7 @@ from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
+from sqlalchemy import or_, and_
 from typing import List, Optional
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -19,7 +20,7 @@ from models import Base, Port, ContainerType, TruckType, Incoterm, Customer, Quo
 from schemas import (
     PortResponse, ContainerTypeResponse, TruckTypeResponse, IncotermResponse,
     QuoteRequestCreate, QuoteRequestResponse, QuoteSubmitResponse, APIResponse,
-    BiddingResponse,
+    BiddingResponse, CargoDetailResponse,
     # Forwarder schemas
     ForwarderCreate, ForwarderLogin, ForwarderResponse, ForwarderAuthResponse,
     # Bid schemas
@@ -821,18 +822,26 @@ def get_bidding_stats(db: Session = Depends(get_db)):
     Get bidding statistics for dashboard
     
     - total_count: 전체 Bidding 건수
-    - open_count: 진행중인 입찰 건수
+    - open_count: 진행중인 입찰 건수 (마감일이 지나지 않은 것만)
     - closing_soon_count: 24시간 이내 마감 예정 건수
     - awarded_count: 낙찰 완료 건수
-    - failed_count: 유찰 건수 (closed + cancelled + expired)
+    - failed_count: 유찰/마감 건수 (closed + cancelled + expired + 마감일 지난 open)
     """
     now = datetime.now()
     tomorrow = now + timedelta(hours=24)
     
     total_count = db.query(Bidding).count()
     
-    open_count = db.query(Bidding).filter(Bidding.status == "open").count()
+    # open_count: status가 'open'이고 마감일이 아직 지나지 않은 것
+    open_count = db.query(Bidding).filter(
+        Bidding.status == "open",
+        or_(
+            Bidding.deadline == None,
+            Bidding.deadline > now
+        )
+    ).count()
     
+    # closing_soon_count: status가 'open'이고 24시간 이내 마감 예정
     closing_soon_count = db.query(Bidding).filter(
         Bidding.status == "open",
         Bidding.deadline <= tomorrow,
@@ -841,9 +850,19 @@ def get_bidding_stats(db: Session = Depends(get_db)):
     
     awarded_count = db.query(Bidding).filter(Bidding.status == "awarded").count()
     
-    failed_count = db.query(Bidding).filter(
+    # failed_count: closed, cancelled, expired 상태 + 마감일이 지난 open 상태
+    explicitly_failed = db.query(Bidding).filter(
         Bidding.status.in_(["closed", "cancelled", "expired"])
     ).count()
+    
+    # 마감일이 지났지만 아직 status가 'open'인 것들도 마감으로 카운트
+    expired_but_open = db.query(Bidding).filter(
+        Bidding.status == "open",
+        Bidding.deadline != None,
+        Bidding.deadline <= now
+    ).count()
+    
+    failed_count = explicitly_failed + expired_but_open
     
     return BiddingStatsResponse(
         total_count=total_count,
@@ -882,8 +901,31 @@ def get_bidding_list(
     )
     
     # Apply filters
+    now = datetime.now()
     if status:
-        query = query.filter(Bidding.status == status)
+        if status == "expired":
+            # expired includes: explicitly expired OR (open AND deadline passed)
+            query = query.filter(
+                or_(
+                    Bidding.status == "expired",
+                    and_(
+                        Bidding.status == "open",
+                        Bidding.deadline != None,
+                        Bidding.deadline <= now
+                    )
+                )
+            )
+        elif status == "open":
+            # open means: status is open AND deadline NOT passed
+            query = query.filter(
+                Bidding.status == "open",
+                or_(
+                    Bidding.deadline == None,
+                    Bidding.deadline > now
+                )
+            )
+        else:
+            query = query.filter(Bidding.status == status)
     
     if shipping_type:
         query = query.filter(QuoteRequest.shipping_type == shipping_type)
@@ -919,6 +961,12 @@ def get_bidding_list(
             if my_bid:
                 my_bid_status = my_bid.status
         
+        # Determine effective status (expired if deadline passed and still open)
+        effective_status = b.status
+        now = datetime.now()
+        if b.status == "open" and b.deadline and b.deadline <= now:
+            effective_status = "expired"
+        
         items.append(BiddingListItem(
             id=b.id,
             bidding_no=b.bidding_no,
@@ -929,7 +977,7 @@ def get_bidding_list(
             load_type=qr.load_type,
             etd=qr.etd,
             deadline=b.deadline,
-            status=b.status,
+            status=effective_status,
             bid_count=bid_count,
             my_bid_status=my_bid_status
         ))
@@ -977,6 +1025,43 @@ def get_bidding_detail(
         if bid:
             my_bid = BidResponse.model_validate(bid)
     
+    # Calculate cargo totals from cargo_details
+    cargo_details = qr.cargo_details
+    container_type = None
+    container_qty = 0
+    total_qty = 0
+    total_weight = 0.0
+    total_cbm = 0.0
+    
+    if cargo_details:
+        for cd in cargo_details:
+            if cd.container_type and not container_type:
+                container_type = cd.container_type
+            total_qty += cd.qty or 0
+            container_qty += cd.qty or 0
+            total_weight += float(cd.gross_weight or 0)
+            total_cbm += float(cd.cbm or 0)
+    
+    # Build cargo details response list
+    cargo_details_list = []
+    if cargo_details:
+        for cd in cargo_details:
+            cargo_details_list.append(CargoDetailResponse(
+                id=cd.id,
+                quote_request_id=cd.quote_request_id,
+                row_index=cd.row_index,
+                container_type=cd.container_type,
+                truck_type=cd.truck_type,
+                length=cd.length,
+                width=cd.width,
+                height=cd.height,
+                qty=cd.qty or 1,
+                gross_weight=float(cd.gross_weight) if cd.gross_weight else None,
+                cbm=float(cd.cbm) if cd.cbm else None,
+                volume_weight=cd.volume_weight,
+                chargeable_weight=cd.chargeable_weight
+            ))
+    
     return BiddingDetailResponse(
         id=bidding.id,
         bidding_no=bidding.bidding_no,
@@ -986,6 +1071,8 @@ def get_bidding_detail(
         pdf_url=f"/api/quote/rfq/{bidding_no}/pdf" if bidding.pdf_path else None,
         customer_company=customer.company,
         customer_name=customer.name,
+        customer_email=customer.email,
+        customer_phone=customer.phone,
         trade_mode=qr.trade_mode,
         shipping_type=qr.shipping_type,
         load_type=qr.load_type,
@@ -995,7 +1082,27 @@ def get_bidding_detail(
         etd=qr.etd,
         eta=qr.eta,
         is_dg=qr.is_dg,
+        dg_class=qr.dg_class,
+        dg_un=qr.dg_un,
         remark=qr.remark,
+        # Cargo Details (합계)
+        container_type=container_type,
+        container_qty=container_qty,
+        total_qty=total_qty,
+        total_weight=total_weight,
+        total_cbm=total_cbm,
+        invoice_value=float(qr.invoice_value or 0),
+        # Cargo Details (개별 리스트)
+        cargo_details=cargo_details_list,
+        # Additional Details
+        export_cc=qr.export_cc or False,
+        import_cc=qr.import_cc or False,
+        shipping_insurance=qr.shipping_insurance or False,
+        pickup_required=qr.pickup_required or False,
+        pickup_address=qr.pickup_address,
+        delivery_required=qr.delivery_required or False,
+        delivery_address=qr.delivery_address,
+        # Bid Info
         bid_count=bid_count,
         my_bid=my_bid
     )

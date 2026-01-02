@@ -1,9 +1,38 @@
 /**
  * Bidding List Module
- * 포워더를 위한 입찰 목록 및 입찰 기능
+ * 포워더를 위한 입찰 목록 및 입찰 기능 (상세 견적서 포함)
  */
 
-const QUOTE_API_BASE = 'http://localhost:8001';
+// QUOTE_API_BASE는 api.js에서 정의됨 (중복 정의 방지)
+// const QUOTE_API_BASE = 'http://localhost:8001';
+
+// 표준 Freight Codes (백엔드 연동 전 프론트엔드 데이터)
+const FREIGHT_CODES = [
+    { code: 'OFR', category: 'Ocean Freight', defaultCurrency: 'USD' },
+    { code: 'AFR', category: 'Air Freight', defaultCurrency: 'USD' },
+    { code: 'BAF', category: 'Bunker Adjustment Factor', defaultCurrency: 'USD' },
+    { code: 'CAF', category: 'Currency Adjustment Factor', defaultCurrency: 'USD' },
+    { code: 'THC', category: 'Terminal Handling Charge', defaultCurrency: 'USD' },
+    { code: 'DOC', category: 'Documentation Fee', defaultCurrency: 'USD' },
+    { code: 'WFG', category: 'Wharfage', defaultCurrency: 'USD' },
+    { code: 'CFS', category: 'CFS Charge', defaultCurrency: 'USD' },
+    { code: 'SEAL', category: 'Seal Fee', defaultCurrency: 'USD' },
+    { code: 'AMS', category: 'AMS Fee', defaultCurrency: 'USD' },
+    { code: 'ENS', category: 'ENS Fee', defaultCurrency: 'USD' },
+    { code: 'LSS', category: 'Low Sulphur Surcharge', defaultCurrency: 'USD' },
+    { code: 'EBS', category: 'Emergency Bunker Surcharge', defaultCurrency: 'USD' },
+    { code: 'CIC', category: 'Container Imbalance Charge', defaultCurrency: 'USD' },
+    { code: 'PSS', category: 'Peak Season Surcharge', defaultCurrency: 'USD' },
+    { code: 'INLAND', category: 'Inland Transport', defaultCurrency: 'USD' },
+    { code: 'CUSTOMS', category: 'Customs Clearance', defaultCurrency: 'USD' },
+    { code: 'TRUCKING', category: 'Trucking', defaultCurrency: 'USD' },
+    { code: 'HANDLING', category: 'Handling Fee', defaultCurrency: 'USD' },
+    { code: 'OTHER', category: 'Other Charges', defaultCurrency: 'USD' }
+];
+
+const UNIT_OPTIONS = ['20DC', '40DC', '40HC', '45HC', 'CBM', 'KG', 'BL', 'CNTR', 'SHPT'];
+const CURRENCY_OPTIONS = ['USD', 'KRW', 'EUR', 'JPY', 'CNY'];
+const TAX_OPTIONS = ['영세', '과세'];
 
 const BiddingList = {
     // State
@@ -18,6 +47,10 @@ const BiddingList = {
     currentBidding: null,
     currentBid: null,
     isEditMode: false,
+    lineItems: [], // 비용 항목 배열
+    bidSaved: false,      // SAVE 완료 여부
+    bidEdited: false,     // 수정됨 여부
+    originalBidData: null, // 원본 데이터 (변경 감지용)
 
     /**
      * Initialize the module
@@ -370,28 +403,50 @@ const BiddingList = {
     },
 
     /**
+     * Check if deadline has passed
+     */
+    isDeadlinePassed(dateStr) {
+        if (!dateStr) return false;
+        const deadline = new Date(dateStr);
+        const now = new Date();
+        return deadline < now;
+    },
+
+    /**
      * Render a table row
      */
     renderRow(item) {
         const isUrgent = item.deadline && this.isWithin24Hours(item.deadline);
+        const isExpired = item.deadline && this.isDeadlinePassed(item.deadline);
         const deadlineFormatted = item.deadline ? this.formatDateTime(item.deadline) : '-';
+        
+        // Determine effective status (마감일이 지났으면 expired로 처리)
+        let effectiveStatus = item.status;
+        if (item.status === 'open' && isExpired) {
+            effectiveStatus = 'expired';
+        }
         
         // Determine action button
         let actionBtn = '';
-        if (item.status === 'open') {
+        if (effectiveStatus === 'open') {
             if (!this.forwarder) {
                 actionBtn = `<button class="action-btn secondary" onclick="BiddingList.openAuthModal()">
                     로그인 필요
                 </button>`;
             } else if (item.my_bid_status) {
-                actionBtn = `<button class="action-btn success" onclick="BiddingList.openBidModal('${item.bidding_no}', true)">
+                actionBtn = `<button class="action-btn success" onclick="BiddingList.goToQuoteRegistration('${item.bidding_no}', true)">
                     <i class="fas fa-edit"></i> 수정하기
                 </button>`;
             } else {
-                actionBtn = `<button class="action-btn primary" onclick="BiddingList.openBidModal('${item.bidding_no}')">
+                actionBtn = `<button class="action-btn primary" onclick="BiddingList.goToQuoteRegistration('${item.bidding_no}')">
                     <i class="fas fa-gavel"></i> 입찰하기
                 </button>`;
             }
+        } else if (effectiveStatus === 'expired') {
+            // 마감된 항목은 상세보기만 가능
+            actionBtn = `<button class="action-btn secondary" onclick="BiddingList.openDetailModal('${item.bidding_no}')">
+                상세보기
+            </button>`;
         } else if (item.status === 'awarded' && item.my_bid_status === 'awarded') {
             actionBtn = `<span class="status-badge awarded"><i class="fas fa-trophy"></i> 낙찰</span>`;
         } else {
@@ -400,10 +455,13 @@ const BiddingList = {
             </button>`;
         }
 
+        // 마감 여부에 따른 행 클래스
+        const rowClass = isExpired ? 'expired-row' : '';
+
         return `
-            <tr>
+            <tr class="${rowClass}">
                 <td>
-                    <span class="bidding-no" onclick="BiddingList.openDetailModal('${item.bidding_no}')">
+                    <span class="bidding-no ${isExpired ? 'expired-text' : ''}" onclick="BiddingList.openDetailModal('${item.bidding_no}')">
                         ${item.bidding_no}
                     </span>
                 </td>
@@ -422,9 +480,9 @@ const BiddingList = {
                     </span>
                 </td>
                 <td>${this.formatDate(item.etd)}</td>
-                <td class="deadline-cell ${isUrgent ? 'urgent' : ''}">${deadlineFormatted}</td>
+                <td class="deadline-cell ${isExpired ? 'expired' : (isUrgent ? 'urgent' : '')}">${deadlineFormatted}${isExpired ? ' <span class="expired-label">마감</span>' : ''}</td>
                 <td>
-                    <span class="status-badge ${item.status}">${this.getStatusLabel(item.status)}</span>
+                    <span class="status-badge ${effectiveStatus}">${this.getStatusLabel(effectiveStatus)}</span>
                 </td>
                 <td>
                     <span class="bid-count">${item.bid_count}</span>
@@ -501,7 +559,327 @@ const BiddingList = {
     },
 
     /**
-     * Open bid modal
+     * Navigate to Quote Registration (now opens modal)
+     */
+    goToQuoteRegistration(biddingNo, isEdit = false) {
+        // Use modal instead of page navigation
+        this.openBidModal(biddingNo, isEdit);
+    },
+
+    /**
+     * Toggle Additional Info section
+     */
+    toggleAdditionalInfo() {
+        const content = document.getElementById('additionalInfoContent');
+        const icon = document.getElementById('additionalToggleIcon');
+        
+        if (content.classList.contains('show')) {
+            content.classList.remove('show');
+            icon.classList.remove('expanded');
+        } else {
+            content.classList.add('show');
+            icon.classList.add('expanded');
+        }
+    },
+
+    /**
+     * Populate Request Details from Quotation data (새 UI 구조)
+     */
+    populateRequestDetails(detail) {
+        const setTextContent = (id, value) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = value || '-';
+        };
+
+        // Header Deadline
+        const headerDeadline = document.getElementById('headerDeadline');
+        const headerDday = document.getElementById('headerDday');
+        if (headerDeadline && detail.deadline) {
+            headerDeadline.textContent = this.formatDateTime(detail.deadline);
+            if (headerDday) {
+                const dday = this.calculateDday(detail.deadline);
+                headerDday.textContent = dday;
+                headerDday.style.background = dday.startsWith('D+') ? '#6b7280' : '#ef4444';
+            }
+        }
+
+        // Request Information Grid
+        setTextContent('reqCustomer', detail.customer_company);
+        setTextContent('reqTradeMode', detail.trade_mode ? detail.trade_mode.charAt(0).toUpperCase() + detail.trade_mode.slice(1) : '-');
+        setTextContent('reqShippingMode', this.getShippingTypeLabel(detail.shipping_type));
+        setTextContent('reqLoadType', detail.load_type);
+        setTextContent('reqIncoterms', detail.incoterms);
+        setTextContent('reqPOL', detail.pol);
+        setTextContent('reqPOD', detail.pod);
+        setTextContent('reqETD', detail.etd ? this.formatDate(detail.etd) : '-');
+        setTextContent('reqETA', detail.eta ? this.formatDate(detail.eta) : '-');
+        setTextContent('reqInvoice', detail.invoice_value ? `USD ${this.formatNumber(detail.invoice_value)}` : '-');
+        
+        // DG (Dangerous Goods)
+        const dgEl = document.getElementById('reqDG');
+        if (dgEl) {
+            if (detail.is_dg) {
+                let dgText = 'Yes';
+                if (detail.dg_class) dgText += ` (${detail.dg_class})`;
+                dgEl.innerHTML = `<span style="color: #f59e0b;"><i class="fas fa-exclamation-triangle"></i> ${dgText}</span>`;
+            } else {
+                dgEl.innerHTML = '<span style="color: #6b7280;">No</span>';
+            }
+        }
+
+        // Cargo Details Table (동적 컬럼)
+        this.populateCargoDetailsTable(detail);
+
+        // Transport Section - ETD 표시 (readonly)
+        const bidETD = document.getElementById('bidETD');
+        if (bidETD) {
+            bidETD.value = detail.etd ? this.formatDate(detail.etd) : '-';
+        }
+
+        // Carrier label 동적 변경
+        const carrierLabel = document.getElementById('carrierLabel');
+        if (carrierLabel) {
+            const labels = { 'air': 'Airline', 'ocean': 'Carrier', 'truck': 'Trucker' };
+            carrierLabel.textContent = labels[detail.shipping_type] || 'Carrier';
+        }
+
+        // Special Remarks
+        const remarksSection = document.getElementById('remarksSection');
+        const reqRemarks = document.getElementById('reqRemarks');
+        if (remarksSection && reqRemarks) {
+            if (detail.remark && detail.remark.trim()) {
+                reqRemarks.textContent = detail.remark;
+                remarksSection.style.display = 'block';
+            } else {
+                remarksSection.style.display = 'none';
+            }
+        }
+    },
+
+    /**
+     * Calculate D-Day
+     */
+    calculateDday(deadline) {
+        const now = new Date();
+        const deadlineDate = new Date(deadline);
+        const diff = Math.ceil((deadlineDate - now) / (1000 * 60 * 60 * 24));
+        if (diff > 0) return `D-${diff}`;
+        if (diff === 0) return 'D-Day';
+        return `D+${Math.abs(diff)}`;
+    },
+
+    /**
+     * Calculate Transit Time
+     */
+    calculateTT() {
+        const etdEl = document.getElementById('bidETD');
+        const etaEl = document.getElementById('bidETA');
+        const ttEl = document.getElementById('bidTT');
+        
+        if (!etdEl || !etaEl || !ttEl) return;
+        
+        const etdValue = this.currentBidding?.etd;
+        const etaValue = etaEl.value;
+        
+        if (etdValue && etaValue) {
+            const etd = new Date(etdValue);
+            const eta = new Date(etaValue);
+            const days = Math.ceil((eta - etd) / (1000 * 60 * 60 * 24));
+            ttEl.value = days > 0 ? `${days} Days` : '-';
+        } else {
+            ttEl.value = '-';
+        }
+        
+        // Mark as edited
+        this.markAsEdited();
+    },
+
+    /**
+     * Get shipping type label
+     */
+    getShippingTypeLabel(type) {
+        const labels = {
+            'ocean': 'Ocean Freight',
+            'air': 'Air Freight',
+            'truck': 'Trucking',
+            'all': 'All Types'
+        };
+        return labels[type] || type || '-';
+    },
+
+    /**
+     * Populate Cargo Details Table (운송 타입별 동적 컬럼)
+     */
+    populateCargoDetailsTable(detail) {
+        const thead = document.getElementById('cargoTableHead');
+        const tbody = document.getElementById('cargoDetailsBody');
+        if (!thead || !tbody) return;
+
+        const shippingType = detail.shipping_type;
+        const cargoDetails = detail.cargo_details || [];
+        
+        // 운송 타입별 컬럼 구성
+        let columns = [];
+        if (shippingType === 'air') {
+            // AIR: Container/Type, CBM 제외
+            columns = [
+                { key: 'no', label: 'No.', width: '50px' },
+                { key: 'length', label: 'L(cm)', width: '70px' },
+                { key: 'width', label: 'W(cm)', width: '70px' },
+                { key: 'height', label: 'H(cm)', width: '70px' },
+                { key: 'qty', label: 'Qty', width: '50px' },
+                { key: 'gross_weight', label: 'G.W(kg)', width: '80px' },
+                { key: 'volume_weight', label: 'Vol.W', width: '70px' },
+                { key: 'chargeable_weight', label: 'C.W', width: '70px' }
+            ];
+        } else if (shippingType === 'ocean' && detail.load_type === 'FCL') {
+            // Ocean FCL
+            columns = [
+                { key: 'no', label: 'No.', width: '50px' },
+                { key: 'container_type', label: 'Container', width: '100px' },
+                { key: 'qty', label: 'Qty', width: '50px' },
+                { key: 'gross_weight', label: 'G.W(kg)', width: '90px' },
+                { key: 'cbm', label: 'CBM', width: '80px' }
+            ];
+        } else {
+            // Ocean LCL, Truck, 기타
+            columns = [
+                { key: 'no', label: 'No.', width: '50px' },
+                { key: 'container_type', label: 'Type', width: '90px' },
+                { key: 'length', label: 'L(cm)', width: '65px' },
+                { key: 'width', label: 'W(cm)', width: '65px' },
+                { key: 'height', label: 'H(cm)', width: '65px' },
+                { key: 'qty', label: 'Qty', width: '50px' },
+                { key: 'gross_weight', label: 'G.W(kg)', width: '80px' },
+                { key: 'cbm', label: 'CBM', width: '70px' }
+            ];
+        }
+
+        // 헤더 생성
+        thead.innerHTML = `<tr>${columns.map(col => 
+            `<th style="width: ${col.width}">${col.label}</th>`
+        ).join('')}</tr>`;
+
+        // 바디 생성
+        if (cargoDetails.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="${columns.length}" class="no-data">No cargo details</td></tr>`;
+        } else {
+            let totals = { qty: 0, gross_weight: 0, cbm: 0, volume_weight: 0, chargeable_weight: 0 };
+            
+            tbody.innerHTML = cargoDetails.map((cd, idx) => {
+                totals.qty += cd.qty || 0;
+                totals.gross_weight += cd.gross_weight || 0;
+                totals.cbm += cd.cbm || 0;
+                totals.volume_weight += cd.volume_weight || 0;
+                totals.chargeable_weight += cd.chargeable_weight || 0;
+
+                return `<tr>${columns.map(col => {
+                    if (col.key === 'no') return `<td>${idx + 1}</td>`;
+                    if (col.key === 'container_type') return `<td>${cd.container_type || cd.truck_type || '-'}</td>`;
+                    if (col.key === 'gross_weight') return `<td>${cd.gross_weight ? this.formatNumber(cd.gross_weight) : '-'}</td>`;
+                    if (col.key === 'cbm') return `<td>${cd.cbm ? this.formatNumber(cd.cbm, 2) : '-'}</td>`;
+                    return `<td>${cd[col.key] || '-'}</td>`;
+                }).join('')}</tr>`;
+            }).join('');
+
+            // Total 행 추가
+            tbody.innerHTML += `<tr class="total-row">${columns.map((col, i) => {
+                if (i === 0) return `<td colspan="1" style="text-align: right; font-weight: 600;">Total</td>`;
+                if (col.key === 'qty') return `<td>${totals.qty}</td>`;
+                if (col.key === 'gross_weight') return `<td>${totals.gross_weight ? this.formatNumber(totals.gross_weight) : '-'}</td>`;
+                if (col.key === 'cbm') return `<td>${totals.cbm ? this.formatNumber(totals.cbm, 2) : '-'}</td>`;
+                if (col.key === 'volume_weight') return `<td>${totals.volume_weight || '-'}</td>`;
+                if (col.key === 'chargeable_weight') return `<td>${totals.chargeable_weight || '-'}</td>`;
+                return '<td></td>';
+            }).join('')}</tr>`;
+        }
+    },
+
+    /**
+     * Populate Additional Information from Quotation data
+     */
+    populateAdditionalInfo(detail) {
+        // Export Customs Clearance
+        const exportCC = detail.export_cc === true;
+        const addExportCC = document.getElementById('addExportCC');
+        const tagExportCC = document.getElementById('tagExportCC');
+        if (addExportCC) {
+            addExportCC.innerHTML = exportCC 
+                ? '<i class="fas fa-check-circle"></i> Required'
+                : '<i class="fas fa-times-circle"></i> No';
+            addExportCC.className = 'item-value ' + (exportCC ? 'required' : 'not-required');
+        }
+        if (tagExportCC) tagExportCC.classList.toggle('active', exportCC);
+
+        // Import Customs Clearance
+        const importCC = detail.import_cc === true;
+        const addImportCC = document.getElementById('addImportCC');
+        const tagImportCC = document.getElementById('tagImportCC');
+        if (addImportCC) {
+            addImportCC.innerHTML = importCC 
+                ? '<i class="fas fa-check-circle"></i> Required'
+                : '<i class="fas fa-times-circle"></i> No';
+            addImportCC.className = 'item-value ' + (importCC ? 'required' : 'not-required');
+        }
+        if (tagImportCC) tagImportCC.classList.toggle('active', importCC);
+
+        // Shipping Insurance
+        const insurance = detail.shipping_insurance === true;
+        const addInsurance = document.getElementById('addInsurance');
+        const tagInsurance = document.getElementById('tagInsurance');
+        if (addInsurance) {
+            addInsurance.innerHTML = insurance 
+                ? '<i class="fas fa-check-circle"></i> Required'
+                : '<i class="fas fa-times-circle"></i> No';
+            addInsurance.className = 'item-value ' + (insurance ? 'required' : 'not-required');
+        }
+        if (tagInsurance) tagInsurance.classList.toggle('active', insurance);
+
+        // Pickup
+        const pickup = detail.pickup_required === true;
+        const addPickup = document.getElementById('addPickup');
+        const addPickupAddr = document.getElementById('addPickupAddr');
+        const tagPickup = document.getElementById('tagPickup');
+        if (addPickup) {
+            addPickup.innerHTML = pickup 
+                ? '<i class="fas fa-check-circle"></i> Required'
+                : '<i class="fas fa-times-circle"></i> No';
+            addPickup.className = 'item-value ' + (pickup ? 'required' : 'not-required');
+        }
+        if (addPickupAddr) {
+            addPickupAddr.textContent = detail.pickup_address || '';
+            addPickupAddr.style.display = pickup && detail.pickup_address ? 'inline' : 'none';
+        }
+        if (tagPickup) tagPickup.classList.toggle('active', pickup);
+
+        // Delivery
+        const delivery = detail.delivery_required === true;
+        const addDelivery = document.getElementById('addDelivery');
+        const addDeliveryAddr = document.getElementById('addDeliveryAddr');
+        const tagDelivery = document.getElementById('tagDelivery');
+        if (addDelivery) {
+            addDelivery.innerHTML = delivery 
+                ? '<i class="fas fa-check-circle"></i> Required'
+                : '<i class="fas fa-times-circle"></i> No';
+            addDelivery.className = 'item-value ' + (delivery ? 'required' : 'not-required');
+        }
+        if (addDeliveryAddr) {
+            addDeliveryAddr.textContent = detail.delivery_address || '';
+            addDeliveryAddr.style.display = delivery && detail.delivery_address ? 'inline' : 'none';
+        }
+        if (tagDelivery) tagDelivery.classList.toggle('active', delivery);
+    },
+
+    /**
+     * Format number with commas
+     */
+    formatNumber(num) {
+        if (num === null || num === undefined || isNaN(num)) return '-';
+        return parseFloat(num).toLocaleString('en-US');
+    },
+
+    /**
+     * Open bid modal - Quote Registration Modal
      */
     async openBidModal(biddingNo, isEdit = false) {
         if (!this.forwarder) {
@@ -510,6 +888,12 @@ const BiddingList = {
         }
 
         this.isEditMode = isEdit;
+        
+        // Reset SAVE/SUBMIT state
+        this.bidSaved = false;
+        this.bidEdited = false;
+        this.currentBid = null;
+        this.originalBidData = null;
 
         try {
             // Load bidding detail
@@ -522,46 +906,152 @@ const BiddingList = {
 
             this.currentBidding = detail;
 
-            // Populate modal
+            // Populate modal header info
             document.getElementById('bidModalBiddingNo').textContent = biddingNo;
-            document.getElementById('bidInfoRoute').textContent = `${detail.pol} → ${detail.pod}`;
-            document.getElementById('bidInfoType').textContent = `${detail.shipping_type.toUpperCase()} / ${detail.load_type}`;
-            document.getElementById('bidInfoEtd').textContent = this.formatDate(detail.etd);
-            document.getElementById('bidInfoDeadline').textContent = detail.deadline ? 
-                this.formatDateTime(detail.deadline) : '-';
+            
+            // Populate Request Details (Quotation 정보)
+            this.populateRequestDetails(detail);
+            
+            // Populate Additional Information (Quotation 추가 정보)
+            this.populateAdditionalInfo(detail);
 
             // If editing, populate existing bid data
             if (isEdit && detail.my_bid) {
                 this.currentBid = detail.my_bid;
-                document.getElementById('bidFreight').value = detail.my_bid.freight_charge || '';
-                document.getElementById('bidLocal').value = detail.my_bid.local_charge || '';
-                document.getElementById('bidOther').value = detail.my_bid.other_charge || '';
-                document.getElementById('bidTransitTime').value = detail.my_bid.transit_time || '';
-                document.getElementById('bidValidity').value = detail.my_bid.validity_date ? 
-                    detail.my_bid.validity_date.split('T')[0] : '';
-                document.getElementById('bidRemark').value = detail.my_bid.remark || '';
+                this.bidSaved = true; // 기존 데이터가 있으면 저장된 상태
                 
-                document.getElementById('bidSubmitBtn').innerHTML = '<i class="fas fa-save"></i> 수정 저장';
+                // Transport Details
+                const bidETA = document.getElementById('bidETA');
+                const bidCarrier = document.getElementById('bidCarrier');
+                const bidValidity = document.getElementById('bidValidity');
+                const bidRemark = document.getElementById('bidRemark');
+                
+                if (bidETA) bidETA.value = detail.my_bid.eta ? detail.my_bid.eta.split('T')[0] : '';
+                if (bidCarrier) bidCarrier.value = detail.my_bid.carrier || '';
+                if (bidValidity) bidValidity.value = detail.my_bid.validity_date ? detail.my_bid.validity_date.split('T')[0] : '';
+                if (bidRemark) bidRemark.value = detail.my_bid.remark || '';
+                
+                // T/T 계산
+                this.calculateTT();
+                
+                // 기존 bid의 line_items 로드
+                if (detail.my_bid.line_items && detail.my_bid.line_items.length > 0) {
+                    this.lineItems = detail.my_bid.line_items.map((item, idx) => ({
+                        id: idx,
+                        code: item.code,
+                        category: item.category,
+                        unit: item.unit || '',
+                        qty: item.qty || 1,
+                        rate: item.rate || 0,
+                        currency: item.currency || 'USD',
+                        tax: item.tax_type || '영세',
+                        vat: item.vat_percent || 0
+                    }));
+                } else {
+                    // 기존 단순 금액을 라인 아이템으로 변환
+                    this.lineItems = [];
+                    if (detail.my_bid.freight_charge) {
+                        this.lineItems.push({
+                            id: 0,
+                            code: 'OFR',
+                            category: 'Ocean Freight',
+                            unit: detail.load_type || '20DC',
+                            qty: 1,
+                            rate: detail.my_bid.freight_charge,
+                            currency: 'USD',
+                            tax: '영세',
+                            vat: 0
+                        });
+                    }
+                    if (detail.my_bid.local_charge) {
+                        this.lineItems.push({
+                            id: 1,
+                            code: 'THC',
+                            category: 'Terminal Handling Charge',
+                            unit: detail.load_type || '20DC',
+                            qty: 1,
+                            rate: detail.my_bid.local_charge,
+                            currency: 'USD',
+                            tax: '영세',
+                            vat: 0
+                        });
+                    }
+                    if (detail.my_bid.other_charge) {
+                        this.lineItems.push({
+                            id: 2,
+                            code: 'OTHER',
+                            category: 'Other Charges',
+                            unit: 'SHPT',
+                            qty: 1,
+                            rate: detail.my_bid.other_charge,
+                            currency: 'USD',
+                            tax: '영세',
+                            vat: 0
+                        });
+                    }
+                }
+                
             } else {
-                // Clear form
+                // Clear form - 기본 라인 아이템 추가
                 this.currentBid = null;
-                document.getElementById('bidFreight').value = '';
-                document.getElementById('bidLocal').value = '';
-                document.getElementById('bidOther').value = '';
-                document.getElementById('bidTransitTime').value = '';
-                document.getElementById('bidValidity').value = '';
-                document.getElementById('bidRemark').value = '';
+                this.lineItems = [
+                    {
+                        id: 0,
+                        code: detail.shipping_type === 'air' ? 'AFR' : 'OFR',
+                        category: detail.shipping_type === 'air' ? 'Air Freight' : 'Ocean Freight',
+                        unit: detail.load_type || '20DC',
+                        qty: 1,
+                        rate: 0,
+                        currency: 'USD',
+                        tax: '영세',
+                        vat: 0
+                    }
+                ];
                 
-                document.getElementById('bidSubmitBtn').innerHTML = '<i class="fas fa-gavel"></i> 입찰 제출';
+                // Clear transport fields
+                const bidETA = document.getElementById('bidETA');
+                const bidCarrier = document.getElementById('bidCarrier');
+                const bidValidity = document.getElementById('bidValidity');
+                const bidRemark = document.getElementById('bidRemark');
+                const bidTT = document.getElementById('bidTT');
+                
+                if (bidETA) bidETA.value = '';
+                if (bidCarrier) bidCarrier.value = '';
+                if (bidValidity) bidValidity.value = '';
+                if (bidRemark) bidRemark.value = '';
+                if (bidTT) bidTT.value = '';
             }
 
+            // 라인 아이템 테이블 렌더링
+            this.renderLineItems();
             this.calculateTotal();
+            
+            // SAVE/SUBMIT 버튼 상태 업데이트
+            this.updateButtonState();
+            
+            // 입력 필드 변경 감지 이벤트 추가
+            this.setupBidFormListeners();
+            
             document.getElementById('bidModal').classList.add('active');
 
         } catch (error) {
             console.error('Failed to load bidding detail:', error);
             alert('입찰 정보를 불러오는데 실패했습니다: ' + error.message);
         }
+    },
+    
+    /**
+     * Setup bid form input listeners for edit detection
+     */
+    setupBidFormListeners() {
+        const inputs = ['bidETA', 'bidCarrier', 'bidValidity', 'bidRemark'];
+        inputs.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.removeEventListener('input', this.handleBidInputChange);
+                el.addEventListener('input', () => this.markAsEdited());
+            }
+        });
     },
 
     /**
@@ -571,62 +1061,402 @@ const BiddingList = {
         document.getElementById('bidModal').classList.remove('active');
         this.currentBidding = null;
         this.currentBid = null;
+        this.lineItems = [];
+    },
+
+    // ==========================================
+    // LINE ITEMS MANAGEMENT (비용 항목 관리)
+    // ==========================================
+
+    /**
+     * Render line items table
+     */
+    renderLineItems() {
+        const tbody = document.getElementById('bidLineItemsBody');
+        if (!tbody) return;
+
+        if (this.lineItems.length === 0) {
+            tbody.innerHTML = `
+                <tr class="bid-line-empty-row">
+                    <td colspan="10">
+                        <div class="bid-line-empty">
+                            <i class="fas fa-file-invoice-dollar"></i>
+                            <p>비용 항목을 추가해주세요</p>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        tbody.innerHTML = this.lineItems.map((item, idx) => this.renderLineItemRow(item, idx)).join('');
     },
 
     /**
-     * Calculate total amount
+     * Render single line item row
+     */
+    renderLineItemRow(item, idx) {
+        const codeOptions = FREIGHT_CODES.map(fc => 
+            `<option value="${fc.code}" ${item.code === fc.code ? 'selected' : ''}>${fc.code}</option>`
+        ).join('');
+
+        const unitOptions = UNIT_OPTIONS.map(u => 
+            `<option value="${u}" ${item.unit === u ? 'selected' : ''}>${u}</option>`
+        ).join('');
+
+        const currencyOptions = CURRENCY_OPTIONS.map(c => 
+            `<option value="${c}" ${item.currency === c ? 'selected' : ''}>${c}</option>`
+        ).join('');
+
+        const taxOptions = TAX_OPTIONS.map(t => 
+            `<option value="${t}" ${item.tax === t ? 'selected' : ''}>${t}</option>`
+        ).join('');
+
+        const amount = this.calculateLineAmount(item);
+
+        return `
+            <tr data-line-idx="${idx}">
+                <td class="col-action">
+                    <button type="button" class="btn-remove-line" onclick="BiddingList.removeLineItem(${idx})" title="삭제">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </td>
+                <td class="col-code">
+                    <select class="bid-line-select" onchange="BiddingList.updateLineItem(${idx}, 'code', this.value)">
+                        ${codeOptions}
+                    </select>
+                </td>
+                <td class="col-category">
+                    <input type="text" class="bid-line-input" value="${item.category}" 
+                           onchange="BiddingList.updateLineItem(${idx}, 'category', this.value)" 
+                           placeholder="Category">
+                </td>
+                <td class="col-unit">
+                    <select class="bid-line-select" onchange="BiddingList.updateLineItem(${idx}, 'unit', this.value)">
+                        <option value="">-</option>
+                        ${unitOptions}
+                    </select>
+                </td>
+                <td class="col-qty">
+                    <input type="number" class="bid-line-input" value="${item.qty}" min="1"
+                           onchange="BiddingList.updateLineItem(${idx}, 'qty', this.value)">
+                </td>
+                <td class="col-rate">
+                    <input type="number" class="bid-line-input" value="${item.rate}" step="0.01" min="0"
+                           onchange="BiddingList.updateLineItem(${idx}, 'rate', this.value)" 
+                           placeholder="0.00">
+                </td>
+                <td class="col-currency">
+                    <select class="bid-line-select" onchange="BiddingList.updateLineItem(${idx}, 'currency', this.value)">
+                        ${currencyOptions}
+                    </select>
+                </td>
+                <td class="col-tax">
+                    <select class="bid-line-select" onchange="BiddingList.updateLineItem(${idx}, 'tax', this.value)">
+                        ${taxOptions}
+                    </select>
+                </td>
+                <td class="col-vat">
+                    <input type="number" class="bid-line-input" value="${item.vat}" step="1" min="0" max="100"
+                           onchange="BiddingList.updateLineItem(${idx}, 'vat', this.value)" 
+                           ${item.tax === '영세' ? 'disabled' : ''}>
+                </td>
+                <td class="col-amount">
+                    <span class="line-amount" id="lineAmount_${idx}">${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                </td>
+            </tr>
+        `;
+    },
+
+    /**
+     * Add new line item
+     */
+    addLineItem() {
+        const newId = this.lineItems.length > 0 
+            ? Math.max(...this.lineItems.map(i => i.id)) + 1 
+            : 0;
+
+        this.lineItems.push({
+            id: newId,
+            code: 'OFR',
+            category: 'Ocean Freight',
+            unit: this.currentBidding?.load_type || '20DC',
+            qty: 1,
+            rate: 0,
+            currency: 'USD',
+            tax: '영세',
+            vat: 0
+        });
+
+        this.renderLineItems();
+        this.calculateTotal();
+    },
+
+    /**
+     * Remove line item
+     */
+    removeLineItem(idx) {
+        if (this.lineItems.length <= 1) {
+            alert('최소 1개의 비용 항목이 필요합니다.');
+            return;
+        }
+
+        this.lineItems.splice(idx, 1);
+        this.renderLineItems();
+        this.calculateTotal();
+    },
+
+    /**
+     * Update line item value
+     */
+    updateLineItem(idx, field, value) {
+        if (!this.lineItems[idx]) return;
+
+        // 특별 처리: Code 변경 시 Category 자동 채움
+        if (field === 'code') {
+            const freightCode = FREIGHT_CODES.find(fc => fc.code === value);
+            if (freightCode) {
+                this.lineItems[idx].code = value;
+                this.lineItems[idx].category = freightCode.category;
+                this.renderLineItems();
+                this.calculateTotal();
+                return;
+            }
+        }
+
+        // Tax 변경 시 VAT 처리
+        if (field === 'tax') {
+            this.lineItems[idx].tax = value;
+            if (value === '영세') {
+                this.lineItems[idx].vat = 0;
+            } else {
+                this.lineItems[idx].vat = 10; // 기본 VAT 10%
+            }
+            this.renderLineItems();
+            this.calculateTotal();
+            return;
+        }
+
+        // 숫자 필드 처리
+        if (['qty', 'rate', 'vat'].includes(field)) {
+            this.lineItems[idx][field] = parseFloat(value) || 0;
+        } else {
+            this.lineItems[idx][field] = value;
+        }
+
+        // 금액 재계산
+        this.updateLineAmount(idx);
+        this.calculateTotal();
+    },
+
+    /**
+     * Calculate single line amount
+     */
+    calculateLineAmount(item) {
+        const base = (item.qty || 0) * (item.rate || 0);
+        const vatAmount = item.tax === '과세' ? base * (item.vat || 0) / 100 : 0;
+        return base + vatAmount;
+    },
+
+    /**
+     * Update single line amount display
+     */
+    updateLineAmount(idx) {
+        const item = this.lineItems[idx];
+        if (!item) return;
+
+        const amount = this.calculateLineAmount(item);
+        const amountEl = document.getElementById(`lineAmount_${idx}`);
+        if (amountEl) {
+            amountEl.textContent = amount.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+    },
+
+    /**
+     * Calculate total amount from all line items
      */
     calculateTotal() {
-        const freight = parseFloat(document.getElementById('bidFreight').value) || 0;
-        const local = parseFloat(document.getElementById('bidLocal').value) || 0;
-        const other = parseFloat(document.getElementById('bidOther').value) || 0;
-        const total = freight + local + other;
+        // USD 기준 총합 계산 (다른 통화는 변환 필요 - 현재는 단순 합계)
+        const total = this.lineItems.reduce((sum, item) => {
+            // USD로 환산 (간단한 예시, 실제로는 환율 API 사용)
+            let amount = this.calculateLineAmount(item);
+            
+            // 다른 통화의 경우 임시 환율 적용 (백엔드 연동 시 실제 환율 사용)
+            const exchangeRates = {
+                'USD': 1,
+                'KRW': 0.00075, // 1 KRW ≈ 0.00075 USD
+                'EUR': 1.08,
+                'JPY': 0.0067,
+                'CNY': 0.14
+            };
+            
+            const rate = exchangeRates[item.currency] || 1;
+            return sum + (amount * rate);
+        }, 0);
         
         document.getElementById('bidTotalAmount').textContent = total.toLocaleString('en-US', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         });
+
+        return total;
     },
 
     /**
-     * Submit bid
+     * Get bid data from form
+     */
+    getBidFormData() {
+        // 라인 아이템을 분류하여 기존 API 호환 형태로 변환
+        let freightCharge = 0, localCharge = 0, otherCharge = 0;
+
+        this.lineItems.forEach(item => {
+            const amount = this.calculateLineAmount(item);
+            const code = (item.code || '').toUpperCase();
+            
+            if (['OFR', 'AFR', 'BAF', 'CAF', 'LSS', 'EBS', 'PSS', 'CIC'].includes(code)) {
+                freightCharge += amount;
+            } else if (['THC', 'WFG', 'CFS', 'DOC', 'SEAL', 'AMS', 'ENS', 'HANDLING'].includes(code)) {
+                localCharge += amount;
+            } else {
+                otherCharge += amount;
+            }
+        });
+
+        const lineItemsData = this.lineItems.map((item, idx) => ({
+            code: item.code,
+            category: item.category,
+            unit: item.unit || null,
+            qty: item.qty || 1,
+            rate: item.rate || 0,
+            currency: item.currency || 'USD',
+            tax_type: item.tax || '영세',
+            vat_percent: item.vat || 0,
+            sort_order: idx
+        }));
+
+        return {
+            bidding_id: this.currentBidding.id,
+            total_amount: this.calculateTotal(),
+            freight_charge: freightCharge || null,
+            local_charge: localCharge || null,
+            other_charge: otherCharge || null,
+            carrier: document.getElementById('bidCarrier')?.value.trim() || null,
+            eta: document.getElementById('bidETA')?.value || null,
+            transit_time: document.getElementById('bidTT')?.value || null,
+            validity_date: document.getElementById('bidValidity')?.value || null,
+            remark: document.getElementById('bidRemark')?.value.trim() || null,
+            line_items: lineItemsData
+        };
+    },
+
+    /**
+     * Save bid (draft)
+     */
+    async saveBid() {
+        if (!this.forwarder || !this.currentBidding) return;
+
+        // 최소 유효성 검사
+        if (this.lineItems.length === 0) {
+            alert('최소 1개의 비용 항목을 입력해주세요.');
+            return;
+        }
+
+        const bidData = this.getBidFormData();
+        console.log('💾 Saving bid data:', bidData);
+
+        try {
+            let response;
+            
+            if (this.currentBid) {
+                // Update existing
+                response = await fetch(`${QUOTE_API_BASE}/api/bid/${this.currentBid.id}?forwarder_id=${this.forwarder.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({...bidData, status: 'draft'})
+                });
+            } else {
+                // Create new draft
+                response = await fetch(`${QUOTE_API_BASE}/api/bid/submit?forwarder_id=${this.forwarder.id}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({...bidData, status: 'draft'})
+                });
+            }
+
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.detail);
+
+            // 상태 업데이트
+            this.bidSaved = true;
+            this.bidEdited = false;
+            this.currentBid = result.bid || result;
+            this.originalBidData = JSON.stringify(bidData);
+            
+            this.updateButtonState();
+            this.showToast('저장되었습니다.', 'success');
+
+        } catch (error) {
+            console.error('Failed to save bid:', error);
+            alert('저장에 실패했습니다: ' + error.message);
+        }
+    },
+
+    /**
+     * Submit bid (final)
      */
     async submitBid() {
         if (!this.forwarder || !this.currentBidding) return;
 
-        const freight = parseFloat(document.getElementById('bidFreight').value) || 0;
-        const local = parseFloat(document.getElementById('bidLocal').value) || 0;
-        const other = parseFloat(document.getElementById('bidOther').value) || 0;
-        const total = freight + local + other;
+        // SAVE 먼저 해야 함
+        if (!this.bidSaved) {
+            alert('먼저 Save를 해주세요.');
+            return;
+        }
 
+        // 수정된 내용이 있으면 저장 먼저
+        if (this.bidEdited) {
+            alert('수정된 내용이 있습니다. Save를 먼저 해주세요.');
+            return;
+        }
+
+        // 유효성 검사
+        if (this.lineItems.length === 0) {
+            alert('최소 1개의 비용 항목을 입력해주세요.');
+            return;
+        }
+
+        const hasValidRate = this.lineItems.some(item => (item.rate || 0) > 0);
+        if (!hasValidRate) {
+            alert('최소 1개 항목에 Rate를 입력해주세요.');
+            return;
+        }
+
+        const total = this.calculateTotal();
         if (total <= 0) {
             alert('입찰 금액을 입력해주세요.');
             return;
         }
 
-        const bidData = {
-            bidding_id: this.currentBidding.id,
-            total_amount: total,
-            freight_charge: freight || null,
-            local_charge: local || null,
-            other_charge: other || null,
-            transit_time: document.getElementById('bidTransitTime').value.trim() || null,
-            validity_date: document.getElementById('bidValidity').value || null,
-            remark: document.getElementById('bidRemark').value.trim() || null
-        };
+        if (!confirm('입찰을 제출하시겠습니까? 제출 후에는 수정이 제한됩니다.')) {
+            return;
+        }
+
+        const bidData = this.getBidFormData();
+        console.log('📤 Submitting bid data:', bidData);
 
         try {
             let response;
             
-            if (this.isEditMode && this.currentBid) {
-                // Update existing bid
+            if (this.currentBid) {
                 response = await fetch(`${QUOTE_API_BASE}/api/bid/${this.currentBid.id}?forwarder_id=${this.forwarder.id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(bidData)
+                    body: JSON.stringify({...bidData, status: 'submitted'})
                 });
             } else {
-                // Submit new bid
                 response = await fetch(`${QUOTE_API_BASE}/api/bid/submit?forwarder_id=${this.forwarder.id}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -635,10 +1465,9 @@ const BiddingList = {
             }
 
             const result = await response.json();
-
             if (!response.ok) throw new Error(result.detail);
 
-            alert(result.message);
+            alert(result.message || '입찰이 제출되었습니다.');
             this.closeBidModal();
             this.loadBiddingList();
             this.loadStats();
@@ -647,6 +1476,70 @@ const BiddingList = {
             console.error('Failed to submit bid:', error);
             alert('입찰 제출에 실패했습니다: ' + error.message);
         }
+    },
+
+    /**
+     * Mark bid as edited
+     */
+    markAsEdited() {
+        if (this.bidSaved && !this.bidEdited) {
+            this.bidEdited = true;
+            this.updateButtonState();
+        }
+    },
+
+    /**
+     * Update SAVE/SUBMIT button state
+     */
+    updateButtonState() {
+        const saveBtn = document.getElementById('bidSaveBtn');
+        const saveBtnText = document.getElementById('saveBtnText');
+        const submitBtn = document.getElementById('bidSubmitBtn');
+
+        if (saveBtn && saveBtnText) {
+            if (this.bidSaved && !this.bidEdited) {
+                // 저장됨 상태 -> Edit
+                saveBtnText.textContent = 'Edit';
+                saveBtn.classList.remove('edited');
+            } else if (this.bidEdited) {
+                // 수정됨 상태 -> Save (주황색)
+                saveBtnText.textContent = 'Save';
+                saveBtn.classList.add('edited');
+            } else {
+                // 초기 상태 -> Save
+                saveBtnText.textContent = 'Save';
+                saveBtn.classList.remove('edited');
+            }
+        }
+
+        if (submitBtn) {
+            // Save 완료 + 수정 없음 -> Submit 활성화
+            submitBtn.disabled = !(this.bidSaved && !this.bidEdited);
+        }
+    },
+
+    /**
+     * Show toast message
+     */
+    showToast(message, type = 'info') {
+        // 간단한 토스트 알림
+        const toast = document.createElement('div');
+        toast.className = `toast-message ${type}`;
+        toast.textContent = message;
+        toast.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 12px 24px;
+            background: ${type === 'success' ? '#22c55e' : '#3b82f6'};
+            color: white;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 10000;
+            animation: fadeIn 0.3s ease;
+        `;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 2500);
     },
 
     /**
@@ -793,7 +1686,7 @@ const BiddingList = {
             'open': '진행중',
             'closed': '마감',
             'awarded': '낙찰',
-            'expired': '만료',
+            'expired': '마감됨',
             'cancelled': '취소'
         };
         return labels[status] || status;

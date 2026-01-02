@@ -401,6 +401,8 @@ class BiddingDetailResponse(BaseModel):
     # Quote Request 정보
     customer_company: str
     customer_name: str
+    customer_email: Optional[str] = None
+    customer_phone: Optional[str] = None
     trade_mode: str
     shipping_type: str
     load_type: str
@@ -410,7 +412,29 @@ class BiddingDetailResponse(BaseModel):
     etd: datetime
     eta: Optional[datetime] = None
     is_dg: bool
+    dg_class: Optional[str] = None
+    dg_un: Optional[str] = None
     remark: Optional[str] = None
+    
+    # Cargo Details (화물 정보) - 합계
+    container_type: Optional[str] = None
+    container_qty: int = 0
+    total_qty: int = 0
+    total_weight: float = 0
+    total_cbm: float = 0
+    invoice_value: float = 0
+    
+    # Cargo Details (개별 화물 리스트)
+    cargo_details: List[CargoDetailResponse] = []
+    
+    # Additional Details (부가 정보)
+    export_cc: bool = False
+    import_cc: bool = False
+    shipping_insurance: bool = False
+    pickup_required: bool = False
+    pickup_address: Optional[str] = None
+    delivery_required: bool = False
+    delivery_address: Optional[str] = None
     
     # 입찰 정보
     bid_count: int = 0

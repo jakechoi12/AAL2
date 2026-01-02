@@ -248,8 +248,10 @@
 }
 
 .status-badge.expired {
-    background: rgba(239, 68, 68, 0.15);
-    color: #f87171;
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    font-weight: 600;
+    border: 1px solid rgba(239, 68, 68, 0.4);
 }
 
 .status-badge.cancelled {
@@ -269,6 +271,50 @@
 
 .deadline-cell.urgent::before {
     content: '⚠️ ';
+}
+
+/* Expired (마감) Deadline Styling */
+.deadline-cell.expired {
+    color: #ef4444;
+    font-weight: 600;
+}
+
+.expired-label {
+    display: inline-block;
+    background: #ef4444;
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    margin-left: 0.35rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    animation: pulse-red 2s infinite;
+}
+
+@keyframes pulse-red {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+/* Expired Row Styling */
+.expired-row {
+    background: rgba(239, 68, 68, 0.05) !important;
+}
+
+.expired-row:hover {
+    background: rgba(239, 68, 68, 0.1) !important;
+}
+
+.expired-row td {
+    color: #9ca3af;
+}
+
+.expired-text {
+    color: #9ca3af !important;
+    text-decoration: line-through;
+    text-decoration-color: #ef4444;
 }
 
 /* Bid Count */
@@ -512,17 +558,909 @@
     margin-top: 0.3rem;
 }
 
-/* --- Bid Modal Specific --- */
+/* --- Quote Registration Modal (견적 등록) --- */
 .bid-modal .modal-content {
     max-width: 560px;
+}
+
+.bid-modal .quote-reg-modal {
+    max-width: 1440px;
+    width: 95%;
+    max-height: 92vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.bid-modal .quote-reg-modal .modal-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.25rem 1.5rem;
+}
+
+/* Quote Header (Bidding No + Deadline) */
+.quote-header {
+    display: flex;
+    align-items: center;
+    padding: 0.875rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), transparent);
+}
+
+.quote-header .header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.quote-header .modal-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.quote-header .modal-bidding-no {
+    font-size: 0.8rem;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent-color);
+    background: rgba(59, 130, 246, 0.15);
+    padding: 0.25rem 0.6rem;
+    border-radius: 4px;
+}
+
+.quote-header .header-deadline {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: auto;
+    margin-right: 1rem;
+    padding: 0.5rem 1rem;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 8px;
+}
+
+.quote-header .header-deadline i {
+    color: #ef4444;
+    font-size: 0.9rem;
+}
+
+.quote-header .deadline-label {
+    font-size: 0.7rem;
+    color: var(--text-sub);
+    text-transform: uppercase;
+}
+
+.quote-header .deadline-datetime {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #ef4444;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.quote-header .deadline-dday {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: white;
+    background: #ef4444;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+}
+
+/* Modal Header Legacy */
+.quote-reg-modal .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.quote-reg-modal .modal-header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.quote-reg-modal .modal-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.quote-reg-modal .modal-bidding-no {
+    font-size: 0.85rem;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent-color);
+    background: rgba(59, 130, 246, 0.15);
+    padding: 0.25rem 0.6rem;
+    border-radius: 4px;
+}
+
+/* QR Section */
+.qr-section {
+    margin-bottom: 1.25rem;
+}
+
+.qr-section-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.required-mark {
+    color: #ef4444;
+}
+
+/* Request Info Section (통합 그리드) */
+.request-info-section {
+    margin-bottom: 1rem;
+}
+
+.request-info-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.info-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.75rem;
+    border-right: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.info-cell:nth-child(6n) {
+    border-right: none;
+}
+
+.info-cell.span-2 {
+    grid-column: span 2;
+}
+
+.info-cell.span-3 {
+    grid-column: span 3;
+}
+
+.cell-label {
+    font-size: 0.65rem;
+    color: var(--text-sub);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.cell-value {
+    font-size: 0.8rem;
+    color: var(--text-main);
+    font-weight: 600;
+}
+
+.cell-value.highlight {
+    color: var(--accent-color);
+}
+
+.cell-value.date-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+}
+
+.cell-value.invoice-value {
+    color: #22c55e;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* Cargo Section */
+.cargo-section {
+    margin-bottom: 1rem;
+}
+
+.cargo-table-wrapper {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow-x: auto;
+}
+
+.cargo-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.75rem;
+}
+
+.cargo-table th {
+    background: var(--accent-color);
+    color: white;
+    padding: 0.5rem 0.6rem;
+    text-align: center;
+    font-weight: 500;
+    font-size: 0.7rem;
+    white-space: nowrap;
+}
+
+.cargo-table td {
+    padding: 0.5rem 0.6rem;
+    text-align: center;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-main);
+}
+
+.cargo-table td.no-data {
+    color: var(--text-sub);
+    font-style: italic;
+    padding: 1rem;
+}
+
+.cargo-table .total-row {
+    background: rgba(59, 130, 246, 0.1);
+    font-weight: 600;
+}
+
+.cargo-table .total-row td:first-child {
+    text-align: right;
+    padding-right: 1rem;
+}
+
+/* Services Section */
+.services-section {
+    margin-bottom: 1rem;
+}
+
+.services-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    cursor: pointer;
+    padding: 0.5rem 0;
+}
+
+.service-tags {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+}
+
+.svc-tag {
+    font-size: 0.65rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-sub);
+    border: 1px solid var(--border-color);
+}
+
+.svc-tag.active {
+    background: rgba(34, 197, 94, 0.15);
+    color: #22c55e;
+    border-color: rgba(34, 197, 94, 0.3);
+}
+
+.services-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.services-content.show {
+    max-height: 200px;
+}
+
+.services-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    margin-top: 0.5rem;
+}
+
+.svc-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.svc-label {
+    font-size: 0.65rem;
+    color: var(--text-sub);
+    text-transform: uppercase;
+}
+
+.svc-value {
+    font-size: 0.75rem;
+    color: var(--text-main);
+}
+
+.svc-value.required {
+    color: #22c55e;
+}
+
+.svc-value.not-required {
+    color: var(--text-sub);
+}
+
+.svc-addr {
+    font-size: 0.65rem;
+    color: var(--text-sub);
+    font-style: italic;
+}
+
+/* Transport Section */
+.transport-section {
+    margin-bottom: 1rem;
+}
+
+.transport-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.75rem;
+}
+
+.transport-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.transport-label {
+    font-size: 0.65rem;
+    color: var(--text-sub);
+    text-transform: uppercase;
+    font-weight: 500;
+}
+
+.transport-input {
+    padding: 0.5rem 0.75rem;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-main);
+    font-size: 0.8rem;
+}
+
+.transport-input:focus {
+    outline: none;
+    border-color: var(--accent-color);
+}
+
+.transport-input.readonly {
+    background: rgba(255, 255, 255, 0.02);
+    color: var(--text-sub);
+}
+
+/* Remark Input */
+.remark-input-section {
+    margin-bottom: 1rem;
+}
+
+.remark-textarea {
+    width: 100%;
+    min-height: 60px;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-main);
+    font-size: 0.8rem;
+    resize: vertical;
+}
+
+.remark-textarea:focus {
+    outline: none;
+    border-color: var(--accent-color);
+}
+
+/* Quote Footer */
+.quote-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.875rem 1.5rem;
+    border-top: 1px solid var(--border-color);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.footer-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.cancel-btn {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-sub);
+}
+
+.cancel-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-main);
+}
+
+.save-btn {
+    background: rgba(59, 130, 246, 0.15);
+    border: 1px solid var(--accent-color);
+    color: var(--accent-color);
+}
+
+.save-btn:hover {
+    background: rgba(59, 130, 246, 0.25);
+}
+
+.save-btn.edited {
+    background: rgba(245, 158, 11, 0.15);
+    border-color: #f59e0b;
+    color: #f59e0b;
+}
+
+.submit-btn {
+    background: var(--accent-color);
+    border: 1px solid var(--accent-color);
+    color: white;
+}
+
+.submit-btn:hover:not(:disabled) {
+    background: #2563eb;
+}
+
+.submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Legacy Info Item */
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.info-item.wide {
+    grid-column: span 2;
+}
+
+.info-label {
+    font-size: 0.7rem;
+    color: var(--text-sub);
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.info-value {
+    font-size: 0.85rem;
+    color: var(--text-main);
+    font-weight: 600;
+}
+
+/* Cargo Details Table */
+.cargo-details-section {
+    margin-bottom: 1rem;
+}
+
+.cargo-details-table-wrapper {
+    overflow-x: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+}
+
+.cargo-details-table {
+    width: 100%;
+    min-width: 700px;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+}
+
+.cargo-details-table th {
+    background: var(--accent-color);
+    color: white;
+    padding: 0.6rem;
+    text-align: center;
+    font-weight: 500;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.cargo-details-table td {
+    padding: 0.5rem 0.6rem;
+    text-align: center;
+    border: 1px solid var(--border-color);
+    background: rgba(255, 255, 255, 0.02);
+    color: var(--text-main);
+}
+
+.cargo-details-table td.no-data {
+    color: var(--text-sub);
+    font-style: italic;
+    padding: 1rem;
+}
+
+.cargo-details-table .total-row {
+    background: rgba(59, 130, 246, 0.1);
+    font-weight: 600;
+}
+
+.cargo-details-table .total-row .total-label {
+    text-align: right;
+    padding-right: 1rem;
+}
+
+.invoice-info {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: rgba(34, 197, 94, 0.1);
+    border-radius: 8px;
+}
+
+.invoice-label {
+    font-size: 0.85rem;
+    color: var(--text-sub);
+    font-weight: 500;
+}
+
+.invoice-value {
+    font-size: 1.1rem;
+    color: #22c55e;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* Remarks Section */
+.remarks-section {
+    margin-bottom: 1rem;
+}
+
+.remarks-content {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    font-size: 0.85rem;
+    color: var(--text-main);
+    line-height: 1.5;
+    white-space: pre-wrap;
+}
+
+/* Request Details Table (legacy) */
+.request-details-section {
+    margin-bottom: 1rem;
+}
+
+.request-details-table-wrapper {
+    overflow-x: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+}
+
+.request-details-table {
+    width: 100%;
+    min-width: 900px;
+    border-collapse: collapse;
+    font-size: 0.75rem;
+}
+
+.request-details-table th {
+    background: var(--accent-color);
+    color: white;
+    padding: 0.5rem 0.6rem;
+    text-align: center;
+    font-weight: 500;
+    font-size: 0.7rem;
+    white-space: nowrap;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.request-details-table td {
+    padding: 0.5rem 0.6rem;
+    text-align: center;
+    border: 1px solid var(--border-color);
+    background: rgba(255, 255, 255, 0.02);
+    color: var(--text-main);
+    font-weight: 500;
+}
+
+/* Additional Information Section */
+.additional-info-section {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+}
+
+.additional-info-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.6rem 1rem;
+    background: rgba(255, 255, 255, 0.03);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.additional-info-header:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.additional-info-header .qr-section-title {
+    margin-bottom: 0;
+}
+
+.additional-tags {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+}
+
+.add-tag {
+    font-size: 0.65rem;
+    font-weight: 400;
+    color: var(--text-sub);
+    padding: 0.15rem 0.4rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+}
+
+.add-tag.active {
+    background: rgba(59, 130, 246, 0.2);
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+}
+
+.toggle-icon {
+    color: var(--text-sub);
+    font-size: 0.75rem;
+    transition: transform 0.3s ease;
+}
+
+.toggle-icon.expanded {
+    transform: rotate(180deg);
+}
+
+.additional-info-content {
+    display: none;
+    padding: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.additional-info-content.show {
+    display: block;
+}
+
+.additional-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+}
+
+.additional-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 6px;
+}
+
+.additional-item .item-label {
+    min-width: 160px;
+    color: var(--text-sub);
+    font-size: 0.8rem;
+}
+
+.additional-item .item-value {
+    font-size: 0.8rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.additional-item .item-value i.fa-check-circle {
+    color: #22c55e;
+}
+
+.additional-item .item-value i.fa-times-circle {
+    color: #ef4444;
+}
+
+.additional-item .item-value.required {
+    color: #22c55e;
+}
+
+.additional-item .item-value.not-required {
+    color: var(--text-sub);
+}
+
+.additional-item .item-address {
+    font-size: 0.75rem;
+    color: var(--accent-color);
+    margin-left: auto;
+}
+
+/* Rates Section */
+.rates-section {
+    margin-bottom: 1rem;
+}
+
+.rates-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.rates-header .qr-section-title {
+    margin-bottom: 0;
+}
+
+.rates-table-wrapper {
+    overflow-x: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+}
+
+.rates-table {
+    width: 100%;
+    min-width: 850px;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+}
+
+/* Group Headers (Freight Code / Selling Rate) */
+.rates-table .header-group th {
+    padding: 0.4rem;
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.rates-table .group-freight {
+    background: #7c3aed;
+    color: white;
+}
+
+.rates-table .group-selling {
+    background: var(--accent-color);
+    color: white;
+}
+
+/* Column Headers */
+.rates-table .header-columns th {
+    padding: 0.4rem 0.35rem;
+    text-align: center;
+    font-weight: 500;
+    font-size: 0.7rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    color: var(--text-sub);
+}
+
+/* Table Body */
+.rates-table tbody tr {
+    transition: var(--transition);
+}
+
+.rates-table tbody tr:hover {
+    background: rgba(59, 130, 246, 0.08);
+}
+
+.rates-table td {
+    padding: 0.35rem;
+    border: 1px solid var(--border-color);
+    vertical-align: middle;
+}
+
+/* Add Row Link */
+.add-row-link {
+    padding: 0.4rem 0;
+}
+
+.add-row-link a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    color: var(--text-sub);
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    transition: var(--transition);
+}
+
+.add-row-link a:hover {
+    color: var(--accent-color);
+    background: rgba(59, 130, 246, 0.1);
+}
+
+/* Input Section */
+.input-section {
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.form-row.three-cols {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+/* Modal Footer */
+.quote-reg-modal .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border-color);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+/* Responsive for Quote Reg Modal */
+@media (max-width: 1024px) {
+    .bid-modal .quote-reg-modal {
+        max-width: 98%;
+        margin: 1rem;
+    }
+
+    .additional-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .form-row.three-cols {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .request-details-table-wrapper,
+    .rates-table-wrapper {
+        margin: 0 -1rem;
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+    }
+
+    .additional-tags {
+        display: none;
+    }
+}
+
+/* Legacy bid-quote-modal support */
+.bid-modal .bid-quote-modal {
+    max-width: 960px;
+    width: 95%;
 }
 
 .bid-info-card {
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid var(--border-color);
     border-radius: 8px;
-    padding: 1rem;
+    padding: 1rem 1.25rem;
     margin-bottom: 1.5rem;
+}
+
+.bid-info-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+}
+
+.bid-info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
 }
 
 .bid-info-row {
@@ -538,10 +1476,256 @@
 
 .bid-info-label {
     color: var(--text-sub);
+    font-size: 0.8rem;
 }
 
 .bid-info-value {
     font-weight: 500;
+    font-size: 0.95rem;
+}
+
+.bid-info-value.deadline {
+    color: #f59e0b;
+}
+
+/* --- 비용 항목 테이블 섹션 --- */
+.bid-line-section {
+    margin-bottom: 1.5rem;
+}
+
+.bid-line-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.bid-line-header h4 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.bid-line-header h4 i {
+    color: var(--accent-color);
+}
+
+.btn-add-line {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.75rem;
+    border-radius: 6px;
+    background: rgba(59, 130, 246, 0.15);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    color: #60a5fa;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-add-line:hover {
+    background: rgba(59, 130, 246, 0.25);
+    border-color: var(--accent-color);
+}
+
+/* 테이블 래퍼 */
+.bid-line-table-wrapper {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+    overflow-x: auto;
+}
+
+/* 비용 항목 테이블 */
+.bid-line-table {
+    width: 100%;
+    min-width: 900px;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.bid-line-table thead {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.bid-line-table th {
+    padding: 0.65rem 0.5rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.75rem;
+    color: var(--text-sub);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--border-color);
+    white-space: nowrap;
+}
+
+.bid-line-table td {
+    padding: 0.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    vertical-align: middle;
+}
+
+.bid-line-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.bid-line-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* 컬럼 너비 */
+.bid-line-table .col-action { width: 36px; text-align: center; }
+.bid-line-table .col-code { width: 80px; }
+.bid-line-table .col-category { width: 140px; }
+.bid-line-table .col-unit { width: 80px; }
+.bid-line-table .col-qty { width: 50px; }
+.bid-line-table .col-rate { width: 100px; }
+.bid-line-table .col-currency { width: 70px; }
+.bid-line-table .col-tax { width: 65px; }
+.bid-line-table .col-vat { width: 55px; }
+.bid-line-table .col-amount { width: 160px; min-width: 160px; text-align: right; }
+
+/* New Rates Table Columns */
+.rates-table .col-del { width: 36px; text-align: center; }
+.rates-table .col-code { width: 80px; }
+.rates-table .col-category { width: 150px; }
+.rates-table .col-unit { width: 80px; }
+.rates-table .col-qty-sm { width: 45px; }
+.rates-table .col-rate { width: 100px; }
+.rates-table .col-currency { width: 65px; }
+.rates-table .col-tax { width: 60px; }
+.rates-table .col-vat { width: 50px; }
+.rates-table .col-amount-lg { width: 160px; min-width: 160px; text-align: right; }
+
+/* 테이블 입력 필드 */
+.bid-line-input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 4px;
+    padding: 0.4rem 0.5rem;
+    color: var(--text-main);
+    font-size: 0.85rem;
+    transition: var(--transition);
+}
+
+.bid-line-input:focus {
+    border-color: var(--accent-color);
+    background: rgba(255, 255, 255, 0.06);
+    outline: none;
+}
+
+.bid-line-input::placeholder {
+    color: var(--text-sub);
+    opacity: 0.5;
+}
+
+.bid-line-input[type="number"] {
+    text-align: right;
+}
+
+/* 드롭다운 스타일 */
+.bid-line-select {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 4px;
+    padding: 0.4rem 0.35rem;
+    color: var(--text-main);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.bid-line-select:focus {
+    border-color: var(--accent-color);
+    outline: none;
+}
+
+/* 삭제 버튼 */
+.btn-remove-line {
+    width: 26px;
+    height: 26px;
+    border-radius: 4px;
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text-sub);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+}
+
+.btn-remove-line:hover {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #f87171;
+}
+
+/* 금액 셀 (readonly) */
+.line-amount {
+    text-align: right;
+    font-weight: 600;
+    color: var(--text-main);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    min-width: 130px;
+}
+
+/* 총합계 행 */
+.bid-total-row {
+    background: rgba(59, 130, 246, 0.08);
+}
+
+.bid-total-row td {
+    padding: 1rem 0.75rem;
+    border-top: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.bid-total-row .total-label {
+    text-align: right;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-main);
+}
+
+.bid-total-row .total-value {
+    text-align: right;
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: var(--accent-color);
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* 빈 상태 */
+.bid-line-empty {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-sub);
+}
+
+.bid-line-empty i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    opacity: 0.4;
+}
+
+.bid-line-empty p {
+    font-size: 0.9rem;
+}
+
+/* 추가 정보 섹션 */
+.bid-additional-section {
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
 }
 
 .amount-summary {
@@ -563,6 +1747,60 @@
     font-size: 1.5rem;
     font-weight: 700;
     color: var(--accent-color);
+}
+
+/* --- 상세 견적서 모달 반응형 --- */
+@media (max-width: 1024px) {
+    .bid-modal .bid-quote-modal {
+        max-width: 95%;
+    }
+    
+    .bid-info-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .bid-modal .bid-quote-modal {
+        max-width: 100%;
+        margin: 0.5rem;
+        max-height: 95vh;
+    }
+    
+    .bid-info-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
+    .bid-info-item {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .bid-info-item:last-child {
+        border-bottom: none;
+    }
+    
+    .bid-line-table-wrapper {
+        margin: 0 -1rem;
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+    }
+    
+    .bid-line-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+    
+    .btn-add-line {
+        width: 100%;
+        justify-content: center;
+    }
 }
 
 /* --- Forwarder Info Bar --- */

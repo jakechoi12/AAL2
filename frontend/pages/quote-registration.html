@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quote Registration - AAL Platform</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="../css/sections/quote-registration.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="qr-header">
+        <a href="../ai_studio_code_F2.html" class="qr-logo">
+            AAL<span>.</span>
+        </a>
+        <nav class="qr-nav">
+            <a href="quotation.html">Quotation</a>
+            <a href="bidding-list.html">Bidding</a>
+            <a href="market-data.html">Market Data</a>
+        </nav>
+        <div class="qr-header-actions">
+            <div class="qr-user-info" id="userInfo">
+                <span class="user-company" id="userCompany">-</span>
+                <span class="user-email" id="userEmail">-</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Layout -->
+    <div class="qr-container">
+        <!-- Left Section: Account Details -->
+        <aside class="qr-sidebar-left">
+            <div class="qr-quote-no" id="quoteNo">NHPS000000</div>
+            
+            <div class="qr-account-section">
+                <h3 class="qr-section-title">Account Details</h3>
+                <div class="qr-field">
+                    <label>Customer</label>
+                    <div class="qr-input-search">
+                        <input type="text" id="customerName" readonly placeholder="Customer Name">
+                        <button class="btn-search"><i class="fas fa-search"></i></button>
+                    </div>
+                </div>
+                <div class="qr-field">
+                    <label>Expire Date</label>
+                    <input type="date" id="expireDate" class="qr-input">
+                </div>
+            </div>
+
+            <!-- Navigation Buttons -->
+            <div class="qr-nav-buttons">
+                <button class="btn-nav" id="btnPrevious" disabled>
+                    <i class="fas fa-chevron-left"></i> Previous
+                </button>
+                <button class="btn-nav" id="btnNext">
+                    Next <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Center Section: Main Content -->
+        <main class="qr-main">
+            <!-- Request Details Header -->
+            <section class="qr-request-details">
+                <h3 class="qr-section-title">Request Details</h3>
+                <div class="qr-details-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Incoterms</th>
+                                <th>Shipping Mode</th>
+                                <th>Trade Mode</th>
+                                <th>Load Type</th>
+                                <th>DG</th>
+                                <th>POL</th>
+                                <th>POD</th>
+                                <th>Container</th>
+                                <th>Total Qty</th>
+                                <th>Total Gross Weight(KG)</th>
+                                <th>Total Measure(CBM)</th>
+                                <th>Invoice Value(USD)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td id="detailIncoterms">-</td>
+                                <td id="detailShippingMode">-</td>
+                                <td id="detailTradeMode">-</td>
+                                <td id="detailLoadType">-</td>
+                                <td id="detailDG"><input type="checkbox" disabled></td>
+                                <td id="detailPOL">-</td>
+                                <td id="detailPOD">-</td>
+                                <td id="detailContainer">-</td>
+                                <td id="detailTotalQty">-</td>
+                                <td id="detailTotalWeight">-</td>
+                                <td id="detailTotalMeasure">-</td>
+                                <td id="detailInvoiceValue">-</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Additional Information (Collapsible) -->
+            <section class="qr-additional-info">
+                <div class="qr-additional-header" onclick="QuoteReg.toggleAdditionalInfo()">
+                    <h3 class="qr-section-title">
+                        <span>Additional Information</span>
+                        <span class="qr-additional-tags">
+                            <span class="tag">Export Customs Clearance</span>
+                            <span class="tag">Import Customs Clearance</span>
+                            <span class="tag">Pickup</span>
+                            <span class="tag">Delivery</span>
+                        </span>
+                    </h3>
+                    <i class="fas fa-chevron-down toggle-icon" id="additionalToggleIcon"></i>
+                </div>
+                <div class="qr-additional-content" id="additionalContent">
+                    <div class="qr-service-grid">
+                        <div class="qr-service-row">
+                            <span class="service-name">Export Customs Clearance</span>
+                            <span class="service-status required" id="exportCCStatus">
+                                <i class="fas fa-check-circle"></i> Required
+                            </span>
+                            <span class="service-status not-required" id="exportCCStatusNo" style="display:none;">
+                                <i class="fas fa-times-circle"></i> No
+                            </span>
+                        </div>
+                        <div class="qr-service-row">
+                            <span class="service-name">Import Customs Clearance</span>
+                            <span class="service-status required" id="importCCStatus">
+                                <i class="fas fa-check-circle"></i> Required
+                            </span>
+                            <span class="service-status not-required" id="importCCStatusNo" style="display:none;">
+                                <i class="fas fa-times-circle"></i> No
+                            </span>
+                        </div>
+                        <div class="qr-service-row">
+                            <span class="service-name">Pickup</span>
+                            <span class="service-status required" id="pickupStatus">
+                                <i class="fas fa-check-circle"></i> Required
+                            </span>
+                            <span class="service-status not-required" id="pickupStatusNo" style="display:none;">
+                                <i class="fas fa-times-circle"></i> No
+                            </span>
+                            <span class="service-address" id="pickupAddress">Address</span>
+                        </div>
+                        <div class="qr-service-row">
+                            <span class="service-name">Delivery</span>
+                            <span class="service-status required" id="deliveryStatus">
+                                <i class="fas fa-check-circle"></i> Required
+                            </span>
+                            <span class="service-status not-required" id="deliveryStatusNo" style="display:none;">
+                                <i class="fas fa-times-circle"></i> No
+                            </span>
+                            <span class="service-address" id="deliveryAddress">Address</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Exchange Rate Info -->
+            <div class="qr-exchange-rate">
+                <span>USD → KRW: <strong id="exchangeRate">1,366.50</strong>(<span id="exchangeDate">23/11/22</span>)</span>
+                <select id="displayCurrency" class="qr-currency-select">
+                    <option value="KRW">KRW</option>
+                    <option value="USD">USD</option>
+                </select>
+            </div>
+
+            <!-- Quote Registration Section -->
+            <section class="qr-rates-section">
+                <div class="qr-rates-header">
+                    <h3 class="qr-section-title">
+                        <i class="fas fa-sync-alt reload-icon" onclick="QuoteReg.reloadQuote()"></i>
+                        Quote Registration
+                    </h3>
+                    <div class="qr-rates-actions">
+                        <button class="btn-reload" onclick="QuoteReg.reloadQuote()">
+                            <i class="fas fa-sync-alt"></i> Reload Quote
+                        </button>
+                        <button class="btn-add-rate" onclick="QuoteReg.addRateLine()">
+                            <i class="fas fa-plus"></i> Add
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Rates Label -->
+                <div class="qr-rates-label">
+                    <span class="required-mark">*</span>Rates
+                </div>
+
+                <!-- Rates Table -->
+                <div class="qr-rates-table-wrapper">
+                    <table class="qr-rates-table" id="ratesTable">
+                        <thead>
+                            <!-- Group Headers -->
+                            <tr class="header-group">
+                                <th colspan="4" class="group-freight">Freight Code</th>
+                                <th colspan="6" class="group-selling">Selling Rate</th>
+                                <th colspan="7" class="group-buying">Buying Rate</th>
+                            </tr>
+                            <!-- Column Headers -->
+                            <tr class="header-columns">
+                                <!-- Freight Code -->
+                                <th class="col-action"></th>
+                                <th class="col-code">Code</th>
+                                <th class="col-category">Category</th>
+                                <th class="col-unit">Unit</th>
+                                <!-- Selling Rate -->
+                                <th class="col-qty">Qty</th>
+                                <th class="col-rate">Rate</th>
+                                <th class="col-currency">Currency</th>
+                                <th class="col-tax">Tax</th>
+                                <th class="col-vat">VAT(%)</th>
+                                <th class="col-amount">Amount</th>
+                                <th class="col-amount-krw">Amount(KRW)</th>
+                                <!-- Buying Rate -->
+                                <th class="col-customer">Customer</th>
+                                <th class="col-rate">Rate</th>
+                                <th class="col-currency">Currency</th>
+                                <th class="col-tax">Tax</th>
+                                <th class="col-vat">VAT(%)</th>
+                                <th class="col-amount">Amount</th>
+                                <th class="col-amount-krw">Amount(KRW)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ratesTableBody">
+                            <!-- Dynamic rows will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Add New Row Link -->
+                <div class="qr-add-row-link">
+                    <a href="javascript:void(0)" onclick="QuoteReg.addRateLine()">
+                        <i class="fas fa-plus"></i> New
+                    </a>
+                </div>
+            </section>
+
+            <!-- Remark Sections -->
+            <section class="qr-remarks-section">
+                <div class="qr-remark-grid">
+                    <div class="qr-remark-box">
+                        <h4 class="qr-remark-title">Remark</h4>
+                        <ul class="qr-remark-list" id="remarkList">
+                            <li>현재 미주 동부항 스페이스가 매우 부족한 상황으로 최대한 빠른 결정이 필요합니다.</li>
+                            <li>9월의 경우 PSS 인상으로 인해 운임이 인상될 가능성이 높습니다.</li>
+                            <li>추가 요청 사항에 따라 최종 청구 비용에 변동이 있을 수 있습니다.</li>
+                        </ul>
+                    </div>
+                    <div class="qr-remark-box internal">
+                        <h4 class="qr-remark-title">Internal Remark</h4>
+                        <ul class="qr-remark-list" id="internalRemarkList">
+                            <li>신규 화주 문의 건으로 공격적으로 견적 안내.</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Summary Section -->
+            <section class="qr-summary-section">
+                <div class="qr-summary-grid">
+                    <div class="qr-summary-item">
+                        <span class="summary-label">Grand Total (KRW)</span>
+                        <span class="summary-value" id="grandTotal">1,548,722</span>
+                    </div>
+                    <div class="qr-summary-item">
+                        <span class="summary-label">Profit Amount (KRW)</span>
+                        <span class="summary-value profit" id="profitAmount">1,548,722</span>
+                    </div>
+                    <div class="qr-summary-item">
+                        <span class="summary-label">Profit Ratio(%)</span>
+                        <span class="summary-value ratio" id="profitRatio">15%</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Action Buttons -->
+            <section class="qr-actions">
+                <button class="btn-action save" onclick="QuoteReg.saveQuote()">
+                    <i class="fas fa-save"></i> Save
+                </button>
+                <button class="btn-action edit" onclick="QuoteReg.editQuote()">
+                    <i class="fas fa-edit"></i> Edit
+                </button>
+                <button class="btn-action submit" onclick="QuoteReg.submitQuote()">
+                    <i class="fas fa-paper-plane"></i> Submit
+                </button>
+            </section>
+        </main>
+
+        <!-- Right Sidebar: Quote Requested List -->
+        <aside class="qr-sidebar-right">
+            <div class="qr-quote-list-section">
+                <h3 class="qr-section-title">Quote Requested List(<span id="quoteListCount">4</span>)</h3>
+                <div class="qr-quote-list" id="quoteList">
+                    <div class="qr-quote-item active" data-quote-no="NHBK000007">
+                        <span class="quote-no">NHBK000007</span>
+                    </div>
+                    <div class="qr-quote-item" data-quote-no="NHBK000010">
+                        <span class="quote-no">NHBK000010</span>
+                        <span class="quote-status saved">Saved</span>
+                    </div>
+                    <div class="qr-quote-item" data-quote-no="NHBK000011">
+                        <span class="quote-no">NHBK000011</span>
+                        <span class="quote-status process">Process</span>
+                    </div>
+                    <div class="qr-quote-item" data-quote-no="NHBK000013">
+                        <span class="quote-no">NHBK000013</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../js/config/api.js"></script>
+    <script src="../js/features/quoteRegistration.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            QuoteReg.init();
+        });
+    </script>
+</body>
+</html>
