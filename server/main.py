@@ -11,11 +11,14 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 from apscheduler.triggers.cron import CronTrigger
 
+# Load environment variables FIRST before importing modules that need DATABASE_URL
+load_dotenv()
+
 import atexit
 import logging
 import bok_backend  # Import the BOK backend module
 import gdelt_backend  # Import the GDELT backend module
-from report_backend import report_bp  # Import the Report backend module
+from report.api import report_bp  # Import the Report backend module
 from news_intelligence.api import news_bp  # Import the News Intelligence module
 from auth.auth_backend import auth_bp  # Import the Auth module
 from auth.models import init_db as init_auth_db  # Initialize auth database
@@ -51,9 +54,6 @@ print()
 
 # Global variable to store quote_backend process
 quote_backend_process = None
-
-# Load environment variables
-load_dotenv()
 
 # Determine base directory (parent of server directory)
 BASE_DIR = Path(__file__).parent.parent

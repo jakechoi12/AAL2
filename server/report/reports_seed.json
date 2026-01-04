@@ -1,0 +1,92 @@
+[
+  {
+    "id": "RPT-CPPI2024",
+    "title": "The Container Port Performance Index 2020 to 2024 - Trends and Lessons Learned",
+    "source": "World Bank",
+    "category_key": "global_research",
+    "published_at": "2024-12-01",
+    "tags": ["Port Performance", "Container Shipping", "Logistics Index", "Global Trade", "Infrastructure"],
+    "summary": "This comprehensive report analyzes the Container Port Performance Index (CPPI) from 2020 to 2024, examining global trends in port efficiency, lessons learned from the pandemic disruptions, and strategic recommendations for port operators and policymakers. The report provides insights into best practices and emerging challenges in container port operations worldwide.",
+    "key_insights": [
+      "Global container port efficiency index analysis and benchmarking results",
+      "Post-pandemic port operations resilience assessment and recovery patterns",
+      "Comparative performance analysis across major ports with improvement strategies",
+      "Impact of digitalization and automation on port efficiency metrics"
+    ],
+    "canonical_url": "https://www.worldbank.org/cppi-2024",
+    "pdf_path": "./seed_pdfs/The Container Port Performance Index 2020 to 2024 - Trends and Lessons Learned.pdf",
+    "is_featured": true
+  },
+  {
+    "id": "RPT-KMI2025",
+    "title": "해양정책연구 2025년 제40권 1호",
+    "source": "한국해양수산개발원 (KMI)",
+    "category_key": "government",
+    "published_at": "2025-01-01",
+    "tags": ["해양정책", "해운", "수산", "항만", "Korea", "Maritime Policy"],
+    "summary": "한국해양수산개발원에서 발간하는 해양정책연구 학술지로, 해양수산 분야의 최신 정책 동향과 연구 결과를 담고 있습니다. 본 호에서는 해운, 항만, 수산, 해양환경 등 다양한 분야의 정책 연구 논문을 수록하고 있습니다.",
+    "key_insights": [
+      "2025년 해양수산 정책 방향 제시",
+      "한국 해운 산업 경쟁력 분석",
+      "탄소중립 해양 정책 추진 현황",
+      "수산업 지속가능성 확보 방안"
+    ],
+    "canonical_url": "https://www.kmi.re.kr/journal/2025-40-1",
+    "pdf_path": "./seed_pdfs/해양정책연구 2025년 제40권 1호(여름호)_.pdf",
+    "is_featured": true
+  },
+  {
+    "id": "RPT-WEO2024",
+    "title": "World Economic Outlook",
+    "source": "International Monetary Fund (IMF)",
+    "category_key": "global_research",
+    "published_at": "2024-10-15",
+    "tags": ["Economic Outlook", "Global Economy", "IMF", "Macroeconomics", "Trade"],
+    "summary": "The IMF's World Economic Outlook provides comprehensive analysis of global economic developments and prospects. This report examines growth projections, inflation trends, trade dynamics, and policy recommendations for navigating current economic challenges.",
+    "key_insights": [
+      "Global growth projections and regional economic performance analysis",
+      "Inflation trends and monetary policy implications across major economies",
+      "Trade and supply chain developments impacting global commerce",
+      "Policy recommendations for sustainable economic recovery"
+    ],
+    "canonical_url": "https://www.imf.org/weo",
+    "pdf_path": "./seed_pdfs/world economic outlook.pdf",
+    "is_featured": true
+  },
+  {
+    "id": "RPT-BOK2025",
+    "title": "2025년 11월 경제전망보고서 (Indigo Book)",
+    "source": "한국은행",
+    "category_key": "government",
+    "published_at": "2025-01-02",
+    "tags": ["경제전망", "한국은행", "Korea", "Monetary Policy", "GDP"],
+    "summary": "한국은행에서 발간하는 경제전망보고서로, 국내외 경제 동향과 향후 경제 전망을 분석합니다. 물가, 성장률, 고용, 금융시장 등 주요 경제지표에 대한 심층 분석과 통화정책 방향을 제시합니다.",
+    "key_insights": [
+      "2025년 한국 경제성장률 전망 및 리스크 요인 분석",
+      "물가 동향 및 인플레이션 전망",
+      "금융시장 안정성 평가 및 통화정책 방향",
+      "대외 경제환경 변화에 따른 영향 분석"
+    ],
+    "canonical_url": "https://www.bok.or.kr/portal/bbs/P0000559/view.do",
+    "pdf_path": "./seed_pdfs/2025년 11월 경제전망보고서(Indigo Book)_F4.pdf",
+    "is_featured": false
+  },
+  {
+    "id": "RPT-KITA2024",
+    "title": "5대 주력품목 한중일 수출경쟁력 비교",
+    "source": "한국무역협회 (KITA)",
+    "category_key": "global_research",
+    "published_at": "2024-11-20",
+    "tags": ["수출경쟁력", "한중일", "무역", "Korea", "China", "Japan", "Export"],
+    "summary": "한국무역협회에서 발간한 연구보고서로, 반도체, 자동차, 철강, 석유화학, 조선 등 5대 주력 수출품목에 대한 한중일 3국의 수출경쟁력을 비교 분석합니다. 각 품목별 시장점유율, 경쟁우위 요인, 향후 전망을 제시합니다.",
+    "key_insights": [
+      "5대 주력품목별 한중일 수출시장 점유율 비교",
+      "품목별 경쟁우위 요인 및 약점 분석",
+      "중국의 추격과 일본과의 기술격차 현황",
+      "수출경쟁력 강화를 위한 정책 제언"
+    ],
+    "canonical_url": "https://www.kita.net/research/report",
+    "pdf_path": "./seed_pdfs/[TF 34호] 5대 주력품목 한중일 수출경쟁력 비교.pdf",
+    "is_featured": false
+  }
+]
