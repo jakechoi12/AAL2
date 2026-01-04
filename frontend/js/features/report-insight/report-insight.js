@@ -1,6 +1,7 @@
 /**
  * Report & Insight - Frontend JavaScript
  * Handles API calls, rendering, filtering, and interactions
+ * MVP Version: No Auth, PDF download from DB
  */
 
 // ============================================
@@ -20,6 +21,8 @@ let selectedTags = [];
 let dateFrom = '';
 let dateTo = '';
 let totalReports = 0;
+
+// Local bookmarks (stored in localStorage only, no server calls)
 let bookmarkedIds = new Set();
 
 // ============================================
@@ -119,12 +122,17 @@ async function loadStats() {
     try {
         const stats = await fetchAPI('/stats');
         
-        document.getElementById('totalReports').textContent = stats.total_reports;
-        document.getElementById('totalOrgs').textContent = stats.total_organizations;
-        document.getElementById('thisMonth').textContent = stats.this_month;
+        const totalReportsEl = document.getElementById('totalReports');
+        const totalOrgsEl = document.getElementById('totalOrgs');
+        const thisMonthEl = document.getElementById('thisMonth');
+        
+        if (totalReportsEl) totalReportsEl.textContent = stats.total_reports;
+        if (totalOrgsEl) totalOrgsEl.textContent = stats.total_organizations;
+        if (thisMonthEl) thisMonthEl.textContent = stats.this_month;
         
         // Update category counts
-        document.getElementById('count-all').textContent = stats.total_reports;
+        const countAllEl = document.getElementById('count-all');
+        if (countAllEl) countAllEl.textContent = stats.total_reports;
         
         stats.category_counts.forEach(cat => {
             const countEl = document.getElementById(`count-${cat.category}`);
@@ -176,13 +184,15 @@ async function loadFeaturedReports() {
         const featured = await fetchAPI('/featured?limit=3');
         
         const container = document.getElementById('featuredGrid');
+        const section = document.getElementById('featuredSection');
         if (!container) return;
         
         if (featured.length === 0) {
-            document.getElementById('featuredSection').style.display = 'none';
+            if (section) section.style.display = 'none';
             return;
         }
         
+        if (section) section.style.display = 'block';
         container.innerHTML = featured.map(report => renderFeaturedCard(report)).join('');
     } catch (error) {
         console.error('Error loading featured reports:', error);
@@ -225,19 +235,21 @@ async function loadReports() {
         const data = await fetchAPI(`?${params.toString()}`);
         
         // Update counts
-        document.getElementById('showingCount').textContent = data.reports.length;
-        document.getElementById('totalCount').textContent = data.total;
+        const showingCountEl = document.getElementById('showingCount');
+        const totalCountEl = document.getElementById('totalCount');
+        if (showingCountEl) showingCountEl.textContent = data.reports.length;
+        if (totalCountEl) totalCountEl.textContent = data.total;
         
         // Render reports
         const container = document.getElementById('reportGrid');
         const emptyState = document.getElementById('emptyState');
         
         if (data.reports.length === 0) {
-            container.innerHTML = '';
-            emptyState.style.display = 'block';
+            if (container) container.innerHTML = '';
+            if (emptyState) emptyState.style.display = 'block';
         } else {
-            emptyState.style.display = 'none';
-            container.innerHTML = data.reports.map(report => renderReportCard(report)).join('');
+            if (emptyState) emptyState.style.display = 'none';
+            if (container) container.innerHTML = data.reports.map(report => renderReportCard(report)).join('');
         }
         
         // Render pagination
@@ -270,17 +282,25 @@ async function loadReportDetail(reportId) {
         document.getElementById('infoDate').textContent = formatDate(report.published_date);
         document.getElementById('infoId').textContent = report.id;
         
-        // Update bookmark button
-        updateBookmarkButton(report.id, report.is_bookmarked || bookmarkedIds.has(report.id));
+        // Update bookmark button (local only)
+        updateBookmarkButton(report.id, bookmarkedIds.has(report.id));
         
-        // Update download button
+        // Update download button - use file.download_url from API
         const downloadBtn = document.getElementById('downloadBtn');
-        if (downloadBtn && report.pdf_url) {
-            downloadBtn.onclick = () => window.open(report.pdf_url, '_blank');
+        if (downloadBtn) {
+            if (report.file && report.file.download_url) {
+                downloadBtn.onclick = () => window.open(report.file.download_url, '_blank');
+                downloadBtn.disabled = false;
+                downloadBtn.innerHTML = '<i class="fas fa-file-pdf"></i> Download PDF';
+            } else {
+                downloadBtn.onclick = () => showToast('PDF not available for this report', 'error');
+                downloadBtn.disabled = true;
+                downloadBtn.innerHTML = '<i class="fas fa-file-pdf"></i> PDF Not Available';
+            }
         }
         
-        // Generate insights
-        generateInsights(report);
+        // Render key insights from API or generate fallback
+        renderKeyInsights(report);
         
         // Load related reports
         loadRelatedReports(reportId);
@@ -315,8 +335,6 @@ async function loadRelatedReports(reportId) {
 // ============================================
 
 function renderFeaturedCard(report) {
-    const isBookmarked = bookmarkedIds.has(report.id);
-    
     return `
         <div class="featured-card" onclick="viewReport('${report.id}')">
             <div class="featured-card-image">
@@ -336,6 +354,7 @@ function renderFeaturedCard(report) {
 
 function renderReportCard(report) {
     const isBookmarked = bookmarkedIds.has(report.id);
+    const hasPdf = report.has_pdf || (report.file && report.file.download_url);
     
     return `
         <div class="report-card" onclick="viewReport('${report.id}')">
@@ -347,7 +366,10 @@ function renderReportCard(report) {
                             title="${isBookmarked ? 'Remove Bookmark' : 'Add Bookmark'}">
                         <i class="${isBookmarked ? 'fas' : 'far'} fa-bookmark"></i>
                     </button>
-                    <button class="action-btn" onclick="event.stopPropagation(); downloadReportPDF('${report.id}', '${report.pdf_url || ''}')" title="Download PDF">
+                    <button class="action-btn" 
+                            onclick="event.stopPropagation(); downloadReportPDF('${report.id}')" 
+                            title="${hasPdf ? 'Download PDF' : 'PDF Not Available'}"
+                            ${hasPdf ? '' : 'disabled'}>
                         <i class="fas fa-download"></i>
                     </button>
                 </div>
@@ -415,21 +437,26 @@ function renderPagination(currentPage, totalPages) {
     container.innerHTML = html;
 }
 
-function generateInsights(report) {
+function renderKeyInsights(report) {
     const insightsContainer = document.getElementById('detailInsights');
     if (!insightsContainer) return;
     
-    // Generate insights based on tags and category
-    const insights = [
-        `This report provides comprehensive analysis on ${report.tags.slice(0, 2).join(' and ')}`,
-        `Published by ${report.organization}, a leading institution in the ${formatCategory(report.category).toLowerCase()} sector`,
-        `Key focus areas include industry trends, market analysis, and strategic recommendations`,
-        `Relevant for professionals in logistics, supply chain, and international trade`
-    ];
+    // Use key_insights from API if available
+    let insights = report.key_insights || [];
+    
+    // If no insights from API, generate generic ones
+    if (insights.length === 0) {
+        insights = [
+            `This report provides comprehensive analysis on ${report.tags.slice(0, 2).join(' and ')}`,
+            `Published by ${report.organization}, a leading institution in the ${formatCategory(report.category).toLowerCase()} sector`,
+            `Key focus areas include industry trends, market analysis, and strategic recommendations`,
+            `Relevant for professionals in logistics, supply chain, and international trade`
+        ];
+    }
     
     insightsContainer.innerHTML = `
         <ul style="color: var(--text-sub); line-height: 2; padding-left: 1.5rem;">
-            ${insights.map(i => `<li>${i}</li>`).join('')}
+            ${insights.map(i => `<li>${escapeHtml(i)}</li>`).join('')}
         </ul>
     `;
 }
@@ -525,7 +552,7 @@ function goToPage(page) {
 }
 
 // ============================================
-// Bookmark Functions
+// Bookmark Functions (Local Storage Only - No Server)
 // ============================================
 
 function loadBookmarks() {
@@ -548,40 +575,22 @@ function saveBookmarks() {
     }
 }
 
-async function toggleBookmark(reportId) {
+function toggleBookmark(reportId) {
     const isCurrentlyBookmarked = bookmarkedIds.has(reportId);
     
-    try {
-        if (isCurrentlyBookmarked) {
-            await fetchAPI(`/bookmarks/${reportId}`, { method: 'DELETE' });
-            bookmarkedIds.delete(reportId);
-            showToast('Bookmark removed', 'success');
-        } else {
-            await fetchAPI('/bookmarks', {
-                method: 'POST',
-                body: JSON.stringify({ report_id: reportId })
-            });
-            bookmarkedIds.add(reportId);
-            showToast('Bookmark added', 'success');
-        }
-        
-        saveBookmarks();
-        
-        // Refresh the display
-        loadReports();
-        loadFeaturedReports();
-        
-    } catch (error) {
-        console.error('Error toggling bookmark:', error);
-        // Still update local state even if API fails
-        if (isCurrentlyBookmarked) {
-            bookmarkedIds.delete(reportId);
-        } else {
-            bookmarkedIds.add(reportId);
-        }
-        saveBookmarks();
-        loadReports();
+    if (isCurrentlyBookmarked) {
+        bookmarkedIds.delete(reportId);
+        showToast('Bookmark removed', 'success');
+    } else {
+        bookmarkedIds.add(reportId);
+        showToast('Bookmark added', 'success');
     }
+    
+    saveBookmarks();
+    
+    // Refresh the display
+    loadReports();
+    loadFeaturedReports();
 }
 
 function toggleBookmarkDetail() {
@@ -589,7 +598,7 @@ function toggleBookmarkDetail() {
     const reportId = urlParams.get('id');
     if (reportId) {
         toggleBookmark(reportId);
-        updateBookmarkButton(reportId, !bookmarkedIds.has(reportId));
+        updateBookmarkButton(reportId, bookmarkedIds.has(reportId));
     }
 }
 
@@ -614,20 +623,20 @@ function viewReport(reportId) {
     window.location.href = `report-detail.html?id=${reportId}`;
 }
 
-function downloadReportPDF(reportId, pdfUrl) {
-    if (pdfUrl) {
-        window.open(pdfUrl, '_blank');
-    } else {
-        showToast('PDF not available for this report', 'error');
-    }
+function downloadReportPDF(reportId) {
+    // Open the download URL in a new tab/window
+    const downloadUrl = `/api/reports/${reportId}/download`;
+    window.open(downloadUrl, '_blank');
 }
 
 function downloadReport() {
     const urlParams = new URLSearchParams(window.location.search);
     const reportId = urlParams.get('id');
     
-    // In a real implementation, this would fetch the PDF URL from the API
-    showToast('Download started...', 'success');
+    if (reportId) {
+        downloadReportPDF(reportId);
+        showToast('Download started...', 'success');
+    }
 }
 
 function shareReport(platform) {
