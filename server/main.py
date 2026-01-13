@@ -18,6 +18,7 @@ import atexit
 import logging
 import bok_backend  # Import the BOK backend module
 import gdelt_backend  # Import the GDELT backend module
+import gemini_backend  # Import the Gemini AI backend module
 from report.api import report_bp  # Import the Report backend module
 from news_intelligence.api import news_bp  # Import the News Intelligence module
 from auth.auth_backend import auth_bp  # Import the Auth module
@@ -261,6 +262,91 @@ def clear_bok_cache():
     except Exception as e:
         logger.error(f"Error clearing BOK cache: {e}", exc_info=True)
         return jsonify({'error': str(e)}), 500
+
+
+# ============================================================
+# AI ASSISTANT API (Gemini)
+# ============================================================
+
+@app.route('/api/ai/chat', methods=['POST'])
+def ai_chat():
+    """
+    AI 어시스턴트와 대화
+    
+    Request Body:
+    {
+        "session_id": "unique_session_id",
+        "message": "사용자 메시지"
+    }
+    
+    Response:
+    {
+        "success": bool,
+        "message": "AI 응답",
+        "quote_data": {...} or null  # 추출된 Quote 데이터
+    }
+    """
+    try:
+        data = request.get_json()
+        session_id = data.get('session_id', 'default')
+        message = data.get('message', '')
+        
+        if not message:
+            return jsonify({'success': False, 'message': '메시지를 입력해주세요.'}), 400
+        
+        result = gemini_backend.chat_with_gemini(session_id, message)
+        return jsonify(result)
+        
+    except Exception as e:
+        logger.error(f"AI Chat error: {e}", exc_info=True)
+        return jsonify({'success': False, 'message': f'오류가 발생했습니다: {str(e)}'}), 500
+
+
+@app.route('/api/ai/suggestions', methods=['GET'])
+def ai_suggestions():
+    """
+    빠른 제안 버튼 목록 반환
+    """
+    suggestions = gemini_backend.get_quick_suggestions()
+    return jsonify({'suggestions': suggestions})
+
+
+@app.route('/api/ai/clear', methods=['POST'])
+def ai_clear_conversation():
+    """
+    대화 이력 삭제
+    
+    Request Body:
+    {
+        "session_id": "unique_session_id"
+    }
+    """
+    try:
+        data = request.get_json()
+        session_id = data.get('session_id', 'default')
+        
+        success = gemini_backend.clear_conversation(session_id)
+        
+        if success:
+            return jsonify({'success': True, 'message': '대화 이력이 삭제되었습니다.'})
+        else:
+            return jsonify({'success': False, 'message': '대화 이력 삭제에 실패했습니다.'}), 500
+            
+    except Exception as e:
+        logger.error(f"AI Clear error: {e}", exc_info=True)
+        return jsonify({'success': False, 'message': f'오류가 발생했습니다: {str(e)}'}), 500
+
+
+@app.route('/api/ai/status', methods=['GET'])
+def ai_status():
+    """
+    AI 서비스 상태 확인
+    """
+    return jsonify({
+        'available': gemini_backend.GEMINI_AVAILABLE,
+        'model': 'gemini-2.5-flash' if gemini_backend.GEMINI_AVAILABLE else None
+    })
+
 
 @app.route('/api/market/indices/stats', methods=['GET'])
 def get_market_indices_stats():

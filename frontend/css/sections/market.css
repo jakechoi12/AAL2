@@ -1424,16 +1424,10 @@
 [data-theme="dark"] .kcci-routes-table .route-change.down {
     background: rgba(244, 67, 54, 0.2);
     color: #e57373;
-}
-
-[data-theme="dark"] .kcci-routes-table td.positive {
+}[data-theme="dark"] .kcci-routes-table td.positive {
     color: #34D399 !important;
-}
-
-[data-theme="dark"] .kcci-routes-table td.negative {
+}[data-theme="dark"] .kcci-routes-table td.negative {
     color: #F87171 !important;
-}
-
-[data-theme="dark"] .kcci-info-footer {
+}[data-theme="dark"] .kcci-info-footer {
     background: rgba(255, 255, 255, 0.02);
 }

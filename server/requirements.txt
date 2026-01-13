@@ -14,3 +14,4 @@ lxml
 pandas
 xlrd
 openpyxl
+google-generativeai

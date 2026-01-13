@@ -221,9 +221,7 @@ a.btn {
         gap: 1rem;
         margin-bottom: 2rem;
     }
-}
-
-/* Safe area for notched devices */
+}/* Safe area for notched devices */
 @supports (padding: env(safe-area-inset-bottom)) {
     .fixed-bottom {
         padding-bottom: calc(1rem + env(safe-area-inset-bottom));

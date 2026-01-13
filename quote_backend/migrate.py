@@ -181,6 +181,77 @@ def run_migration():
     """)
     print("Created bookmarked_biddings table")
     
+    # Ocean Rate Sheets table (Quick Quotation 용)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS ocean_rate_sheets (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            pol_id INTEGER NOT NULL,
+            pod_id INTEGER NOT NULL,
+            carrier VARCHAR(100) DEFAULT 'HMM' NOT NULL,
+            valid_from DATETIME NOT NULL,
+            valid_to DATETIME NOT NULL,
+            is_active BOOLEAN DEFAULT 1,
+            remark TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (pol_id) REFERENCES ports(id),
+            FOREIGN KEY (pod_id) REFERENCES ports(id)
+        )
+    """)
+    print("Created ocean_rate_sheets table")
+    
+    # Ocean Rate Items table
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS ocean_rate_items (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            sheet_id INTEGER NOT NULL,
+            container_type_id INTEGER NOT NULL,
+            freight_code_id INTEGER NOT NULL,
+            freight_group VARCHAR(50) NOT NULL,
+            unit VARCHAR(10) NOT NULL,
+            currency VARCHAR(3) NOT NULL,
+            rate DECIMAL(15, 2),
+            is_active BOOLEAN DEFAULT 1,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (sheet_id) REFERENCES ocean_rate_sheets(id),
+            FOREIGN KEY (container_type_id) REFERENCES container_types(id),
+            FOREIGN KEY (freight_code_id) REFERENCES freight_codes(id)
+        )
+    """)
+    print("Created ocean_rate_items table")
+    
+    # Trucking Rates table (내륙 운송 운임)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS trucking_rates (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            cargo_type VARCHAR(20) DEFAULT '일반화물' NOT NULL,
+            origin_port_id INTEGER NOT NULL,
+            dest_province VARCHAR(50) NOT NULL,
+            dest_city VARCHAR(50) NOT NULL,
+            dest_district VARCHAR(50) NOT NULL,
+            distance_km INTEGER,
+            rate_20ft DECIMAL(15, 0),
+            rate_40ft DECIMAL(15, 0),
+            is_active BOOLEAN DEFAULT 1,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (origin_port_id) REFERENCES ports(id)
+        )
+    """)
+    print("Created trucking_rates table")
+    
+    # Create index for trucking_rates table
+    cursor.execute("""
+        CREATE INDEX IF NOT EXISTS idx_trucking_rates_origin 
+        ON trucking_rates(origin_port_id)
+    """)
+    cursor.execute("""
+        CREATE INDEX IF NOT EXISTS idx_trucking_rates_dest 
+        ON trucking_rates(dest_province, dest_city)
+    """)
+    print("Created indexes for trucking_rates table")
+    
     # Add abbreviation column to container_types table if not exists
     try:
         cursor.execute("ALTER TABLE container_types ADD COLUMN abbreviation VARCHAR(20)")

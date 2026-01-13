@@ -879,3 +879,133 @@ class BookmarkedBidding(Base):
     
     def __repr__(self):
         return f"<BookmarkedBidding forwarder={self.forwarder_id} bidding={self.bidding_id}>"
+
+
+# ==========================================
+# OCEAN FREIGHT RATE TABLES
+# ==========================================
+
+class OceanRateSheet(Base):
+    """
+    Ocean Rate Sheet - 해상 운임표 (POL-POD 조합별 헤더)
+    Quick Quotation 기능을 위한 운임 데이터 관리
+    """
+    __tablename__ = "ocean_rate_sheets"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    
+    # POL-POD (Foreign Key to ports)
+    pol_id = Column(Integer, ForeignKey("ports.id"), nullable=False, index=True)
+    pod_id = Column(Integer, ForeignKey("ports.id"), nullable=False, index=True)
+    
+    # Carrier (선사) - 기본값 HMM
+    carrier = Column(String(100), default="HMM", nullable=False)
+    
+    # Validity Period (유효기간)
+    valid_from = Column(DateTime, nullable=False)
+    valid_to = Column(DateTime, nullable=False)
+    
+    # Status
+    is_active = Column(Boolean, default=True)
+    remark = Column(Text, nullable=True)
+    
+    # Timestamps
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+    
+    # Relationships
+    pol = relationship("Port", foreign_keys=[pol_id], lazy="joined")
+    pod = relationship("Port", foreign_keys=[pod_id], lazy="joined")
+    items = relationship("OceanRateItem", back_populates="sheet", cascade="all, delete-orphan")
+    
+    def __repr__(self):
+        return f"<OceanRateSheet {self.id}: POL{self.pol_id}->POD{self.pod_id}>"
+
+
+class OceanRateItem(Base):
+    """
+    Ocean Rate Item - 해상 운임 항목 (컨테이너별, 비용항목별)
+    rate가 NULL이면 Quick Quotation = N
+    """
+    __tablename__ = "ocean_rate_items"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    
+    # Parent Sheet
+    sheet_id = Column(Integer, ForeignKey("ocean_rate_sheets.id"), nullable=False, index=True)
+    
+    # Container Type
+    container_type_id = Column(Integer, ForeignKey("container_types.id"), nullable=False, index=True)
+    
+    # Freight Code (OFR, THC, DOC 등) - 기존 freight_codes 테이블 참조
+    freight_code_id = Column(Integer, ForeignKey("freight_codes.id"), nullable=False, index=True)
+    
+    # Freight Group (Ocean Freight, Origin Local Charges, etc.)
+    freight_group = Column(String(50), nullable=False)
+    
+    # Unit & Currency
+    unit = Column(String(10), nullable=False)  # Qty, BL
+    currency = Column(String(3), nullable=False)  # USD, KRW, EUR
+    
+    # Rate (NULL이면 Quick Quotation = N)
+    rate = Column(DECIMAL(15, 2), nullable=True)
+    
+    # Status
+    is_active = Column(Boolean, default=True)
+    
+    # Timestamps
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+    
+    # Relationships
+    sheet = relationship("OceanRateSheet", back_populates="items")
+    container_type = relationship("ContainerType", lazy="joined")
+    freight_code = relationship("FreightCode", lazy="joined")
+    
+    def __repr__(self):
+        return f"<OceanRateItem {self.freight_code_id}: {self.rate} {self.currency}>"
+
+
+# ==========================================
+# TRUCKING RATE TABLE (내륙 운임)
+# ==========================================
+
+class TruckingRate(Base):
+    """
+    Trucking Rate - 내륙 운송 운임
+    Pickup/Delivery 옵션 선택 시 운임 조회용
+    """
+    __tablename__ = "trucking_rates"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    
+    # 화물 종류 (일반화물 등)
+    cargo_type = Column(String(20), default="일반화물", nullable=False)
+    
+    # 출발 터미널/항구 (Foreign Key to ports)
+    origin_port_id = Column(Integer, ForeignKey("ports.id"), nullable=False, index=True)
+    
+    # 목적지 주소 (도/광역시 > 시/군/구 > 읍/면/동)
+    dest_province = Column(String(50), nullable=False, index=True)  # 강원도
+    dest_city = Column(String(50), nullable=False, index=True)      # 강릉시
+    dest_district = Column(String(50), nullable=False)              # 강포동
+    
+    # 거리 (km)
+    distance_km = Column(Integer, nullable=True)
+    
+    # 컨테이너별 운임 (KRW)
+    rate_20ft = Column(DECIMAL(15, 0), nullable=True)
+    rate_40ft = Column(DECIMAL(15, 0), nullable=True)
+    
+    # Status
+    is_active = Column(Boolean, default=True)
+    
+    # Timestamps
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+    
+    # Relationships
+    origin_port = relationship("Port", lazy="joined")
+    
+    def __repr__(self):
+        return f"<TruckingRate {self.origin_port_id}->{self.dest_province} {self.dest_city}: 20ft={self.rate_20ft}>"

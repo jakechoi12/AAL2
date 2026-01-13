@@ -342,6 +342,350 @@
             to { opacity: 1; transform: translateY(-100%); }
         }
         
+        /* Quick Quotation Result Styles */
+        .quick-quote-section {
+            display: none;
+            margin-bottom: 2.5rem;
+        }
+        .quick-quote-section.show {
+            display: block;
+        }
+        .quick-quote-card {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(59, 130, 246, 0.02) 100%);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 12px;
+            padding: 1.5rem;
+            position: relative;
+        }
+        .quick-quote-card.unavailable {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(239, 68, 68, 0.02) 100%);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+        .quick-quote-badge {
+            position: absolute;
+            top: -10px;
+            left: 20px;
+            background: var(--accent-color);
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 20px;
+            letter-spacing: 0.5px;
+        }
+        .quick-quote-badge.unavailable {
+            background: #ef4444;
+        }
+        .quick-quote-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-top: 0.5rem;
+        }
+        .quick-quote-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+        .quick-quote-carrier {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: var(--text-sub);
+        }
+        .quick-quote-carrier strong {
+            color: var(--accent-color);
+        }
+        .quick-quote-breakdown {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        .quick-quote-breakdown.vertical {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        .quick-quote-group {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+        .quick-quote-group-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .quick-quote-step {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            background: var(--accent-color);
+            color: white;
+            border-radius: 50%;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+        .quick-quote-group-title {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+        .quick-quote-group-title i {
+            margin-right: 6px;
+            color: var(--accent-color);
+        }
+        .quick-quote-group-subtitle {
+            font-size: 0.75rem;
+            font-weight: 400;
+            color: var(--text-sub);
+        }
+        .quick-quote-items-list {
+            margin-bottom: 0.5rem;
+        }
+        .quick-quote-item {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: center;
+            padding: 8px 0;
+            font-size: 0.85rem;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .quick-quote-item:last-child {
+            border-bottom: none;
+        }
+        .quick-quote-item-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .quick-quote-item-code {
+            font-weight: 600;
+            color: var(--text-main);
+            font-size: 0.85rem;
+        }
+        .quick-quote-item-name {
+            font-size: 0.75rem;
+            color: var(--text-sub);
+        }
+        .quick-quote-item-name-ko {
+            font-size: 0.7rem;
+            color: #888;
+        }
+        .quick-quote-item-rate {
+            font-weight: 600;
+            color: var(--text-main);
+            text-align: right;
+            font-size: 0.9rem;
+        }
+        .quick-quote-item-rate.na {
+            color: #ef4444;
+            font-style: italic;
+        }
+        .quick-quote-subtotal {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px dashed var(--border-color);
+            font-weight: 600;
+        }
+        .quick-quote-subtotal-label {
+            color: var(--text-sub);
+            font-size: 0.8rem;
+        }
+        .quick-quote-subtotal-value {
+            color: var(--accent-color);
+            font-size: 0.95rem;
+        }
+        .quick-quote-total-section {
+            margin-top: 1.5rem;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .quick-quote-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: rgba(59, 130, 246, 0.1);
+        }
+        .quick-quote-total-label {
+            font-size: 0.9rem;
+            color: var(--text-main);
+        }
+        .quick-quote-total-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--accent-color);
+        }
+        .quick-quote-total-krw {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: var(--accent-color);
+        }
+        .quick-quote-total-krw-label {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.8);
+        }
+        .quick-quote-total-krw-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+        }
+        .quick-quote-meta {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 1rem;
+            background: rgba(255,255,255,0.1);
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.9);
+        }
+        .quick-quote-meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .btn-breakdown-toggle {
+            width: 100%;
+            padding: 0.75rem;
+            margin-top: 1rem;
+            background: transparent;
+            border: 1px dashed var(--border-color);
+            border-radius: 6px;
+            color: var(--text-sub);
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+        .btn-breakdown-toggle:hover {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+        }
+        .btn-breakdown-toggle i {
+            transition: transform 0.3s ease;
+        }
+        .btn-breakdown-toggle.expanded i {
+            transform: rotate(180deg);
+        }
+        .quick-quote-total-breakdown {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            margin-top: 0.5rem;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 6px;
+            font-size: 0.85rem;
+        }
+        .quick-quote-total-breakdown .quick-quote-total-label {
+            color: var(--text-sub);
+        }
+        .quick-quote-total-breakdown .quick-quote-total-value {
+            font-weight: 600;
+            color: var(--accent-color);
+        }
+        .quick-quote-note {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            background: rgba(255, 193, 7, 0.1);
+            border-radius: 6px;
+            font-size: 0.75rem;
+            color: #ffc107;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .quick-quote-unavailable-msg {
+            text-align: center;
+            padding: 1.5rem;
+        }
+        .quick-quote-unavailable-msg h4 {
+            color: #ef4444;
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        .quick-quote-unavailable-msg p {
+            color: var(--text-sub);
+            font-size: 0.9rem;
+        }
+        .quick-quote-loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 2rem;
+            color: var(--text-sub);
+        }
+        .quick-quote-loading i {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Detailed Quote Request Button Styles */
+        .btn-detailed-quote {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%);
+            border: 2px dashed var(--accent-color);
+            border-radius: 12px;
+            color: var(--accent-color);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+        .btn-detailed-quote:hover {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(59, 130, 246, 0.08) 100%);
+            border-style: solid;
+            transform: translateY(-2px);
+        }
+        .btn-detailed-quote .btn-hint {
+            font-size: 0.8rem;
+            font-weight: 400;
+            color: var(--text-sub);
+        }
+        #detailed-quote-btn-section {
+            margin-bottom: 2rem;
+        }
+        #detailed-quote-section {
+            animation: fadeInUp 0.4s ease;
+        }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         /* Reefer Temperature Input - Matching DG Class Style */
         .reefer-temp-section {
             display: none;
@@ -870,6 +1214,7 @@
             .cargo-row { grid-template-columns: 1fr; gap: 5px; border-bottom: 1px solid #333; padding-bottom: 10px; }
         }
     </style>
+    <script src="../js/features/ai-assistant.js"></script>
 </head>
 <body>
     <!-- Header -->
@@ -1082,97 +1427,8 @@
                 </div>
             </div>
 
-            <!-- Shipping Schedules -->
-            <div class="section">
-                <div class="section-header" id="schedules-header">Shipping Schedules <i class="far fa-question-circle info-icon"></i></div>
-                <div class="grid-2" style="margin-bottom: 1rem;">
-                    <div class="input-group">
-                        <label id="label-pol">Port of Loading <span class="text-red">*</span></label>
-                        <div class="autocomplete-wrapper">
-                            <div class="icon-input-wrapper">
-                                <i class="fas fa-map-marker-alt"></i>
-                                <input type="text" class="form-input port-autocomplete" id="input-pol" placeholder="Origin Port / City" maxlength="50" autocomplete="off">
-                            </div>
-                            <div class="autocomplete-dropdown" id="dropdown-pol"></div>
-                        </div>
-                        <div style="font-size: 0.75rem; color: var(--text-sub); margin-top:4px;">From</div>
-                    </div>
-                    <div class="input-group">
-                        <label id="label-pod">Port of Discharging <span class="text-red">*</span></label>
-                        <div class="autocomplete-wrapper">
-                            <div class="icon-input-wrapper">
-                                <i class="fas fa-map-marker-alt"></i>
-                                <input type="text" class="form-input port-autocomplete" id="input-pod" placeholder="Destination Port / City" maxlength="50" autocomplete="off">
-                            </div>
-                            <div class="autocomplete-dropdown" id="dropdown-pod"></div>
-                        </div>
-                        <div style="font-size: 0.75rem; color: var(--text-sub); margin-top:4px;">To</div>
-                    </div>
-                </div>
-                <div class="grid-2">
-                    <div class="input-group">
-                        <label>Estimated Departure <span class="text-red">*</span></label>
-                        <div class="icon-input-wrapper">
-                            <i class="far fa-calendar"></i>
-                            <div class="date-input-group" id="etd-input-group">
-                                <input type="text" class="date-year" id="etd-year" placeholder="YYYY" maxlength="4" inputmode="numeric">
-                                <span class="date-separator">/</span>
-                                <input type="text" class="date-month" id="etd-month" placeholder="MM" maxlength="2" inputmode="numeric">
-                                <span class="date-separator">/</span>
-                                <input type="text" class="date-day" id="etd-day" placeholder="DD" maxlength="2" inputmode="numeric">
-                                <span class="time-fields" id="etd-time-fields">
-                                    <span class="date-separator">/</span>
-                                    <input type="text" class="date-hour" id="etd-hour" placeholder="HH" maxlength="2" inputmode="numeric">
-                                    <span class="date-separator">:</span>
-                                    <input type="text" class="date-minute" id="etd-minute" placeholder="MM" maxlength="2" inputmode="numeric">
-                                </span>
-                            </div>
-                            <input type="hidden" id="input-etd">
-                        </div>
-                        <div style="font-size: 0.75rem; color: var(--text-sub); margin-top:4px;">ETD</div>
-                        <div class="date-error-message" id="etd-error" style="display:none;"><i class="fas fa-exclamation-circle"></i><span></span></div>
-                    </div>
-                    <div class="input-group">
-                        <label>Estimated Arrival <span class="text-red">*</span></label>
-                        <div class="icon-input-wrapper">
-                            <i class="far fa-calendar"></i>
-                            <div class="date-input-group" id="eta-input-group">
-                                <input type="text" class="date-year" id="eta-year" placeholder="YYYY" maxlength="4" inputmode="numeric">
-                                <span class="date-separator">/</span>
-                                <input type="text" class="date-month" id="eta-month" placeholder="MM" maxlength="2" inputmode="numeric">
-                                <span class="date-separator">/</span>
-                                <input type="text" class="date-day" id="eta-day" placeholder="DD" maxlength="2" inputmode="numeric">
-                                <span class="time-fields" id="eta-time-fields">
-                                    <span class="date-separator">/</span>
-                                    <input type="text" class="date-hour" id="eta-hour" placeholder="HH" maxlength="2" inputmode="numeric">
-                                    <span class="date-separator">:</span>
-                                    <input type="text" class="date-minute" id="eta-minute" placeholder="MM" maxlength="2" inputmode="numeric">
-                                </span>
-                            </div>
-                            <input type="hidden" id="input-eta">
-                        </div>
-                        <div style="font-size: 0.75rem; color: var(--text-sub); margin-top:4px;">ETA</div>
-                        <div class="date-error-message" id="eta-error" style="display:none;"><i class="fas fa-exclamation-circle"></i><span></span></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Incoterms -->
-            <div class="section" id="incoterms-section">
-                <div class="section-header">Incoterms <i class="far fa-question-circle info-icon" title="Terms of Sale"></i></div>
-                <div class="grid-3" id="incoterm-container">
-                    <!-- JS will render active state here -->
-                    <div class="incoterm-card" onclick="setInco(this, 'EXW')"><div class="title">EXW</div><div class="desc">Ex Works<br>Only responsible until goods leave factory.</div></div>
-                    <div class="incoterm-card active" onclick="setInco(this, 'FOB')"><div class="title">FOB</div><div class="desc">Free-on Board<br>Costs until loaded at origin.</div></div>
-                    <div class="incoterm-card" onclick="setInco(this, 'CFR')"><div class="title">CFR</div><div class="desc">Cost and Freight<br>Pays transport to destination.</div></div>
-                    <div class="incoterm-card" onclick="setInco(this, 'CIF')"><div class="title">CIF</div><div class="desc">Cost, Insurance & Freight<br>Pays freight + insurance.</div></div>
-                    <div class="incoterm-card" onclick="setInco(this, 'DAP')"><div class="title">DAP</div><div class="desc">Delivered at Place<br>Ships to buyer's location.</div></div>
-                    <div class="incoterm-card" onclick="setInco(this, 'DDP')"><div class="title">DDP</div><div class="desc">Delivered Duty Paid<br>Handles everything + duties.</div></div>
-                </div>
-            </div>
-
-            <!-- Cargo Details -->
-            <div class="section">
+            <!-- Cargo Details (Phase 1 - 필수 입력) -->
+            <div class="section" id="cargo-details-section">
                 <div class="section-header">Cargo Details <i class="far fa-question-circle info-icon"></i> 
                     <button class="btn-add-row" id="btn-add-cargo" onclick="addCargoRow()" style="margin-left:auto;">
                         <i class="fas fa-plus"></i> Add
@@ -1318,6 +1574,204 @@
                 </div>
             </div>
 
+            <!-- Shipping Schedules -->
+            <div class="section">
+                <div class="section-header" id="schedules-header">Shipping Schedules <i class="far fa-question-circle info-icon"></i></div>
+                <div class="grid-2" style="margin-bottom: 1rem;">
+                    <div class="input-group">
+                        <label id="label-pol">Port of Loading <span class="text-red">*</span></label>
+                        <div class="autocomplete-wrapper">
+                            <div class="icon-input-wrapper">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <input type="text" class="form-input port-autocomplete" id="input-pol" placeholder="Origin Port / City" maxlength="50" autocomplete="off">
+                            </div>
+                            <div class="autocomplete-dropdown" id="dropdown-pol"></div>
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--text-sub); margin-top:4px;">From</div>
+                    </div>
+                    <div class="input-group">
+                        <label id="label-pod">Port of Discharging <span class="text-red">*</span></label>
+                        <div class="autocomplete-wrapper">
+                            <div class="icon-input-wrapper">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <input type="text" class="form-input port-autocomplete" id="input-pod" placeholder="Destination Port / City" maxlength="50" autocomplete="off">
+                            </div>
+                            <div class="autocomplete-dropdown" id="dropdown-pod"></div>
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--text-sub); margin-top:4px;">To</div>
+                    </div>
+                </div>
+                <div class="grid-2">
+                    <div class="input-group">
+                        <label>Estimated Departure <span class="text-red">*</span></label>
+                        <div class="icon-input-wrapper">
+                            <i class="far fa-calendar"></i>
+                            <div class="date-input-group" id="etd-input-group">
+                                <input type="text" class="date-year" id="etd-year" placeholder="YYYY" maxlength="4" inputmode="numeric">
+                                <span class="date-separator">/</span>
+                                <input type="text" class="date-month" id="etd-month" placeholder="MM" maxlength="2" inputmode="numeric">
+                                <span class="date-separator">/</span>
+                                <input type="text" class="date-day" id="etd-day" placeholder="DD" maxlength="2" inputmode="numeric">
+                                <span class="time-fields" id="etd-time-fields">
+                                    <span class="date-separator">/</span>
+                                    <input type="text" class="date-hour" id="etd-hour" placeholder="HH" maxlength="2" inputmode="numeric">
+                                    <span class="date-separator">:</span>
+                                    <input type="text" class="date-minute" id="etd-minute" placeholder="MM" maxlength="2" inputmode="numeric">
+                                </span>
+                            </div>
+                            <input type="hidden" id="input-etd">
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--text-sub); margin-top:4px;">ETD</div>
+                        <div class="date-error-message" id="etd-error" style="display:none;"><i class="fas fa-exclamation-circle"></i><span></span></div>
+                    </div>
+                    <div class="input-group">
+                        <label>Estimated Arrival <span class="text-red">*</span></label>
+                        <div class="icon-input-wrapper">
+                            <i class="far fa-calendar"></i>
+                            <div class="date-input-group" id="eta-input-group">
+                                <input type="text" class="date-year" id="eta-year" placeholder="YYYY" maxlength="4" inputmode="numeric">
+                                <span class="date-separator">/</span>
+                                <input type="text" class="date-month" id="eta-month" placeholder="MM" maxlength="2" inputmode="numeric">
+                                <span class="date-separator">/</span>
+                                <input type="text" class="date-day" id="eta-day" placeholder="DD" maxlength="2" inputmode="numeric">
+                                <span class="time-fields" id="eta-time-fields">
+                                    <span class="date-separator">/</span>
+                                    <input type="text" class="date-hour" id="eta-hour" placeholder="HH" maxlength="2" inputmode="numeric">
+                                    <span class="date-separator">:</span>
+                                    <input type="text" class="date-minute" id="eta-minute" placeholder="MM" maxlength="2" inputmode="numeric">
+                                </span>
+                            </div>
+                            <input type="hidden" id="input-eta">
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--text-sub); margin-top:4px;">ETA</div>
+                        <div class="date-error-message" id="eta-error" style="display:none;"><i class="fas fa-exclamation-circle"></i><span></span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Quotation Result -->
+            <div class="quick-quote-section" id="quick-quote-section">
+                <div class="section-header">
+                    Estimated Freight 
+                    <i class="far fa-question-circle info-icon" title="POL, POD, Container Type을 기반으로 예상 운임을 계산합니다."></i>
+                </div>
+                <div class="quick-quote-card" id="quick-quote-card">
+                    <div class="quick-quote-badge" id="quick-quote-badge">QUICK QUOTATION</div>
+                    
+                    <!-- Loading State -->
+                    <div class="quick-quote-loading" id="quick-quote-loading" style="display:none;">
+                        <i class="fas fa-spinner"></i>
+                        <span>운임 조회 중...</span>
+                    </div>
+                    
+                    <!-- Available State -->
+                    <div id="quick-quote-content" style="display:none;">
+                        <!-- 예상 총 비용 (상단 표시) -->
+                        <div class="quick-quote-total-section">
+                            <div class="quick-quote-total-krw">
+                                <span class="quick-quote-total-krw-label">예상 총 비용</span>
+                                <span class="quick-quote-total-krw-value" id="quick-quote-total-krw">₩0</span>
+                            </div>
+                            <div class="quick-quote-meta">
+                                <span><i class="fas fa-ship"></i> <strong id="quick-quote-carrier">-</strong></span>
+                                <span>Valid: <span id="quick-quote-validity">-</span></span>
+                            </div>
+                        </div>
+                        
+                        <!-- 상세 보기 토글 버튼 -->
+                        <button type="button" class="btn-breakdown-toggle" id="btn-breakdown-toggle" onclick="toggleQuoteBreakdown()">
+                            <i class="fas fa-chevron-down" id="breakdown-toggle-icon"></i>
+                            <span id="breakdown-toggle-text">상세 보기</span>
+                        </button>
+                        
+                        <!-- 상세 내역 (접힌 상태) -->
+                        <div class="quick-quote-breakdown vertical" id="quick-quote-breakdown" style="display:none;">
+                            <!-- Step 1: Origin Local Charges (출발지 비용) -->
+                            <div class="quick-quote-group">
+                                <div class="quick-quote-group-header">
+                                    <span class="quick-quote-step">1</span>
+                                    <div class="quick-quote-group-title">
+                                        <i class="fas fa-warehouse"></i> Origin Local Charges
+                                        <span class="quick-quote-group-subtitle">출발지 비용</span>
+                                    </div>
+                                </div>
+                                <div id="quick-quote-local-items" class="quick-quote-items-list"></div>
+                                <div class="quick-quote-subtotal">
+                                    <span class="quick-quote-subtotal-label">Subtotal</span>
+                                    <span class="quick-quote-subtotal-value" id="quick-quote-local-subtotal">₩0</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Step 2: Ocean Freight (해상운임) -->
+                            <div class="quick-quote-group">
+                                <div class="quick-quote-group-header">
+                                    <span class="quick-quote-step">2</span>
+                                    <div class="quick-quote-group-title">
+                                        <i class="fas fa-ship"></i> Ocean Freight
+                                        <span class="quick-quote-group-subtitle">해상운임</span>
+                                    </div>
+                                </div>
+                                <div id="quick-quote-ocean-items" class="quick-quote-items-list"></div>
+                                <div class="quick-quote-subtotal">
+                                    <span class="quick-quote-subtotal-label">Subtotal</span>
+                                    <span class="quick-quote-subtotal-value" id="quick-quote-ocean-subtotal">$0</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Step 3: Additional Services (추가 서비스) - 선택 시에만 표시 -->
+                            <div class="quick-quote-group" id="quick-quote-additional" style="display:none;">
+                                <div class="quick-quote-group-header">
+                                    <span class="quick-quote-step">3</span>
+                                    <div class="quick-quote-group-title">
+                                        <i class="fas fa-plus-square"></i> Additional Services
+                                        <span class="quick-quote-group-subtitle">추가 서비스</span>
+                                    </div>
+                                </div>
+                                <div id="quick-quote-additional-items" class="quick-quote-items-list"></div>
+                                <div class="quick-quote-subtotal">
+                                    <span class="quick-quote-subtotal-label">Subtotal</span>
+                                    <span class="quick-quote-subtotal-value" id="quick-quote-additional-subtotal">₩0</span>
+                                </div>
+                            </div>
+                            
+                            <!-- 통화별 합계 -->
+                            <div class="quick-quote-total-breakdown">
+                                <span class="quick-quote-total-label">
+                                    <i class="fas fa-calculator"></i> 통화별 합계
+                                </span>
+                                <span class="quick-quote-total-value" id="quick-quote-total">$0 + ₩0</span>
+                            </div>
+                        </div>
+                        
+                        <div class="quick-quote-note">
+                            <i class="fas fa-info-circle"></i>
+                            <span id="quick-quote-note">위 금액은 예상 견적으로 실제 금액은 비딩 결과에 따라 달라질 수 있습니다.</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Unavailable State -->
+                    <div class="quick-quote-unavailable-msg" id="quick-quote-unavailable" style="display:none;">
+                        <h4><i class="fas fa-exclamation-triangle"></i> <span id="quick-quote-unavailable-title">실시간 견적 불가</span></h4>
+                        <p id="quick-quote-unavailable-msg">해당 구간은 실시간 견적을 제공하지 않습니다.</p>
+                        <p id="quick-quote-available-period" style="display:none; margin-top: 10px; padding: 10px; background: rgba(59, 130, 246, 0.1); border-radius: 8px; color: var(--accent-color);">
+                            <i class="fas fa-info-circle"></i> <span id="quick-quote-available-period-text"></span>
+                        </p>
+                        <p style="margin-top: 10px; color: var(--text-sub);">견적 요청을 통해 포워더 비딩을 진행해 주세요.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Quote Request Button (Estimated Freight 출력 후에만 표시) -->
+            <div class="section" id="detailed-quote-btn-section" style="display:none;">
+                <button type="button" class="btn-detailed-quote" id="btn-detailed-quote" onclick="toggleDetailedQuoteSection()">
+                    <i class="fas fa-plus-circle" id="btn-detailed-icon"></i> 
+                    <span id="btn-detailed-text">상세 견적 요청</span>
+                </button>
+            </div>
+
+            <!-- Phase 2: Detailed Quote Section (Initially Hidden) -->
+            <div id="detailed-quote-section" style="display:none;">
+
             <!-- Additional Details -->
             <div class="section" id="additional-details-section">
                 <div class="section-header">Additional Details <i class="far fa-question-circle info-icon"></i></div>
@@ -1325,8 +1779,8 @@
                 <div class="detail-row" id="row-export-cc">
                     <label>Export Customs Clearance</label>
                     <div class="radio-group">
-                        <label class="radio-label"><input type="radio" name="export-cc" value="yes" onchange="updateSummary()"> Required</label>
-                        <label class="radio-label checked"><input type="radio" name="export-cc" value="no" checked onchange="updateSummary()"> No</label>
+                        <label class="radio-label"><input type="radio" name="export-cc" value="yes" onchange="updateSummary(); updateAdditionalCosts()"> Required</label>
+                        <label class="radio-label checked"><input type="radio" name="export-cc" value="no" checked onchange="updateSummary(); updateAdditionalCosts()"> No</label>
                     </div>
                 </div>
                 <div class="detail-row" id="row-import-cc">
@@ -1348,12 +1802,12 @@
                     <label style="padding-top:10px;">Pickup</label>
                     <div style="width:100%;">
                         <div class="radio-group" style="margin-bottom:10px;">
-                            <label class="radio-label"><input type="radio" name="pickup" value="yes" onchange="toggleAddr('pickup-addr', true)"> Required</label>
-                            <label class="radio-label checked"><input type="radio" name="pickup" value="no" checked onchange="toggleAddr('pickup-addr', false)"> No</label>
+                            <label class="radio-label"><input type="radio" name="pickup" value="yes" onchange="toggleAddr('pickup-addr', true); updateAdditionalCosts()"> Required</label>
+                            <label class="radio-label checked"><input type="radio" name="pickup" value="no" checked onchange="toggleAddr('pickup-addr', false); updateAdditionalCosts()"> No</label>
                         </div>
                         <div class="input-group" id="pickup-addr-group" style="display:none;">
                             <label>Address <span class="text-red">*</span></label>
-                            <input type="text" class="form-input" id="pickup-addr" placeholder="Full Pickup Address" maxlength="100">
+                            <input type="text" class="form-input" id="pickup-addr" placeholder="Full Pickup Address" maxlength="100" onblur="updateAdditionalCosts()">
                         </div>
                     </div>
                 </div>
@@ -1377,6 +1831,19 @@
                     <div class="input-group" style="width: 200px;">
                         <input type="text" class="form-input number-format" id="invoice-val" placeholder="0" inputmode="numeric" maxlength="20">
                     </div>
+                </div>
+            </div>
+
+            <!-- Incoterms (Phase 2) -->
+            <div class="section" id="incoterms-section">
+                <div class="section-header">Incoterms <i class="far fa-question-circle info-icon" title="Terms of Sale - 비딩 시 명시됩니다"></i></div>
+                <div class="grid-3" id="incoterm-container">
+                    <div class="incoterm-card" onclick="setInco(this, 'EXW')"><div class="title">EXW</div><div class="desc">Ex Works<br>Only responsible until goods leave factory.</div></div>
+                    <div class="incoterm-card active" onclick="setInco(this, 'FOB')"><div class="title">FOB</div><div class="desc">Free-on Board<br>Costs until loaded at origin.</div></div>
+                    <div class="incoterm-card" onclick="setInco(this, 'CFR')"><div class="title">CFR</div><div class="desc">Cost and Freight<br>Pays transport to destination.</div></div>
+                    <div class="incoterm-card" onclick="setInco(this, 'CIF')"><div class="title">CIF</div><div class="desc">Cost, Insurance & Freight<br>Pays freight + insurance.</div></div>
+                    <div class="incoterm-card" onclick="setInco(this, 'DAP')"><div class="title">DAP</div><div class="desc">Delivered at Place<br>Ships to buyer's location.</div></div>
+                    <div class="incoterm-card" onclick="setInco(this, 'DDP')"><div class="title">DDP</div><div class="desc">Delivered Duty Paid<br>Handles everything + duties.</div></div>
                 </div>
             </div>
 
@@ -1404,6 +1871,8 @@
                 </div>
             </div>
 
+            </div><!-- End of Phase 2: detailed-quote-section -->
+
         </main>
 
         <!-- Right: Summary -->
@@ -1428,20 +1897,20 @@
                             <span class="s-value" id="s-load">FCL</span>
                         </li>
                         <li>
-                            <span class="s-label" id="s-schedule-label">Shipping Schedules</span>
-                            <span class="s-value" id="s-schedule">- <br> -</span>
-                        </li>
-                        <li>
-                            <span class="s-label">Incoterms</span>
-                            <span class="s-value" id="s-inco">FOB</span>
-                        </li>
-                        <li>
                             <span class="s-label">Cargo Details</span>
                             <span class="s-value" id="s-cargo">-</span>
                         </li>
                         <li>
+                            <span class="s-label" id="s-schedule-label">Shipping Schedules</span>
+                            <span class="s-value" id="s-schedule">- <br> -</span>
+                        </li>
+                        <li>
                             <span class="s-label">Additional Details</span>
                             <span class="s-value" id="s-add">-</span>
+                        </li>
+                        <li>
+                            <span class="s-label">Incoterms</span>
+                            <span class="s-value" id="s-inco">FOB</span>
                         </li>
                         <li>
                             <span class="s-label">Customer Information</span>
@@ -1469,8 +1938,416 @@
             ship: 'ocean',
             incoterms: 'FOB',
             load: 'FCL',
-            containerTypes: []  // Container types from API
+            containerTypes: [],  // Container types from API
+            quickQuotation: null  // Quick Quotation 결과 저장
         };
+
+        // ==========================================
+        // QUICK QUOTATION FUNCTIONS
+        // ==========================================
+        
+        /**
+         * Quick Quotation API 호출
+         * POL, POD, Container Type 기반으로 운임 조회
+         */
+        async function fetchQuickQuotation() {
+            // FCL이 아니면 Quick Quotation 숨김
+            if (state.load !== 'FCL' || state.ship !== 'ocean') {
+                hideQuickQuotation();
+                return;
+            }
+            
+            const pol = document.getElementById('input-pol')?.value?.trim();
+            const pod = document.getElementById('input-pod')?.value?.trim();
+            const fclRow = document.querySelector('#fcl-rows .cargo-row');
+            const containerSelect = fclRow?.querySelector('.fcl-type');
+            const containerCode = containerSelect?.options[containerSelect.selectedIndex]?.dataset?.code;
+            
+            // 필수 값이 없으면 숨김
+            if (!pol || !pod || !containerCode) {
+                hideQuickQuotation();
+                return;
+            }
+            
+            // POL/POD에서 코드만 추출 (예: "KRPUS - BUSAN, KOREA" → "KRPUS")
+            const polCode = pol.split(' - ')[0]?.trim();
+            const podCode = pod.split(' - ')[0]?.trim();
+            
+            if (!polCode || !podCode) {
+                hideQuickQuotation();
+                return;
+            }
+            
+            // ETD 날짜 가져오기 (필수)
+            const etdYear = document.getElementById('etd-year')?.value?.trim();
+            const etdMonth = document.getElementById('etd-month')?.value?.trim();
+            const etdDay = document.getElementById('etd-day')?.value?.trim();
+            
+            // ETD가 입력되지 않으면 조회하지 않음
+            if (!etdYear || !etdMonth || !etdDay) {
+                hideQuickQuotation();
+                return;
+            }
+            
+            const etd = `${etdYear}-${etdMonth.padStart(2, '0')}-${etdDay.padStart(2, '0')}`;
+            
+            // Show loading
+            showQuickQuotationLoading();
+            
+            try {
+                const params = new URLSearchParams({
+                    pol: polCode,
+                    pod: podCode,
+                    container_type: containerCode
+                });
+                if (etd) params.append('etd', etd);
+                
+                const response = await fetch(`${API_BASE_URL}/api/freight/estimate?${params}`);
+                const data = await response.json();
+                
+                state.quickQuotation = data;
+                renderQuickQuotation(data);
+                
+            } catch (error) {
+                console.error('[Quick Quotation Error]', error);
+                showQuickQuotationUnavailable('API 연결 오류', '운임 정보를 조회할 수 없습니다.');
+            }
+        }
+        
+        /**
+         * Quick Quotation 결과 렌더링
+         */
+        function renderQuickQuotation(data) {
+            const section = document.getElementById('quick-quote-section');
+            const card = document.getElementById('quick-quote-card');
+            const badge = document.getElementById('quick-quote-badge');
+            const content = document.getElementById('quick-quote-content');
+            const unavailable = document.getElementById('quick-quote-unavailable');
+            const loading = document.getElementById('quick-quote-loading');
+            
+            loading.style.display = 'none';
+            section.classList.add('show');
+            
+            // Estimated Freight 섹션으로 스크롤
+            setTimeout(() => {
+                section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+            
+            if (data.quick_quotation) {
+                // Available
+                card.classList.remove('unavailable');
+                badge.classList.remove('unavailable');
+                badge.textContent = 'QUICK QUOTATION';
+                content.style.display = 'block';
+                unavailable.style.display = 'none';
+                
+                // Carrier & Validity
+                document.getElementById('quick-quote-carrier').textContent = data.carrier || '-';
+                document.getElementById('quick-quote-validity').textContent = 
+                    data.valid_from && data.valid_to ? `${data.valid_from} ~ ${data.valid_to}` : '-';
+                
+                // Origin Local Items (순서 1)
+                const localItems = document.getElementById('quick-quote-local-items');
+                localItems.innerHTML = '';
+                if (data.origin_local?.items) {
+                    data.origin_local.items.forEach(item => {
+                        localItems.innerHTML += renderFreightItem(item);
+                    });
+                }
+                
+                // Local subtotal (여러 통화 표시)
+                let localSubtotal = [];
+                if (data.origin_local?.subtotal_usd > 0) localSubtotal.push(formatCurrency(data.origin_local.subtotal_usd, 'USD'));
+                if (data.origin_local?.subtotal_krw > 0) localSubtotal.push(formatCurrency(data.origin_local.subtotal_krw, 'KRW'));
+                if (data.origin_local?.subtotal_eur > 0) localSubtotal.push(formatCurrency(data.origin_local.subtotal_eur, 'EUR'));
+                document.getElementById('quick-quote-local-subtotal').textContent = localSubtotal.join(' + ') || '₩0';
+
+                // Ocean Freight Items (순서 2)
+                const oceanItems = document.getElementById('quick-quote-ocean-items');
+                oceanItems.innerHTML = '';
+                if (data.ocean_freight?.items) {
+                    data.ocean_freight.items.forEach(item => {
+                        oceanItems.innerHTML += renderFreightItem(item);
+                    });
+                }
+                document.getElementById('quick-quote-ocean-subtotal').textContent = 
+                    formatCurrency(data.ocean_freight?.subtotal_usd || 0, 'USD');
+                
+                // Total (통화별)
+                let totalParts = [];
+                if (data.total_usd > 0) totalParts.push(formatCurrency(data.total_usd, 'USD'));
+                if (data.total_krw > 0) totalParts.push(formatCurrency(data.total_krw, 'KRW'));
+                if (data.total_eur > 0) totalParts.push(formatCurrency(data.total_eur, 'EUR'));
+                document.getElementById('quick-quote-total').textContent = totalParts.join(' + ') || '$0';
+                
+                // Total KRW (환산 총액)
+                const totalKrw = data.total_krw_converted || 0;
+                document.getElementById('quick-quote-total-krw').textContent = formatCurrency(totalKrw, 'KRW');
+                
+                // Note
+                document.getElementById('quick-quote-note').textContent = data.note || '';
+                
+            } else {
+                // Unavailable
+                card.classList.add('unavailable');
+                badge.classList.add('unavailable');
+                badge.textContent = 'QUOTATION REQUIRED';
+                content.style.display = 'none';
+                unavailable.style.display = 'block';
+                
+                document.getElementById('quick-quote-unavailable-title').textContent = 
+                    data.message || '실시간 견적 불가';
+                document.getElementById('quick-quote-unavailable-msg').textContent = 
+                    data.guide || '견적 요청을 통해 포워더 비딩을 진행해 주세요.';
+                
+                // 유효한 운임 데이터 기간 안내
+                const periodEl = document.getElementById('quick-quote-available-period');
+                const periodTextEl = document.getElementById('quick-quote-available-period-text');
+                if (data.available_from && data.available_to) {
+                    periodEl.style.display = 'block';
+                    periodTextEl.textContent = `현재 운임 데이터: ${data.available_from} ~ ${data.available_to}`;
+                } else {
+                    periodEl.style.display = 'none';
+                }
+            }
+            
+            // Estimated Freight 출력 후 상세 견적 버튼 표시
+            showDetailedQuoteButton();
+        }
+        
+        /**
+         * Quick Quotation 로딩 상태 표시
+         */
+        function showQuickQuotationLoading() {
+            const section = document.getElementById('quick-quote-section');
+            const content = document.getElementById('quick-quote-content');
+            const unavailable = document.getElementById('quick-quote-unavailable');
+            const loading = document.getElementById('quick-quote-loading');
+            
+            section.classList.add('show');
+            content.style.display = 'none';
+            unavailable.style.display = 'none';
+            loading.style.display = 'flex';
+        }
+        
+        /**
+         * Quick Quotation 숨김
+         */
+        function hideQuickQuotation() {
+            const section = document.getElementById('quick-quote-section');
+            section.classList.remove('show');
+            state.quickQuotation = null;
+            
+            // 버튼과 Phase 2 섹션도 숨김
+            hideDetailedQuoteButton();
+        }
+        
+        /**
+         * Quick Quotation 불가 상태 표시
+         */
+        function showQuickQuotationUnavailable(title, message) {
+            const section = document.getElementById('quick-quote-section');
+            const card = document.getElementById('quick-quote-card');
+            const badge = document.getElementById('quick-quote-badge');
+            const content = document.getElementById('quick-quote-content');
+            const unavailable = document.getElementById('quick-quote-unavailable');
+            const loading = document.getElementById('quick-quote-loading');
+            
+            section.classList.add('show');
+            card.classList.add('unavailable');
+            badge.classList.add('unavailable');
+            badge.textContent = 'QUOTATION REQUIRED';
+            content.style.display = 'none';
+            unavailable.style.display = 'block';
+            loading.style.display = 'none';
+            
+            document.getElementById('quick-quote-unavailable-title').textContent = title;
+            document.getElementById('quick-quote-unavailable-msg').textContent = message;
+        }
+        
+        /**
+         * Additional Costs 상태 관리
+         */
+        const additionalCosts = {
+            exportCC: 0,
+            pickup: 0
+        };
+        
+        // 고정 비용 설정
+        const FIXED_COSTS = {
+            exportCC: 50000  // 수출 통관 비용 (KRW)
+        };
+        
+        /**
+         * Additional Details 변경 시 추가 비용 업데이트
+         */
+        async function updateAdditionalCosts() {
+            const exportCC = document.querySelector('input[name="export-cc"]:checked')?.value === 'yes';
+            const pickup = document.querySelector('input[name="pickup"]:checked')?.value === 'yes';
+            const pickupAddr = document.getElementById('pickup-addr')?.value?.trim();
+            
+            // Reset costs
+            additionalCosts.exportCC = 0;
+            additionalCosts.pickup = 0;
+            
+            const additionalSection = document.getElementById('quick-quote-additional');
+            const additionalItems = document.getElementById('quick-quote-additional-items');
+            
+            if (!additionalSection || !additionalItems) return;
+            
+            let items = [];
+            
+            // Export CC Cost
+            if (exportCC) {
+                additionalCosts.exportCC = FIXED_COSTS.exportCC;
+                items.push({
+                    code: 'EXP CC',
+                    name: 'Export Customs Clearance',
+                    name_ko: '수출 통관',
+                    rate: FIXED_COSTS.exportCC,
+                    currency: 'KRW'
+                });
+            }
+            
+            // Pickup Trucking Cost
+            if (pickup && pickupAddr) {
+                const truckingRate = await fetchTruckingRate(pickupAddr);
+                if (truckingRate) {
+                    additionalCosts.pickup = truckingRate;
+                    items.push({
+                        code: 'TRUCKING',
+                        name: 'Pickup Trucking',
+                        name_ko: '픽업 내륙운송',
+                        rate: truckingRate,
+                        currency: 'KRW'
+                    });
+                }
+            }
+            
+            // Render additional items
+            if (items.length > 0) {
+                additionalSection.style.display = 'block';
+                additionalItems.innerHTML = '';
+                items.forEach(item => {
+                    additionalItems.innerHTML += `
+                        <div class="quick-quote-item">
+                            <span class="quick-quote-item-name" title="${item.name_ko || ''}">${item.code}</span>
+                            <span class="quick-quote-item-rate">${formatCurrency(item.rate, item.currency)}</span>
+                        </div>
+                    `;
+                });
+                
+                // Update subtotal
+                const totalAdditional = additionalCosts.exportCC + additionalCosts.pickup;
+                document.getElementById('quick-quote-additional-subtotal').textContent = formatCurrency(totalAdditional, 'KRW');
+            } else {
+                additionalSection.style.display = 'none';
+            }
+            
+            // Update total
+            updateQuickQuotationTotal();
+        }
+        
+        /**
+         * Trucking Rate 조회
+         */
+        async function fetchTruckingRate(address) {
+            // POL 코드 가져오기
+            const pol = document.getElementById('input-pol')?.value;
+            if (!pol) return null;
+            
+            const polCode = pol.split(' - ')[0]?.trim();
+            if (!polCode) return null;
+            
+            // Container Type 가져오기
+            const fclTypeSelect = document.querySelector('#fcl-rows .fcl-type');
+            const containerCode = fclTypeSelect?.value?.split(' ')[0];
+            if (!containerCode) return null;
+            
+            try {
+                const params = new URLSearchParams({
+                    origin_port: polCode,
+                    address: address,
+                    container_type: containerCode
+                });
+                
+                const response = await fetch(`${API_BASE_URL}/api/trucking/rate?${params}`);
+                if (!response.ok) return null;
+                
+                const data = await response.json();
+                return data.rate || null;
+                
+            } catch (error) {
+                console.error('[Trucking Rate Error]', error);
+                return null;
+            }
+        }
+        
+        /**
+         * Quick Quotation Total 업데이트
+         */
+        function updateQuickQuotationTotal() {
+            if (!state.quickQuotation || !state.quickQuotation.quick_quotation) return;
+            
+            const data = state.quickQuotation;
+            const additionalTotal = additionalCosts.exportCC + additionalCosts.pickup;
+            
+            // Total 계산 (기존 + Additional)
+            let totalParts = [];
+            if (data.total_usd > 0) totalParts.push(formatCurrency(data.total_usd, 'USD'));
+            
+            const totalKRW = (data.total_krw || 0) + additionalTotal;
+            if (totalKRW > 0) totalParts.push(formatCurrency(totalKRW, 'KRW'));
+            
+            if (data.total_eur > 0) totalParts.push(formatCurrency(data.total_eur, 'EUR'));
+            
+            document.getElementById('quick-quote-total').textContent = totalParts.join(' + ') || '$0';
+        }
+        
+        /**
+         * 통화 포맷팅
+         */
+        function formatCurrency(amount, currency) {
+            if (amount === null || amount === undefined) return 'N/A';
+            
+            const num = Number(amount);
+            switch (currency) {
+                case 'USD':
+                    return '$' + num.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+                case 'KRW':
+                    return '₩' + num.toLocaleString('ko-KR');
+                case 'EUR':
+                    return '€' + num.toLocaleString('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+                default:
+                    return num.toLocaleString() + ' ' + currency;
+            }
+        }
+        
+        /**
+         * 운임 항목 렌더링 (Full Name 포함)
+         */
+        function renderFreightItem(item) {
+            const hasRate = item.rate !== null && item.rate !== undefined;
+            return `
+                <div class="quick-quote-item">
+                    <div class="quick-quote-item-info">
+                        <span class="quick-quote-item-code">${item.code}</span>
+                        <span class="quick-quote-item-name">${item.name || ''}</span>
+                        ${item.name_ko ? `<span class="quick-quote-item-name-ko">${item.name_ko}</span>` : ''}
+                    </div>
+                    <span class="quick-quote-item-rate ${!hasRate ? 'na' : ''}">
+                        ${hasRate ? formatCurrency(item.rate, item.currency) : 'N/A'}
+                    </span>
+                </div>
+            `;
+        }
+        
+        // Debounce 함수 for Quick Quotation
+        let quickQuotationTimeout = null;
+        function triggerQuickQuotation() {
+            if (quickQuotationTimeout) clearTimeout(quickQuotationTimeout);
+            quickQuotationTimeout = setTimeout(fetchQuickQuotation, 500);
+        }
 
         // ==========================================
         // CONTAINER TYPE FUNCTIONS
@@ -1525,6 +2402,12 @@
                         dropdown.value = currentValue;
                     }
                 }
+                
+                // Add change event for Quick Quotation
+                dropdown.addEventListener('change', () => {
+                    updateSummary();
+                    triggerQuickQuotation();
+                });
             });
         }
 
@@ -1923,6 +2806,9 @@
                     
                     // Update summary
                     updateSummary();
+                    
+                    // Trigger Quick Quotation
+                    triggerQuickQuotation();
                 });
             });
         }
@@ -1968,6 +2854,9 @@
             
             // Fetch container types from API
             fetchContainerTypes();
+            
+            // Check if coming from AI Assistant
+            checkAIQuoteData();
             
             const inputs = ['input-pol', 'input-pod', 'fcl-type', 'c-company', 'c-name', 'c-email', 'c-phone'];
             inputs.forEach(id => {
@@ -2048,6 +2937,13 @@
                             validateDates();
                         }
                     });
+                    
+                    // ETD 필드 변경 시 Quick Quotation 재조회
+                    if (id.startsWith('etd-')) {
+                        el.addEventListener('blur', function() {
+                            triggerQuickQuotation();
+                        });
+                    }
                 }
             });
 
@@ -2468,6 +3364,94 @@
         }
 
         // Functions
+        
+        // 상세 견적 버튼 표시 (Estimated Freight 출력 후)
+        function showDetailedQuoteButton() {
+            const btnSection = document.getElementById('detailed-quote-btn-section');
+            if (btnSection) {
+                btnSection.style.display = 'block';
+            }
+        }
+        
+        // 상세 견적 버튼 숨김 및 Phase 2 섹션 초기화
+        function hideDetailedQuoteButton() {
+            const btnSection = document.getElementById('detailed-quote-btn-section');
+            const detailedSection = document.getElementById('detailed-quote-section');
+            
+            if (btnSection) {
+                btnSection.style.display = 'none';
+            }
+            if (detailedSection) {
+                detailedSection.style.display = 'none';
+            }
+            
+            // 버튼 상태 초기화
+            resetDetailedQuoteButton();
+        }
+        
+        // 버튼 상태 초기화
+        function resetDetailedQuoteButton() {
+            const icon = document.getElementById('btn-detailed-icon');
+            const text = document.getElementById('btn-detailed-text');
+            
+            if (icon) icon.className = 'fas fa-plus-circle';
+            if (text) text.textContent = '상세 견적 요청';
+        }
+        
+        // Toggle Quote Breakdown (상세 보기) - 펼치기/접기
+        function toggleQuoteBreakdown() {
+            const breakdown = document.getElementById('quick-quote-breakdown');
+            const btn = document.getElementById('btn-breakdown-toggle');
+            const icon = document.getElementById('breakdown-toggle-icon');
+            const text = document.getElementById('breakdown-toggle-text');
+            
+            if (breakdown.style.display === 'none') {
+                breakdown.style.display = 'grid';
+                btn.classList.add('expanded');
+                text.textContent = '상세 접기';
+            } else {
+                breakdown.style.display = 'none';
+                btn.classList.remove('expanded');
+                text.textContent = '상세 보기';
+            }
+        }
+        
+        // Toggle Detailed Quote Section (Phase 2) - 펼치기/접기
+        function toggleDetailedQuoteSection() {
+            const detailedSection = document.getElementById('detailed-quote-section');
+            const icon = document.getElementById('btn-detailed-icon');
+            const text = document.getElementById('btn-detailed-text');
+            
+            if (!detailedSection) return;
+            
+            const isHidden = detailedSection.style.display === 'none' || detailedSection.style.display === '';
+            
+            if (isHidden) {
+                // 펼치기
+                detailedSection.style.display = 'block';
+                if (icon) icon.className = 'fas fa-minus-circle';
+                if (text) text.textContent = '상세 견적 접기';
+                
+                // Scroll to the section
+                detailedSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else {
+                // 접기
+                detailedSection.style.display = 'none';
+                if (icon) icon.className = 'fas fa-plus-circle';
+                if (text) text.textContent = '상세 견적 요청';
+            }
+        }
+        
+        // Hide Detailed Quote Section (Phase 2) - for reset (하위 호환성)
+        function hideDetailedQuoteSection() {
+            const detailedSection = document.getElementById('detailed-quote-section');
+            
+            if (detailedSection) {
+                detailedSection.style.display = 'none';
+            }
+            resetDetailedQuoteButton();
+        }
+
         function setTrade(val) {
             state.trade = val;
             document.getElementById('trade-export').classList.toggle('active', val === 'export');
@@ -2581,6 +3565,13 @@
             updateSummary();
             checkReeferContainer(); // Check for Reefer container on ship type change
             validateDates(); // Re-validate dates when ship mode changes (Ocean/Air have different rules)
+            
+            // Quick Quotation - Ocean + FCL만 지원
+            if (val === 'ocean') {
+                triggerQuickQuotation();
+            } else {
+                hideQuickQuotation();
+            }
         }
 
         function renderLoadTypes(type) {
@@ -2621,6 +3612,13 @@
                     updateAdditionalDetails();
                     updateSummary();
                     checkReeferContainer(); // Check for Reefer container on load type change
+                    
+                    // Quick Quotation - FCL만 지원
+                    if (opt.code === 'FCL') {
+                        triggerQuickQuotation();
+                    } else {
+                        hideQuickQuotation();
+                    }
                 };
                 container.appendChild(div);
             });
@@ -3535,6 +4533,133 @@
             container.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
+        // ==========================================
+        // AI ASSISTANT INTEGRATION
+        // ==========================================
+        
+        /**
+         * AI에서 전달된 Quote 데이터로 폼 자동 채움
+         */
+        function checkAIQuoteData() {
+            // URL 파라미터 확인
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('from') !== 'ai') return;
+            
+            // sessionStorage에서 데이터 가져오기
+            const aiData = sessionStorage.getItem('ai_quote_data');
+            if (!aiData) return;
+            
+            try {
+                const data = JSON.parse(aiData);
+                console.log('[AI Integration] Received quote data:', data);
+                
+                // 약간의 딜레이 후 폼 채움 (컨테이너 타입 로드 대기)
+                setTimeout(() => {
+                    applyAIQuoteData(data);
+                    
+                    // 성공 메시지 표시
+                    showToast('AI 어시스턴트에서 데이터를 가져왔습니다.', 'success');
+                    
+                    // 데이터 삭제 (재사용 방지)
+                    sessionStorage.removeItem('ai_quote_data');
+                }, 500);
+                
+            } catch (error) {
+                console.error('[AI Integration] Error parsing AI data:', error);
+            }
+        }
+        
+        /**
+         * AI 데이터를 폼에 적용
+         */
+        function applyAIQuoteData(data) {
+            // Trade Mode
+            if (data.trade_mode) {
+                setTrade(data.trade_mode);
+            }
+            
+            // Shipping Type
+            if (data.shipping_type) {
+                setShip(data.shipping_type);
+            }
+            
+            // Load Type
+            if (data.load_type) {
+                setTimeout(() => {
+                    const loadCard = document.querySelector(`[onclick*="setLoad('${data.load_type}')"]`);
+                    if (loadCard) loadCard.click();
+                }, 100);
+            }
+            
+            // POL (Port of Loading)
+            if (data.pol) {
+                const polInput = document.getElementById('input-pol');
+                if (polInput) {
+                    // 항구 코드를 직접 설정
+                    polInput.value = data.pol;
+                    state.pol = data.pol;
+                    updateSummary();
+                    
+                    // 자동완성 트리거
+                    polInput.dispatchEvent(new Event('input'));
+                }
+            }
+            
+            // POD (Port of Discharging)
+            if (data.pod) {
+                const podInput = document.getElementById('input-pod');
+                if (podInput) {
+                    podInput.value = data.pod;
+                    state.pod = data.pod;
+                    updateSummary();
+                    podInput.dispatchEvent(new Event('input'));
+                }
+            }
+            
+            // Container Type
+            if (data.container_type) {
+                setTimeout(() => {
+                    const containerSelect = document.querySelector('#fcl-rows .fcl-type');
+                    if (containerSelect) {
+                        // 옵션 중에서 매칭되는 것 찾기
+                        const options = containerSelect.options;
+                        for (let i = 0; i < options.length; i++) {
+                            if (options[i].dataset.code === data.container_type || 
+                                options[i].text.includes(data.container_type)) {
+                                containerSelect.selectedIndex = i;
+                                containerSelect.dispatchEvent(new Event('change'));
+                                break;
+                            }
+                        }
+                    }
+                }, 300);
+            }
+            
+            // ETD (Estimated Time of Departure)
+            if (data.etd) {
+                const etdParts = data.etd.split('-');
+                if (etdParts.length === 3) {
+                    const etdYear = document.getElementById('etd-year');
+                    const etdMonth = document.getElementById('etd-month');
+                    const etdDay = document.getElementById('etd-day');
+                    
+                    if (etdYear) etdYear.value = etdParts[0];
+                    if (etdMonth) etdMonth.value = etdParts[1];
+                    if (etdDay) etdDay.value = etdParts[2];
+                    
+                    // 날짜 유효성 검사 및 Quick Quotation 트리거
+                    setTimeout(() => {
+                        if (typeof triggerQuickQuotation === 'function') {
+                            triggerQuickQuotation();
+                        }
+                    }, 500);
+                }
+            }
+            
+            // Summary 업데이트
+            updateSummary();
+        }
+        
         // ==========================================
         // FORM SUBMISSION
         // ==========================================

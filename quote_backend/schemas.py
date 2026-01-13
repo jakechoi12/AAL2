@@ -1447,3 +1447,59 @@ class PriceGuideResponse(BaseModel):
     min_price_krw: float
     max_price_krw: float
     median_price_krw: float
+
+
+# ==========================================
+# QUICK QUOTATION / FREIGHT ESTIMATE SCHEMAS
+# ==========================================
+
+class FreightRateItem(BaseModel):
+    """개별 운임 항목"""
+    code: str
+    name: str
+    name_ko: Optional[str] = None
+    rate: Optional[float] = None
+    currency: str
+    unit: str
+
+
+class FreightGroupBreakdown(BaseModel):
+    """운임 그룹별 breakdown"""
+    group_name: str
+    items: List[FreightRateItem]
+    subtotal_usd: float = 0
+    subtotal_krw: float = 0
+    subtotal_eur: float = 0
+
+
+class QuickQuotationResponse(BaseModel):
+    """Quick Quotation 응답 (운임 자동완성)"""
+    quick_quotation: bool
+    message: Optional[str] = None
+    guide: Optional[str] = None
+    
+    # Quick Quotation = Y인 경우
+    carrier: Optional[str] = None
+    valid_from: Optional[str] = None
+    valid_to: Optional[str] = None
+    container_type: Optional[str] = None
+    container_name: Optional[str] = None
+    
+    # 운임 breakdown
+    ocean_freight: Optional[FreightGroupBreakdown] = None
+    origin_local: Optional[FreightGroupBreakdown] = None
+    
+    # 합계
+    total_usd: float = 0
+    total_krw: float = 0
+    total_eur: float = 0
+    
+    note: Optional[str] = None
+    
+    # KRW 환산 총액
+    total_krw_converted: float = 0
+    exchange_rates_used: Optional[dict] = None
+    
+    # Quick Quotation = N인 경우 - 유효한 운임 데이터 기간 안내
+    available_from: Optional[str] = None
+    available_to: Optional[str] = None

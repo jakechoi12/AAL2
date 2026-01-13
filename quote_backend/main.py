@@ -14,6 +14,53 @@ from pathlib import Path
 import random
 import string
 import os
+import requests
+from functools import lru_cache
+
+# 한국은행 API 환율 조회 함수
+BOK_API_BASE = "http://localhost:5000"  # Flask server (bok_backend)
+
+@lru_cache(maxsize=10)
+def get_bok_exchange_rate(currency: str, cache_key: str = None) -> float:
+    """
+    한국은행 API를 통해 환율 조회 (최근 7일 평균)
+    cache_key: 캐싱을 위한 날짜 키 (예: "2026-01-13")
+    
+    Returns: KRW 환율 (1 currency = X KRW)
+    """
+    try:
+        end_date = datetime.now().strftime("%Y%m%d")
+        start_date = (datetime.now() - timedelta(days=7)).strftime("%Y%m%d")
+        
+        # 한국은행 API 호출 (Flask 서버 경유)
+        response = requests.get(
+            f"{BOK_API_BASE}/api/market/indices",
+            params={
+                "type": "exchange",
+                "itemCode": currency.upper(),
+                "startDate": start_date,
+                "endDate": end_date,
+                "cycle": "D"
+            },
+            timeout=10
+        )
+        
+        if response.status_code == 200:
+            data = response.json()
+            if data.get("data") and len(data["data"]) > 0:
+                # 최신 환율 반환
+                latest = data["data"][-1]
+                return float(latest.get("DATA_VALUE", 0))
+        
+        # 실패 시 기본값 반환
+        default_rates = {"USD": 1450.0, "EUR": 1550.0, "JPY": 9.5, "CNY": 200.0}
+        return default_rates.get(currency.upper(), 1.0)
+        
+    except Exception as e:
+        print(f"[Exchange Rate] Error fetching rate for {currency}: {e}")
+        # 기본값 반환
+        default_rates = {"USD": 1450.0, "EUR": 1550.0, "JPY": 9.5, "CNY": 200.0}
+        return default_rates.get(currency.upper(), 1.0)
 
 from database import get_db, engine
 from models import (
@@ -23,7 +70,9 @@ from models import (
     FreightCategory, FreightCode, FreightUnit, FreightCodeUnit,
     # Contract & Shipment
     Contract, Shipment, ShipmentTracking, Settlement, Message,
-    FavoriteRoute, BidTemplate, BookmarkedBidding
+    FavoriteRoute, BidTemplate, BookmarkedBidding,
+    # Ocean & Trucking Rates
+    OceanRateSheet, OceanRateItem, TruckingRate
 )
 from schemas import (
     PortResponse, ContainerTypeResponse, TruckTypeResponse, IncotermResponse,
@@ -1844,6 +1893,381 @@ def get_freight_categories(
         shipping_types=c.shipping_types,
         sort_order=c.sort_order
     ) for c in categories]
+
+
+# ==========================================
+# QUICK QUOTATION - FREIGHT ESTIMATE API
+# ==========================================
+
+from models import OceanRateSheet, OceanRateItem
+from schemas import QuickQuotationResponse, FreightRateItem, FreightGroupBreakdown
+
+
+@app.get("/api/freight/estimate", response_model=QuickQuotationResponse, tags=["Quick Quotation"])
+def get_freight_estimate(
+    pol: str,
+    pod: str,
+    container_type: str,
+    etd: Optional[str] = None,
+    db: Session = Depends(get_db)
+):
+    """
+    Quick Quotation - 운임 자동완성 API
+    
+    - pol: 출발항 코드 (e.g., KRPUS)
+    - pod: 도착항 코드 (e.g., NLRTM)
+    - container_type: 컨테이너 타입 코드 (e.g., 20DC, 40DC, 4HDC)
+    - etd: 출발예정일 (YYYY-MM-DD) - 유효기간 체크용 (선택)
+    
+    Returns:
+    - quick_quotation: true/false
+    - 운임 breakdown (quick_quotation=true인 경우)
+    """
+    
+    # Get ports
+    pol_port = db.query(Port).filter(Port.code == pol.upper()).first()
+    pod_port = db.query(Port).filter(Port.code == pod.upper()).first()
+    
+    if not pol_port:
+        return QuickQuotationResponse(
+            quick_quotation=False,
+            message=f"출발항 '{pol}'을 찾을 수 없습니다.",
+            guide="올바른 항구 코드를 입력해 주세요."
+        )
+    
+    if not pod_port:
+        return QuickQuotationResponse(
+            quick_quotation=False,
+            message=f"도착항 '{pod}'을 찾을 수 없습니다.",
+            guide="올바른 항구 코드를 입력해 주세요."
+        )
+    
+    # Get container type
+    ct = db.query(ContainerType).filter(ContainerType.code == container_type.upper()).first()
+    if not ct:
+        return QuickQuotationResponse(
+            quick_quotation=False,
+            message=f"컨테이너 타입 '{container_type}'을 찾을 수 없습니다.",
+            guide="올바른 컨테이너 타입을 선택해 주세요."
+        )
+    
+    # Determine check date
+    if etd:
+        try:
+            check_date = datetime.strptime(etd, "%Y-%m-%d")
+        except ValueError:
+            check_date = datetime.now()
+    else:
+        check_date = datetime.now()
+    
+    # Find valid rate sheet
+    sheet = db.query(OceanRateSheet).filter(
+        OceanRateSheet.pol_id == pol_port.id,
+        OceanRateSheet.pod_id == pod_port.id,
+        OceanRateSheet.is_active == True,
+        OceanRateSheet.valid_from <= check_date,
+        OceanRateSheet.valid_to >= check_date
+    ).first()
+    
+    if not sheet:
+        # 해당 구간의 다른 유효한 운임이 있는지 확인
+        available_sheet = db.query(OceanRateSheet).filter(
+            OceanRateSheet.pol_id == pol_port.id,
+            OceanRateSheet.pod_id == pod_port.id,
+            OceanRateSheet.is_active == True
+        ).order_by(OceanRateSheet.valid_from.desc()).first()
+        
+        if available_sheet:
+            # 운임 데이터는 있지만 요청한 날짜가 유효 기간 외
+            return QuickQuotationResponse(
+                quick_quotation=False,
+                message=f"요청하신 날짜({etd or '미지정'})에 운임 데이터가 없습니다.",
+                guide=f"현재 운임 데이터: {available_sheet.valid_from.strftime('%Y-%m-%d')} ~ {available_sheet.valid_to.strftime('%Y-%m-%d')}",
+                available_from=available_sheet.valid_from.strftime('%Y-%m-%d'),
+                available_to=available_sheet.valid_to.strftime('%Y-%m-%d')
+            )
+        else:
+            # 해당 구간에 운임 데이터가 전혀 없음
+            return QuickQuotationResponse(
+                quick_quotation=False,
+                message="해당 구간은 실시간 견적을 제공하지 않습니다.",
+                guide="견적 요청을 통해 포워더 비딩을 진행해 주세요."
+            )
+    
+    # Get rate items for this container type
+    items = db.query(OceanRateItem).filter(
+        OceanRateItem.sheet_id == sheet.id,
+        OceanRateItem.container_type_id == ct.id,
+        OceanRateItem.is_active == True
+    ).all()
+    
+    if not items:
+        return QuickQuotationResponse(
+            quick_quotation=False,
+            message="해당 컨테이너 타입의 운임 정보가 없습니다.",
+            guide="견적 요청을 통해 포워더 비딩을 진행해 주세요."
+        )
+    
+    # Check if Ocean Freight (FRT) rate exists
+    frt_code = db.query(FreightCode).filter(FreightCode.code == "FRT").first()
+    frt_item = next((i for i in items if i.freight_code_id == frt_code.id), None) if frt_code else None
+    
+    if not frt_item or frt_item.rate is None:
+        return QuickQuotationResponse(
+            quick_quotation=False,
+            message="해당 컨테이너 타입의 기본 운임이 등록되지 않았습니다.",
+            guide="견적 요청을 통해 포워더 비딩을 진행해 주세요.",
+            container_type=ct.code,
+            container_name=ct.name
+        )
+    
+    # Build breakdown
+    ocean_freight_items = []
+    origin_local_items = []
+    
+    total_usd = 0.0
+    total_krw = 0.0
+    total_eur = 0.0
+    
+    ocean_usd = 0.0
+    local_usd = 0.0
+    local_krw = 0.0
+    local_eur = 0.0
+    
+    for item in items:
+        fc = item.freight_code
+        rate_item = FreightRateItem(
+            code=fc.code,
+            name=fc.name_en,
+            name_ko=fc.name_ko,
+            rate=float(item.rate) if item.rate else None,
+            currency=item.currency,
+            unit=item.unit
+        )
+        
+        if item.freight_group == "Ocean Freight":
+            ocean_freight_items.append(rate_item)
+            if item.rate:
+                if item.currency == "USD":
+                    ocean_usd += float(item.rate)
+                    total_usd += float(item.rate)
+        else:
+            origin_local_items.append(rate_item)
+            if item.rate:
+                if item.currency == "USD":
+                    local_usd += float(item.rate)
+                    total_usd += float(item.rate)
+                elif item.currency == "KRW":
+                    local_krw += float(item.rate)
+                    total_krw += float(item.rate)
+                elif item.currency == "EUR":
+                    local_eur += float(item.rate)
+                    total_eur += float(item.rate)
+    
+    ocean_breakdown = FreightGroupBreakdown(
+        group_name="Ocean Freight",
+        items=ocean_freight_items,
+        subtotal_usd=ocean_usd
+    )
+    
+    local_breakdown = FreightGroupBreakdown(
+        group_name="Origin Local Charges",
+        items=origin_local_items,
+        subtotal_usd=local_usd,
+        subtotal_krw=local_krw,
+        subtotal_eur=local_eur
+    )
+    
+    # 환율 조회 및 KRW 환산 (한국은행 API 활용)
+    exchange_rates_used = {}
+    total_krw_converted = total_krw  # 이미 KRW인 금액은 그대로
+    cache_key = datetime.now().strftime("%Y-%m-%d")  # 일별 캐싱
+    
+    # USD 환산
+    if total_usd > 0:
+        usd_rate = get_bok_exchange_rate("USD", cache_key)
+        exchange_rates_used["USD"] = usd_rate
+        total_krw_converted += total_usd * usd_rate
+    
+    # EUR 환산
+    if total_eur > 0:
+        eur_rate = get_bok_exchange_rate("EUR", cache_key)
+        exchange_rates_used["EUR"] = eur_rate
+        total_krw_converted += total_eur * eur_rate
+    
+    return QuickQuotationResponse(
+        quick_quotation=True,
+        carrier=sheet.carrier,
+        valid_from=sheet.valid_from.strftime("%Y-%m-%d"),
+        valid_to=sheet.valid_to.strftime("%Y-%m-%d"),
+        container_type=ct.code,
+        container_name=ct.name,
+        ocean_freight=ocean_breakdown,
+        origin_local=local_breakdown,
+        total_usd=total_usd,
+        total_krw=total_krw,
+        total_eur=total_eur,
+        total_krw_converted=total_krw_converted,
+        exchange_rates_used=exchange_rates_used if exchange_rates_used else None,
+        note="해당 견적은 예상 견적입니다. 실제 금액은 비딩 결과에 따라 달라질 수 있습니다."
+    )
+
+
+@app.get("/api/freight/routes", tags=["Quick Quotation"])
+def get_available_routes(db: Session = Depends(get_db)):
+    """
+    Quick Quotation 가능한 구간 목록 조회
+    """
+    today = datetime.now()
+    
+    sheets = db.query(OceanRateSheet).filter(
+        OceanRateSheet.is_active == True,
+        OceanRateSheet.valid_from <= today,
+        OceanRateSheet.valid_to >= today
+    ).all()
+    
+    routes = []
+    for sheet in sheets:
+        routes.append({
+            "pol_code": sheet.pol.code,
+            "pol_name": sheet.pol.name,
+            "pod_code": sheet.pod.code,
+            "pod_name": sheet.pod.name,
+            "carrier": sheet.carrier,
+            "valid_from": sheet.valid_from.strftime("%Y-%m-%d"),
+            "valid_to": sheet.valid_to.strftime("%Y-%m-%d")
+        })
+    
+    return {
+        "count": len(routes),
+        "routes": routes
+    }
+
+
+# ==========================================
+# TRUCKING RATE API
+# ==========================================
+
+@app.get("/api/trucking/rate", tags=["Trucking"])
+def get_trucking_rate(
+    origin_port: str,
+    address: str,
+    container_type: str,
+    db: Session = Depends(get_db)
+):
+    """
+    Trucking Rate 조회 API
+    
+    - origin_port: 출발항 코드 (e.g., KRPUS)
+    - address: 목적지 주소 (검색용)
+    - container_type: 컨테이너 타입 코드 (e.g., 20DC, 40DC)
+    
+    Returns:
+    - rate: 운임 (KRW), null if not found
+    """
+    
+    # Get port
+    port = db.query(Port).filter(Port.code == origin_port.upper()).first()
+    if not port:
+        return {"rate": None, "message": f"출발항 '{origin_port}'을 찾을 수 없습니다."}
+    
+    # Parse container type for rate column selection
+    is_40ft = container_type.upper().startswith('4')
+    
+    # Search trucking rate by address (partial match)
+    # 주소에서 도/시/구 정보 추출 시도
+    query = db.query(TruckingRate).filter(
+        TruckingRate.origin_port_id == port.id,
+        TruckingRate.is_active == True
+    )
+    
+    # 주소 검색 (도/시/구/동 중 하나라도 매칭)
+    address_parts = address.replace(',', ' ').split()
+    
+    if address_parts:
+        # OR 조건으로 주소 부분 매칭
+        rate = None
+        for part in address_parts:
+            part = part.strip()
+            if len(part) < 2:
+                continue
+            
+            rate = query.filter(
+                or_(
+                    TruckingRate.dest_province.contains(part),
+                    TruckingRate.dest_city.contains(part),
+                    TruckingRate.dest_district.contains(part)
+                )
+            ).first()
+            
+            if rate:
+                break
+        
+        if rate:
+            rate_value = float(rate.rate_40ft) if is_40ft else float(rate.rate_20ft)
+            return {
+                "rate": rate_value,
+                "currency": "KRW",
+                "origin": f"{port.code} - {port.name}",
+                "destination": f"{rate.dest_province} {rate.dest_city} {rate.dest_district}",
+                "distance_km": rate.distance_km,
+                "container_type": "40ft" if is_40ft else "20ft"
+            }
+    
+    return {
+        "rate": None,
+        "message": f"'{address}' 지역의 운임 정보를 찾을 수 없습니다."
+    }
+
+
+@app.get("/api/trucking/locations", tags=["Trucking"])
+def get_trucking_locations(
+    origin_port: str,
+    search: Optional[str] = None,
+    db: Session = Depends(get_db)
+):
+    """
+    Trucking 가능 지역 목록 조회
+    
+    - origin_port: 출발항 코드
+    - search: 검색어 (선택)
+    """
+    port = db.query(Port).filter(Port.code == origin_port.upper()).first()
+    if not port:
+        return {"locations": [], "message": f"출발항 '{origin_port}'을 찾을 수 없습니다."}
+    
+    query = db.query(TruckingRate).filter(
+        TruckingRate.origin_port_id == port.id,
+        TruckingRate.is_active == True
+    )
+    
+    if search:
+        query = query.filter(
+            or_(
+                TruckingRate.dest_province.contains(search),
+                TruckingRate.dest_city.contains(search),
+                TruckingRate.dest_district.contains(search)
+            )
+        )
+    
+    rates = query.limit(50).all()
+    
+    locations = []
+    for rate in rates:
+        locations.append({
+            "province": rate.dest_province,
+            "city": rate.dest_city,
+            "district": rate.dest_district,
+            "full_address": f"{rate.dest_province} {rate.dest_city} {rate.dest_district}",
+            "distance_km": rate.distance_km,
+            "rate_20ft": float(rate.rate_20ft) if rate.rate_20ft else None,
+            "rate_40ft": float(rate.rate_40ft) if rate.rate_40ft else None
+        })
+    
+    return {
+        "count": len(locations),
+        "locations": locations
+    }
 
 
 # ==========================================
