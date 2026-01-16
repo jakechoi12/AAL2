@@ -11,6 +11,7 @@ DB 위치:
 import os
 import sys
 import logging
+import requests
 from typing import Dict, List, Optional, Any
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
@@ -18,6 +19,10 @@ from decimal import Decimal
 # 로깅 설정
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# API 엔드포인트 설정
+FLASK_API_BASE = "http://localhost:5000"
+QUOTE_API_BASE = "http://localhost:8001"
 
 # 경로 설정
 SERVER_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -418,6 +423,390 @@ TOOL_DEFINITIONS = [
             },
             "required": ["page"]
         }
+    },
+    # ════════════════════════════════════════════════════════════
+    # PHASE 0: 화주 견적 업무 완성
+    # ════════════════════════════════════════════════════════════
+    {
+        "name": "get_my_quotes",
+        "description": "화주의 견적 요청 목록을 조회합니다. 이메일로 고객을 식별하여 해당 고객의 모든 견적 요청을 반환합니다.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "customer_email": {
+                    "type": "string",
+                    "description": "고객 이메일 주소"
+                },
+                "status": {
+                    "type": "string",
+                    "enum": ["all", "pending", "in_progress", "completed", "cancelled"],
+                    "description": "견적 상태 필터 (기본값: all)"
+                },
+                "limit": {
+                    "type": "integer",
+                    "description": "조회할 최대 건수 (기본값: 10)"
+                }
+            },
+            "required": ["customer_email"]
+        }
+    },
+    {
+        "name": "update_quote_request",
+        "description": "기존 견적 요청을 수정합니다. 비딩이 진행 중(open)일 때만 수정 가능합니다.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "bidding_no": {
+                    "type": "string",
+                    "description": "수정할 비딩 번호 (예: EXSEA00001)"
+                },
+                "etd": {
+                    "type": "string",
+                    "description": "변경할 출발 예정일 (YYYY-MM-DD)"
+                },
+                "eta": {
+                    "type": "string",
+                    "description": "변경할 도착 예정일 (YYYY-MM-DD)"
+                },
+                "incoterms": {
+                    "type": "string",
+                    "description": "변경할 인코텀즈"
+                },
+                "pickup_required": {
+                    "type": "boolean",
+                    "description": "픽업 필요 여부"
+                },
+                "pickup_address": {
+                    "type": "string",
+                    "description": "픽업 주소"
+                },
+                "delivery_required": {
+                    "type": "boolean",
+                    "description": "배송 필요 여부"
+                },
+                "delivery_address": {
+                    "type": "string",
+                    "description": "배송 주소"
+                },
+                "remark": {
+                    "type": "string",
+                    "description": "비고 사항"
+                }
+            },
+            "required": ["bidding_no"]
+        }
+    },
+    {
+        "name": "cancel_quote_request",
+        "description": "견적 요청을 취소합니다. 비딩이 진행 중(open)이고 입찰이 없을 때만 취소 가능합니다.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "request_id": {
+                    "type": "integer",
+                    "description": "취소할 견적 요청 ID"
+                }
+            },
+            "required": ["request_id"]
+        }
+    },
+    # ════════════════════════════════════════════════════════════
+    # PHASE 1: 비딩/입찰 도구
+    # ════════════════════════════════════════════════════════════
+    {
+        "name": "submit_bid",
+        "description": "포워더가 비딩에 운임 제안을 제출합니다. 비딩이 진행 중(open)일 때만 제출 가능합니다.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "bidding_id": {
+                    "type": "integer",
+                    "description": "비딩 ID"
+                },
+                "forwarder_id": {
+                    "type": "integer",
+                    "description": "포워더 ID"
+                },
+                "total_amount": {
+                    "type": "number",
+                    "description": "총 운임 (USD)"
+                },
+                "freight_charge": {
+                    "type": "number",
+                    "description": "해상/항공 운임 (USD)"
+                },
+                "local_charge": {
+                    "type": "number",
+                    "description": "현지 비용 (USD)"
+                },
+                "other_charge": {
+                    "type": "number",
+                    "description": "기타 비용 (USD)"
+                },
+                "transit_time": {
+                    "type": "string",
+                    "description": "운송 소요 기간 (예: 14-18일)"
+                },
+                "validity_date": {
+                    "type": "string",
+                    "description": "견적 유효 기간 (YYYY-MM-DD)"
+                },
+                "remark": {
+                    "type": "string",
+                    "description": "비고 사항"
+                }
+            },
+            "required": ["bidding_id", "forwarder_id", "total_amount"]
+        }
+    },
+    {
+        "name": "award_bid",
+        "description": "화주가 특정 입찰을 낙찰 처리합니다. 비딩이 진행 중(open) 또는 마감(closed) 상태일 때 가능합니다.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "bidding_no": {
+                    "type": "string",
+                    "description": "비딩 번호 (예: EXSEA00001)"
+                },
+                "bid_id": {
+                    "type": "integer",
+                    "description": "낙찰할 입찰 ID"
+                }
+            },
+            "required": ["bidding_no", "bid_id"]
+        }
+    },
+    {
+        "name": "get_bidding_detail",
+        "description": "비딩의 상세 정보를 조회합니다. 견적 요청 정보, 입찰 목록, 고객 정보 등을 포함합니다.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "bidding_no": {
+                    "type": "string",
+                    "description": "비딩 번호 (예: EXSEA00001)"
+                }
+            },
+            "required": ["bidding_no"]
+        }
+    },
+    {
+        "name": "get_bidding_bids",
+        "description": "특정 비딩에 제출된 입찰 목록을 조회합니다.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "bidding_no": {
+                    "type": "string",
+                    "description": "비딩 번호 (예: EXSEA00001)"
+                }
+            },
+            "required": ["bidding_no"]
+        }
+    },
+    {
+        "name": "close_bidding",
+        "description": "비딩을 마감합니다. 더 이상 입찰을 받지 않습니다.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "bidding_no": {
+                    "type": "string",
+                    "description": "마감할 비딩 번호"
+                }
+            },
+            "required": ["bidding_no"]
+        }
+    },
+    {
+        "name": "get_my_bids",
+        "description": "포워더의 입찰 목록을 조회합니다.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "forwarder_id": {
+                    "type": "integer",
+                    "description": "포워더 ID"
+                },
+                "status": {
+                    "type": "string",
+                    "enum": ["all", "submitted", "awarded", "rejected"],
+                    "description": "입찰 상태 필터"
+                },
+                "limit": {
+                    "type": "integer",
+                    "description": "조회할 최대 건수"
+                }
+            },
+            "required": ["forwarder_id"]
+        }
+    },
+    # ════════════════════════════════════════════════════════════
+    # PHASE 2: 계약/배송 도구
+    # ════════════════════════════════════════════════════════════
+    {
+        "name": "get_contracts",
+        "description": "계약 목록을 조회합니다. 사용자 유형과 ID로 필터링합니다.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "user_type": {
+                    "type": "string",
+                    "enum": ["shipper", "forwarder"],
+                    "description": "사용자 유형"
+                },
+                "user_id": {
+                    "type": "integer",
+                    "description": "사용자 ID (customer_id 또는 forwarder_id)"
+                },
+                "status": {
+                    "type": "string",
+                    "enum": ["all", "pending", "confirmed", "in_progress", "completed", "cancelled"],
+                    "description": "계약 상태 필터"
+                },
+                "limit": {
+                    "type": "integer",
+                    "description": "조회할 최대 건수"
+                }
+            },
+            "required": ["user_type", "user_id"]
+        }
+    },
+    {
+        "name": "get_contract_detail",
+        "description": "계약의 상세 정보를 조회합니다.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "contract_id": {
+                    "type": "integer",
+                    "description": "계약 ID"
+                }
+            },
+            "required": ["contract_id"]
+        }
+    },
+    {
+        "name": "track_shipment",
+        "description": "배송 상태를 추적합니다. 배송 ID로 현재 위치와 이력을 조회합니다.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "shipment_id": {
+                    "type": "integer",
+                    "description": "배송 ID"
+                }
+            },
+            "required": ["shipment_id"]
+        }
+    },
+    {
+        "name": "get_shipments",
+        "description": "배송 목록을 조회합니다.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "user_type": {
+                    "type": "string",
+                    "enum": ["shipper", "forwarder"],
+                    "description": "사용자 유형"
+                },
+                "user_id": {
+                    "type": "integer",
+                    "description": "사용자 ID"
+                },
+                "status": {
+                    "type": "string",
+                    "enum": ["all", "pending", "picked_up", "in_transit", "delivered"],
+                    "description": "배송 상태 필터"
+                },
+                "limit": {
+                    "type": "integer",
+                    "description": "조회할 최대 건수"
+                }
+            },
+            "required": ["user_type", "user_id"]
+        }
+    },
+    # ════════════════════════════════════════════════════════════
+    # PHASE 3: 분석/소통 도구
+    # ════════════════════════════════════════════════════════════
+    {
+        "name": "get_shipper_analytics",
+        "description": "화주의 분석 데이터를 조회합니다. 총 요청 건수, 평균 입찰 수, 낙찰률, 총 운송비 등의 KPI를 제공합니다.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "customer_id": {
+                    "type": "integer",
+                    "description": "고객(화주) ID"
+                },
+                "from_date": {
+                    "type": "string",
+                    "description": "조회 시작일 (YYYY-MM-DD)"
+                },
+                "to_date": {
+                    "type": "string",
+                    "description": "조회 종료일 (YYYY-MM-DD)"
+                }
+            },
+            "required": ["customer_id"]
+        }
+    },
+    {
+        "name": "get_notifications",
+        "description": "사용자의 알림 목록을 조회합니다.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "user_type": {
+                    "type": "string",
+                    "enum": ["shipper", "forwarder"],
+                    "description": "사용자 유형"
+                },
+                "user_id": {
+                    "type": "integer",
+                    "description": "사용자 ID"
+                },
+                "unread_only": {
+                    "type": "boolean",
+                    "description": "읽지 않은 알림만 조회"
+                },
+                "limit": {
+                    "type": "integer",
+                    "description": "조회할 최대 건수"
+                }
+            },
+            "required": ["user_type", "user_id"]
+        }
+    },
+    {
+        "name": "send_message",
+        "description": "비딩 관련 메시지를 발송합니다. 화주와 포워더 간 소통에 사용합니다.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "bidding_id": {
+                    "type": "integer",
+                    "description": "비딩 ID"
+                },
+                "sender_type": {
+                    "type": "string",
+                    "enum": ["shipper", "forwarder"],
+                    "description": "발신자 유형"
+                },
+                "sender_id": {
+                    "type": "integer",
+                    "description": "발신자 ID"
+                },
+                "message": {
+                    "type": "string",
+                    "description": "메시지 내용"
+                }
+            },
+            "required": ["bidding_id", "sender_type", "sender_id", "message"]
+        }
     }
 ]
 
@@ -428,7 +817,7 @@ TOOL_DEFINITIONS = [
 
 def get_ocean_rates(pol: str, pod: str, container_type: str = "4HDC") -> Dict[str, Any]:
     """
-    해상 운임 조회
+    해상 운임 조회 (Quote Backend API 연동으로 환율 일관성 보장)
     
     Args:
         pol: 출발항 코드 (예: KRPUS)
@@ -438,151 +827,131 @@ def get_ocean_rates(pol: str, pod: str, container_type: str = "4HDC") -> Dict[st
     Returns:
         운임 정보 딕셔너리
     """
-    session = None
     try:
-        session = get_quote_db_session()
-        
-        # 컨테이너 타입 표준화 (40HC -> 4HDC)
+        # 컨테이너 타입 표준화 (40HC -> 4HDC, 20FT -> 20DC)
         container_type = container_type.upper()
         if container_type == "40HC":
             container_type = "4HDC"
+        elif container_type in ["20FT", "20'", "20"]:
+            container_type = "20DC"
+        elif container_type in ["40FT", "40'", "40"]:
+            container_type = "40DC"
         
-        # 1. POL/POD 항구 정보 조회
-        pol_query = text(f"SELECT id, code, name, name_ko, country FROM ports WHERE code = '{pol.upper()}'")
-        pol_result = session.execute(pol_query).fetchone()
+        # Quote Backend의 /api/freight/estimate API 호출 (환율 자동 적용)
+        response = requests.get(
+            f"{QUOTE_API_BASE}/api/freight/estimate",
+            params={
+                "pol": pol.upper(),
+                "pod": pod.upper(),
+                "container_type": container_type
+            },
+            timeout=10
+        )
         
-        pod_query = text(f"SELECT id, code, name, name_ko, country FROM ports WHERE code = '{pod.upper()}'")
-        pod_result = session.execute(pod_query).fetchone()
-        
-        if not pol_result:
+        if response.status_code != 200:
             return {
                 "success": False,
-                "message": f"출발항 '{pol}'을 찾을 수 없습니다.",
-                "suggestion": "올바른 항구 코드를 입력해주세요. (예: KRPUS=부산, KRINC=인천)"
+                "message": f"운임 조회 실패: HTTP {response.status_code}",
+                "suggestion": "올바른 항구 코드를 입력해주세요. (예: KRPUS=부산, NLRTM=로테르담)"
             }
         
-        if not pod_result:
+        data = response.json()
+        
+        # Quick Quotation 불가능한 경우
+        if not data.get("quick_quotation"):
             return {
                 "success": False,
-                "message": f"도착항 '{pod}'을 찾을 수 없습니다.",
-                "suggestion": "올바른 항구 코드를 입력해주세요. (예: NLRTM=로테르담, DEHAM=함부르크)"
+                "message": data.get("message", "해당 구간의 운임 정보가 없습니다."),
+                "suggestion": data.get("guide", "견적 요청을 통해 포워더 비딩을 진행해 주세요.")
             }
         
-        pol_id, pol_code, pol_name, pol_name_ko, pol_country = pol_result
-        pod_id, pod_code, pod_name, pod_name_ko, pod_country = pod_result
-        
-        # 2. 컨테이너 타입 조회
-        container_query = text(f"SELECT id, code, name FROM container_types WHERE code = '{container_type}'")
-        container_result = session.execute(container_query).fetchone()
-        
-        if not container_result:
-            return {
-                "success": False,
-                "message": f"컨테이너 타입 '{container_type}'을 찾을 수 없습니다.",
-                "suggestion": "지원되는 컨테이너 타입: 20DC, 40DC, 4HDC(40HC)"
-            }
-        
-        container_id, container_code, container_name = container_result
-        
-        # 3. 유효한 운임표 조회
-        today = datetime.now().strftime('%Y-%m-%d')
-        sheet_query = text(f"""
-            SELECT id, carrier, valid_from, valid_to 
-            FROM ocean_rate_sheets 
-            WHERE pol_id = {pol_id} 
-            AND pod_id = {pod_id} 
-            AND is_active = 1
-            AND valid_from <= '{today}' 
-            AND valid_to >= '{today}'
-            ORDER BY valid_from DESC
-            LIMIT 1
-        """)
-        sheet_result = session.execute(sheet_query).fetchone()
-        
-        if not sheet_result:
-            return {
-                "success": False,
-                "message": f"{pol_name_ko or pol_name}({pol_code}) → {pod_name_ko or pod_name}({pod_code}) 구간의 유효한 운임 정보가 없습니다.",
-                "suggestion": "다른 구간이나 일정으로 조회해 보세요. 또는 직접 견적 요청을 해주세요."
-            }
-        
-        sheet_id, carrier, valid_from, valid_to = sheet_result
-        
-        # 4. 운임 항목 조회
-        items_query = text(f"""
-            SELECT 
-                ri.freight_group,
-                fc.code as freight_code,
-                fc.name_ko as freight_name,
-                ri.rate,
-                ri.currency,
-                ri.unit
-            FROM ocean_rate_items ri
-            JOIN freight_codes fc ON ri.freight_code_id = fc.id
-            WHERE ri.sheet_id = {sheet_id}
-            AND ri.container_type_id = {container_id}
-            AND ri.is_active = 1
-            AND ri.rate IS NOT NULL
-            ORDER BY ri.freight_group, fc.sort_order
-        """)
-        items_result = session.execute(items_query).fetchall()
-        
-        if not items_result:
-            return {
-                "success": False,
-                "message": f"{container_code} 컨테이너에 대한 운임 정보가 없습니다.",
-                "suggestion": "다른 컨테이너 타입으로 조회해 보세요."
-            }
-        
-        # 5. 결과 정리
+        # 운임 상세 정리
         rate_groups = {}
-        total_usd = 0
-        total_krw = 0
         
-        for group, code, name, rate, currency, unit in items_result:
-            if group not in rate_groups:
-                rate_groups[group] = []
-            
-            rate_float = float(rate) if rate else 0
-            rate_groups[group].append({
-                "code": code,
-                "name": name or code,
-                "rate": rate_float,
-                "currency": currency,
-                "unit": unit
-            })
-            
-            if currency == "USD":
-                total_usd += rate_float
-            elif currency == "KRW":
-                total_krw += rate_float
+        # Ocean Freight 항목
+        ocean_freight = data.get("ocean_freight", {})
+        if ocean_freight.get("items"):
+            rate_groups["Ocean Freight"] = [
+                {
+                    "code": item["code"],
+                    "name": item.get("name_ko") or item.get("name") or item["code"],
+                    "rate": item["rate"],
+                    "currency": item["currency"],
+                    "unit": item["unit"]
+                }
+                for item in ocean_freight["items"] if item.get("rate")
+            ]
+        
+        # Origin Local Charges 항목
+        origin_local = data.get("origin_local", {})
+        if origin_local.get("items"):
+            rate_groups["Origin Local Charges"] = [
+                {
+                    "code": item["code"],
+                    "name": item.get("name_ko") or item.get("name") or item["code"],
+                    "rate": item["rate"],
+                    "currency": item["currency"],
+                    "unit": item["unit"]
+                }
+                for item in origin_local["items"] if item.get("rate")
+            ]
+        
+        # 환율 정보 및 출처 확인
+        exchange_rates = data.get("exchange_rates_used", {})
+        total_krw_converted = data.get("total_krw_converted", 0)
+        
+        # 환율 출처 판별 (기본값인지 실시간인지)
+        # 기본값: USD=1450, EUR=1550
+        DEFAULT_RATES = {"USD": 1450.0, "EUR": 1550.0}
+        is_default_rate = True
+        for curr, rate in exchange_rates.items():
+            if curr in DEFAULT_RATES and abs(rate - DEFAULT_RATES[curr]) > 0.01:
+                is_default_rate = False
+                break
+        
+        exchange_rate_source = "시스템 기본 환율" if is_default_rate else "한국은행 실시간"
         
         return {
             "success": True,
             "route": {
-                "pol": {"code": pol_code, "name": pol_name_ko or pol_name, "country": pol_country},
-                "pod": {"code": pod_code, "name": pod_name_ko or pod_name, "country": pod_country}
+                "pol": pol.upper(),
+                "pod": pod.upper()
             },
-            "container": {"code": container_code, "name": container_name},
-            "carrier": carrier,
-            "validity": {"from": str(valid_from)[:10], "to": str(valid_to)[:10]},
+            "container": {
+                "code": data.get("container_type"),
+                "name": data.get("container_name")
+            },
+            "carrier": data.get("carrier"),
+            "validity": {
+                "from": data.get("valid_from"),
+                "to": data.get("valid_to")
+            },
             "rates": rate_groups,
             "total": {
-                "usd": total_usd,
-                "krw": total_krw,
-                "summary": f"USD {total_usd:,.0f}" + (f" + KRW {total_krw:,.0f}" if total_krw > 0 else "")
-            }
+                "usd": data.get("total_usd", 0),
+                "krw": data.get("total_krw", 0),
+                "eur": data.get("total_eur", 0),
+                "total_krw_converted": round(total_krw_converted),
+                "summary": f"₩{total_krw_converted:,.0f}"
+            },
+            "exchange_rates_used": exchange_rates,
+            "exchange_rate_source": exchange_rate_source,
+            "note": data.get("note", "")
         }
         
+    except requests.exceptions.Timeout:
+        logger.error("get_ocean_rates timeout")
+        return {
+            "success": False,
+            "message": "운임 조회 시간 초과",
+            "suggestion": "잠시 후 다시 시도해주세요."
+        }
     except Exception as e:
         logger.error(f"get_ocean_rates error: {e}")
         return {
             "success": False,
             "message": f"운임 조회 중 오류가 발생했습니다: {str(e)}"
         }
-    finally:
-        if session:
-            session.close()
 
 
 # ============================================================
@@ -1536,7 +1905,7 @@ def get_exchange_rates(
     target_currency: str = "KRW"
 ) -> Dict[str, Any]:
     """
-    실시간 환율 조회
+    실시간 환율 조회 (한국은행 API 연동)
     
     Args:
         base_currency: 기준 통화
@@ -1545,42 +1914,73 @@ def get_exchange_rates(
     Returns:
         환율 정보
     """
-    try:
-        # 현재 환율 데이터 (실제로는 API 연동 필요)
-        # 예시 환율 데이터 (2026년 기준 예상값)
-        exchange_rates = {
-            "USD": {
-                "KRW": 1380.50,
-                "CNY": 7.25,
-                "EUR": 0.92,
-                "JPY": 155.30,
-                "GBP": 0.79,
-                "SGD": 1.35,
-                "HKD": 7.82
-            }
-        }
+    # 기본 환율 (Quote Backend와 동일 - 한국은행 API 실패 시 사용)
+    DEFAULT_RATES = {
+        "USD": {"KRW": 1450.0, "CNY": 7.25, "EUR": 0.92, "JPY": 155.30, "GBP": 0.79, "SGD": 1.35, "HKD": 7.82},
+        "EUR": {"KRW": 1550.0, "USD": 1.087},
+        "JPY": {"KRW": 9.5},
+        "CNY": {"KRW": 200.0}
+    }
+    
+    def fetch_bok_rate(currency: str) -> float:
+        """한국은행 API에서 환율 조회 (Flask 서버 경유)"""
+        try:
+            from datetime import timedelta
+            end_date = datetime.now().strftime("%Y%m%d")
+            start_date = (datetime.now() - timedelta(days=7)).strftime("%Y%m%d")
+            
+            response = requests.get(
+                f"{FLASK_API_BASE}/api/market/indices",
+                params={
+                    "type": "exchange",
+                    "itemCode": currency.upper(),
+                    "startDate": start_date,
+                    "endDate": end_date,
+                    "cycle": "D"
+                },
+                timeout=5
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("data") and len(data["data"]) > 0:
+                    latest = data["data"][-1]
+                    return float(latest.get("DATA_VALUE", 0))
+        except Exception as e:
+            logger.warning(f"한국은행 API 환율 조회 실패 ({currency}): {e}")
         
+        return None
+    
+    try:
         base = base_currency.upper()
         targets = [t.strip().upper() for t in target_currency.split(",")]
         
-        if base not in exchange_rates:
-            return {
-                "success": False,
-                "message": f"지원하지 않는 기준 통화입니다: {base}"
-            }
-        
         rates = {}
+        api_source = "한국은행 API"
+        
         for target in targets:
-            if target in exchange_rates[base]:
+            rate_value = None
+            
+            # KRW 환율인 경우 한국은행 API 시도
+            if target == "KRW" and base in ["USD", "EUR", "JPY", "CNY"]:
+                rate_value = fetch_bok_rate(base)
+            
+            # API 실패 시 기본값 사용
+            if rate_value is None:
+                api_source = "기본값"
+                if base in DEFAULT_RATES and target in DEFAULT_RATES[base]:
+                    rate_value = DEFAULT_RATES[base][target]
+            
+            if rate_value:
                 rates[target] = {
-                    "rate": exchange_rates[base][target],
+                    "rate": rate_value,
                     "pair": f"{base}/{target}"
                 }
         
         if not rates:
             return {
                 "success": False,
-                "message": f"지원하지 않는 목표 통화입니다: {target_currency}"
+                "message": f"지원하지 않는 통화 쌍입니다: {base}/{target_currency}"
             }
         
         return {
@@ -1588,7 +1988,8 @@ def get_exchange_rates(
             "base_currency": base,
             "rates": rates,
             "updated_at": datetime.now(timezone.utc).isoformat(),
-            "note": "환율은 예시 데이터입니다. 실제 거래 시 은행 환율을 확인하세요."
+            "source": api_source,
+            "note": "환율은 한국은행 API 또는 시스템 기본값입니다."
         }
         
     except Exception as e:
@@ -1773,6 +2174,982 @@ def navigate_to_page(
 
 
 # ============================================================
+# PHASE 0: 화주 견적 업무 도구
+# ============================================================
+
+def get_my_quotes(
+    customer_email: str,
+    status: str = "all",
+    limit: int = 10
+) -> Dict[str, Any]:
+    """
+    화주의 견적 요청 목록 조회
+    
+    Args:
+        customer_email: 고객 이메일
+        status: 상태 필터
+        limit: 조회 건수
+    
+    Returns:
+        견적 요청 목록
+    """
+    import requests
+    
+    try:
+        QUOTE_API_BASE = "http://localhost:8001"
+        
+        params = {
+            "customer_email": customer_email,
+            "limit": limit
+        }
+        if status and status != "all":
+            params["status"] = status
+        
+        response = requests.get(
+            f"{QUOTE_API_BASE}/api/quote/requests",
+            params=params,
+            timeout=30
+        )
+        
+        if response.status_code == 200:
+            data = response.json()
+            quotes = data.get("quotes", data.get("requests", []))
+            
+            return {
+                "success": True,
+                "count": len(quotes),
+                "quotes": quotes,
+                "customer_email": customer_email
+            }
+        else:
+            return {
+                "success": False,
+                "message": f"견적 목록 조회 실패: {response.text}"
+            }
+            
+    except requests.exceptions.ConnectionError:
+        return {
+            "success": False,
+            "message": "Quote Backend 서버에 연결할 수 없습니다."
+        }
+    except Exception as e:
+        logger.error(f"get_my_quotes error: {e}")
+        return {
+            "success": False,
+            "message": f"오류 발생: {str(e)}"
+        }
+
+
+def update_quote_request(
+    bidding_no: str,
+    etd: str = None,
+    eta: str = None,
+    incoterms: str = None,
+    pickup_required: bool = None,
+    pickup_address: str = None,
+    delivery_required: bool = None,
+    delivery_address: str = None,
+    remark: str = None
+) -> Dict[str, Any]:
+    """
+    견적 요청 수정
+    
+    Args:
+        bidding_no: 비딩 번호
+        기타: 수정할 필드들
+    
+    Returns:
+        수정 결과
+    """
+    import requests
+    
+    try:
+        QUOTE_API_BASE = "http://localhost:8001"
+        
+        update_data = {}
+        if etd:
+            update_data["etd"] = etd
+        if eta:
+            update_data["eta"] = eta
+        if incoterms:
+            update_data["incoterms"] = incoterms
+        if pickup_required is not None:
+            update_data["pickup_required"] = pickup_required
+        if pickup_address:
+            update_data["pickup_address"] = pickup_address
+        if delivery_required is not None:
+            update_data["delivery_required"] = delivery_required
+        if delivery_address:
+            update_data["delivery_address"] = delivery_address
+        if remark:
+            update_data["remark"] = remark
+        
+        if not update_data:
+            return {
+                "success": False,
+                "message": "수정할 내용이 없습니다."
+            }
+        
+        response = requests.put(
+            f"{QUOTE_API_BASE}/api/quote/update/{bidding_no}",
+            json=update_data,
+            timeout=30
+        )
+        
+        if response.status_code == 200:
+            result = response.json()
+            return {
+                "success": True,
+                "message": f"견적 요청이 수정되었습니다.",
+                "bidding_no": bidding_no,
+                "updated_fields": list(update_data.keys())
+            }
+        else:
+            error_detail = response.json().get("detail", response.text)
+            return {
+                "success": False,
+                "message": f"견적 수정 실패: {error_detail}"
+            }
+            
+    except requests.exceptions.ConnectionError:
+        return {
+            "success": False,
+            "message": "Quote Backend 서버에 연결할 수 없습니다."
+        }
+    except Exception as e:
+        logger.error(f"update_quote_request error: {e}")
+        return {
+            "success": False,
+            "message": f"오류 발생: {str(e)}"
+        }
+
+
+def cancel_quote_request(request_id: int) -> Dict[str, Any]:
+    """
+    견적 요청 취소
+    
+    Args:
+        request_id: 견적 요청 ID
+    
+    Returns:
+        취소 결과
+    """
+    import requests
+    
+    try:
+        QUOTE_API_BASE = "http://localhost:8001"
+        
+        response = requests.delete(
+            f"{QUOTE_API_BASE}/api/quote-request/{request_id}",
+            timeout=30
+        )
+        
+        if response.status_code == 200:
+            return {
+                "success": True,
+                "message": f"견적 요청(ID: {request_id})이 취소되었습니다."
+            }
+        else:
+            error_detail = response.json().get("detail", response.text)
+            return {
+                "success": False,
+                "message": f"견적 취소 실패: {error_detail}"
+            }
+            
+    except requests.exceptions.ConnectionError:
+        return {
+            "success": False,
+            "message": "Quote Backend 서버에 연결할 수 없습니다."
+        }
+    except Exception as e:
+        logger.error(f"cancel_quote_request error: {e}")
+        return {
+            "success": False,
+            "message": f"오류 발생: {str(e)}"
+        }
+
+
+# ============================================================
+# PHASE 1: 비딩/입찰 도구
+# ============================================================
+
+def submit_bid(
+    bidding_id: int,
+    forwarder_id: int,
+    total_amount: float,
+    freight_charge: float = None,
+    local_charge: float = None,
+    other_charge: float = None,
+    transit_time: str = None,
+    validity_date: str = None,
+    remark: str = None
+) -> Dict[str, Any]:
+    """
+    포워더가 비딩에 입찰 제출
+    
+    Args:
+        bidding_id: 비딩 ID
+        forwarder_id: 포워더 ID
+        total_amount: 총 운임
+        기타: 운임 상세 및 비고
+    
+    Returns:
+        입찰 제출 결과
+    """
+    import requests
+    
+    try:
+        QUOTE_API_BASE = "http://localhost:8001"
+        
+        bid_data = {
+            "bidding_id": bidding_id,
+            "total_amount": total_amount
+        }
+        
+        if freight_charge is not None:
+            bid_data["freight_charge"] = freight_charge
+        if local_charge is not None:
+            bid_data["local_charge"] = local_charge
+        if other_charge is not None:
+            bid_data["other_charge"] = other_charge
+        if transit_time:
+            bid_data["transit_time"] = transit_time
+        if validity_date:
+            bid_data["validity_date"] = validity_date
+        if remark:
+            bid_data["remark"] = remark
+        
+        response = requests.post(
+            f"{QUOTE_API_BASE}/api/bid/submit",
+            params={"forwarder_id": forwarder_id},
+            json=bid_data,
+            timeout=30
+        )
+        
+        if response.status_code == 200:
+            result = response.json()
+            return {
+                "success": True,
+                "message": "입찰이 성공적으로 제출되었습니다!",
+                "bid_id": result.get("bid", {}).get("id"),
+                "bidding_id": bidding_id,
+                "total_amount": total_amount
+            }
+        else:
+            error_detail = response.json().get("detail", response.text)
+            return {
+                "success": False,
+                "message": f"입찰 제출 실패: {error_detail}"
+            }
+            
+    except requests.exceptions.ConnectionError:
+        return {
+            "success": False,
+            "message": "Quote Backend 서버에 연결할 수 없습니다."
+        }
+    except Exception as e:
+        logger.error(f"submit_bid error: {e}")
+        return {
+            "success": False,
+            "message": f"오류 발생: {str(e)}"
+        }
+
+
+def award_bid(bidding_no: str, bid_id: int) -> Dict[str, Any]:
+    """
+    입찰 낙찰 처리 (화주용)
+    
+    Args:
+        bidding_no: 비딩 번호
+        bid_id: 낙찰할 입찰 ID
+    
+    Returns:
+        낙찰 결과
+    """
+    import requests
+    
+    try:
+        QUOTE_API_BASE = "http://localhost:8001"
+        
+        response = requests.post(
+            f"{QUOTE_API_BASE}/api/bidding/{bidding_no}/award",
+            params={"bid_id": bid_id},
+            timeout=30
+        )
+        
+        if response.status_code == 200:
+            result = response.json()
+            data = result.get("data", {})
+            return {
+                "success": True,
+                "message": f"입찰이 낙찰되었습니다!",
+                "bidding_no": bidding_no,
+                "awarded_bid_id": bid_id,
+                "forwarder_company": data.get("forwarder_company"),
+                "total_amount": data.get("total_amount")
+            }
+        else:
+            error_detail = response.json().get("detail", response.text)
+            return {
+                "success": False,
+                "message": f"낙찰 처리 실패: {error_detail}"
+            }
+            
+    except requests.exceptions.ConnectionError:
+        return {
+            "success": False,
+            "message": "Quote Backend 서버에 연결할 수 없습니다."
+        }
+    except Exception as e:
+        logger.error(f"award_bid error: {e}")
+        return {
+            "success": False,
+            "message": f"오류 발생: {str(e)}"
+        }
+
+
+def get_bidding_detail(bidding_no: str) -> Dict[str, Any]:
+    """
+    비딩 상세 정보 조회
+    
+    Args:
+        bidding_no: 비딩 번호
+    
+    Returns:
+        비딩 상세 정보
+    """
+    import requests
+    
+    try:
+        QUOTE_API_BASE = "http://localhost:8001"
+        
+        response = requests.get(
+            f"{QUOTE_API_BASE}/api/bidding/{bidding_no}/detail",
+            timeout=30
+        )
+        
+        if response.status_code == 200:
+            data = response.json()
+            return {
+                "success": True,
+                "bidding": data
+            }
+        else:
+            error_detail = response.json().get("detail", response.text)
+            return {
+                "success": False,
+                "message": f"비딩 조회 실패: {error_detail}"
+            }
+            
+    except requests.exceptions.ConnectionError:
+        return {
+            "success": False,
+            "message": "Quote Backend 서버에 연결할 수 없습니다."
+        }
+    except Exception as e:
+        logger.error(f"get_bidding_detail error: {e}")
+        return {
+            "success": False,
+            "message": f"오류 발생: {str(e)}"
+        }
+
+
+def get_bidding_bids(bidding_no: str) -> Dict[str, Any]:
+    """
+    비딩에 제출된 입찰 목록 조회
+    
+    Args:
+        bidding_no: 비딩 번호
+    
+    Returns:
+        입찰 목록
+    """
+    import requests
+    
+    try:
+        QUOTE_API_BASE = "http://localhost:8001"
+        
+        response = requests.get(
+            f"{QUOTE_API_BASE}/api/bidding/{bidding_no}/bids",
+            timeout=30
+        )
+        
+        if response.status_code == 200:
+            data = response.json()
+            bids = data.get("bids", [])
+            return {
+                "success": True,
+                "bidding_no": bidding_no,
+                "count": len(bids),
+                "bids": bids
+            }
+        else:
+            error_detail = response.json().get("detail", response.text)
+            return {
+                "success": False,
+                "message": f"입찰 목록 조회 실패: {error_detail}"
+            }
+            
+    except requests.exceptions.ConnectionError:
+        return {
+            "success": False,
+            "message": "Quote Backend 서버에 연결할 수 없습니다."
+        }
+    except Exception as e:
+        logger.error(f"get_bidding_bids error: {e}")
+        return {
+            "success": False,
+            "message": f"오류 발생: {str(e)}"
+        }
+
+
+def close_bidding(bidding_no: str) -> Dict[str, Any]:
+    """
+    비딩 마감
+    
+    Args:
+        bidding_no: 비딩 번호
+    
+    Returns:
+        마감 결과
+    """
+    import requests
+    
+    try:
+        QUOTE_API_BASE = "http://localhost:8001"
+        
+        response = requests.post(
+            f"{QUOTE_API_BASE}/api/bidding/{bidding_no}/close",
+            timeout=30
+        )
+        
+        if response.status_code == 200:
+            return {
+                "success": True,
+                "message": f"비딩({bidding_no})이 마감되었습니다.",
+                "bidding_no": bidding_no
+            }
+        else:
+            error_detail = response.json().get("detail", response.text)
+            return {
+                "success": False,
+                "message": f"비딩 마감 실패: {error_detail}"
+            }
+            
+    except requests.exceptions.ConnectionError:
+        return {
+            "success": False,
+            "message": "Quote Backend 서버에 연결할 수 없습니다."
+        }
+    except Exception as e:
+        logger.error(f"close_bidding error: {e}")
+        return {
+            "success": False,
+            "message": f"오류 발생: {str(e)}"
+        }
+
+
+def get_my_bids(
+    forwarder_id: int,
+    status: str = "all",
+    limit: int = 10
+) -> Dict[str, Any]:
+    """
+    포워더의 입찰 목록 조회
+    
+    Args:
+        forwarder_id: 포워더 ID
+        status: 상태 필터
+        limit: 조회 건수
+    
+    Returns:
+        입찰 목록
+    """
+    import requests
+    
+    try:
+        QUOTE_API_BASE = "http://localhost:8001"
+        
+        params = {
+            "forwarder_id": forwarder_id,
+            "limit": limit
+        }
+        if status and status != "all":
+            params["status"] = status
+        
+        response = requests.get(
+            f"{QUOTE_API_BASE}/api/bid/my-bids",
+            params=params,
+            timeout=30
+        )
+        
+        if response.status_code == 200:
+            data = response.json()
+            bids = data.get("bids", [])
+            return {
+                "success": True,
+                "count": len(bids),
+                "bids": bids
+            }
+        else:
+            error_detail = response.json().get("detail", response.text)
+            return {
+                "success": False,
+                "message": f"입찰 목록 조회 실패: {error_detail}"
+            }
+            
+    except requests.exceptions.ConnectionError:
+        return {
+            "success": False,
+            "message": "Quote Backend 서버에 연결할 수 없습니다."
+        }
+    except Exception as e:
+        logger.error(f"get_my_bids error: {e}")
+        return {
+            "success": False,
+            "message": f"오류 발생: {str(e)}"
+        }
+
+
+# ============================================================
+# PHASE 2: 계약/배송 도구
+# ============================================================
+
+def get_contracts(
+    user_type: str,
+    user_id: int,
+    status: str = "all",
+    limit: int = 10
+) -> Dict[str, Any]:
+    """
+    계약 목록 조회
+    
+    Args:
+        user_type: 사용자 유형 (shipper/forwarder)
+        user_id: 사용자 ID
+        status: 상태 필터
+        limit: 조회 건수
+    
+    Returns:
+        계약 목록
+    """
+    import requests
+    
+    try:
+        QUOTE_API_BASE = "http://localhost:8001"
+        
+        params = {
+            "user_type": user_type,
+            "user_id": user_id,
+            "limit": limit
+        }
+        if status and status != "all":
+            params["status"] = status
+        
+        response = requests.get(
+            f"{QUOTE_API_BASE}/api/contracts",
+            params=params,
+            timeout=30
+        )
+        
+        if response.status_code == 200:
+            data = response.json()
+            contracts = data.get("contracts", [])
+            return {
+                "success": True,
+                "count": len(contracts),
+                "contracts": contracts
+            }
+        else:
+            error_detail = response.json().get("detail", response.text)
+            return {
+                "success": False,
+                "message": f"계약 목록 조회 실패: {error_detail}"
+            }
+            
+    except requests.exceptions.ConnectionError:
+        return {
+            "success": False,
+            "message": "Quote Backend 서버에 연결할 수 없습니다."
+        }
+    except Exception as e:
+        logger.error(f"get_contracts error: {e}")
+        return {
+            "success": False,
+            "message": f"오류 발생: {str(e)}"
+        }
+
+
+def get_contract_detail(contract_id: int) -> Dict[str, Any]:
+    """
+    계약 상세 정보 조회
+    
+    Args:
+        contract_id: 계약 ID
+    
+    Returns:
+        계약 상세 정보
+    """
+    import requests
+    
+    try:
+        QUOTE_API_BASE = "http://localhost:8001"
+        
+        response = requests.get(
+            f"{QUOTE_API_BASE}/api/contract/{contract_id}",
+            timeout=30
+        )
+        
+        if response.status_code == 200:
+            data = response.json()
+            return {
+                "success": True,
+                "contract": data
+            }
+        else:
+            error_detail = response.json().get("detail", response.text)
+            return {
+                "success": False,
+                "message": f"계약 조회 실패: {error_detail}"
+            }
+            
+    except requests.exceptions.ConnectionError:
+        return {
+            "success": False,
+            "message": "Quote Backend 서버에 연결할 수 없습니다."
+        }
+    except Exception as e:
+        logger.error(f"get_contract_detail error: {e}")
+        return {
+            "success": False,
+            "message": f"오류 발생: {str(e)}"
+        }
+
+
+def track_shipment(shipment_id: int) -> Dict[str, Any]:
+    """
+    배송 추적
+    
+    Args:
+        shipment_id: 배송 ID
+    
+    Returns:
+        배송 상세 정보 및 추적 이력
+    """
+    import requests
+    
+    try:
+        QUOTE_API_BASE = "http://localhost:8001"
+        
+        response = requests.get(
+            f"{QUOTE_API_BASE}/api/shipment/{shipment_id}",
+            timeout=30
+        )
+        
+        if response.status_code == 200:
+            data = response.json()
+            return {
+                "success": True,
+                "shipment": {
+                    "id": data.get("id"),
+                    "shipment_no": data.get("shipment_no"),
+                    "current_status": data.get("current_status"),
+                    "current_location": data.get("current_location"),
+                    "estimated_delivery": data.get("estimated_delivery"),
+                    "actual_delivery": data.get("actual_delivery"),
+                    "bl_no": data.get("bl_no"),
+                    "vessel_flight": data.get("vessel_flight"),
+                    "pol": data.get("pol"),
+                    "pod": data.get("pod"),
+                    "tracking_history": data.get("tracking_history", [])
+                }
+            }
+        else:
+            error_detail = response.json().get("detail", response.text)
+            return {
+                "success": False,
+                "message": f"배송 추적 실패: {error_detail}"
+            }
+            
+    except requests.exceptions.ConnectionError:
+        return {
+            "success": False,
+            "message": "Quote Backend 서버에 연결할 수 없습니다."
+        }
+    except Exception as e:
+        logger.error(f"track_shipment error: {e}")
+        return {
+            "success": False,
+            "message": f"오류 발생: {str(e)}"
+        }
+
+
+def get_shipments(
+    user_type: str,
+    user_id: int,
+    status: str = "all",
+    limit: int = 10
+) -> Dict[str, Any]:
+    """
+    배송 목록 조회
+    
+    Args:
+        user_type: 사용자 유형
+        user_id: 사용자 ID
+        status: 상태 필터
+        limit: 조회 건수
+    
+    Returns:
+        배송 목록
+    """
+    import requests
+    
+    try:
+        QUOTE_API_BASE = "http://localhost:8001"
+        
+        params = {
+            "user_type": user_type,
+            "user_id": user_id,
+            "limit": limit
+        }
+        if status and status != "all":
+            params["status"] = status
+        
+        response = requests.get(
+            f"{QUOTE_API_BASE}/api/shipments",
+            params=params,
+            timeout=30
+        )
+        
+        if response.status_code == 200:
+            data = response.json()
+            shipments = data.get("shipments", [])
+            return {
+                "success": True,
+                "count": len(shipments),
+                "shipments": shipments
+            }
+        else:
+            error_detail = response.json().get("detail", response.text)
+            return {
+                "success": False,
+                "message": f"배송 목록 조회 실패: {error_detail}"
+            }
+            
+    except requests.exceptions.ConnectionError:
+        return {
+            "success": False,
+            "message": "Quote Backend 서버에 연결할 수 없습니다."
+        }
+    except Exception as e:
+        logger.error(f"get_shipments error: {e}")
+        return {
+            "success": False,
+            "message": f"오류 발생: {str(e)}"
+        }
+
+
+# ============================================================
+# PHASE 3: 분석/소통 도구
+# ============================================================
+
+def get_shipper_analytics(
+    customer_id: int,
+    from_date: str = None,
+    to_date: str = None
+) -> Dict[str, Any]:
+    """
+    화주 분석 데이터 조회
+    
+    Args:
+        customer_id: 고객 ID
+        from_date: 시작일
+        to_date: 종료일
+    
+    Returns:
+        분석 데이터 (KPI)
+    """
+    import requests
+    
+    try:
+        QUOTE_API_BASE = "http://localhost:8001"
+        
+        params = {"customer_id": customer_id}
+        if from_date:
+            params["from_date"] = from_date
+        if to_date:
+            params["to_date"] = to_date
+        
+        response = requests.get(
+            f"{QUOTE_API_BASE}/api/analytics/shipper/summary",
+            params=params,
+            timeout=30
+        )
+        
+        if response.status_code == 200:
+            data = response.json()
+            return {
+                "success": True,
+                "analytics": {
+                    "total_requests": data.get("total_requests"),
+                    "avg_bids_per_request": data.get("avg_bids_per_request"),
+                    "award_rate": data.get("award_rate"),
+                    "total_cost_krw": data.get("total_cost_krw"),
+                    "avg_saving_rate": data.get("avg_saving_rate"),
+                    "period": {
+                        "from": from_date or "전체",
+                        "to": to_date or "현재"
+                    }
+                }
+            }
+        else:
+            error_detail = response.json().get("detail", response.text)
+            return {
+                "success": False,
+                "message": f"분석 데이터 조회 실패: {error_detail}"
+            }
+            
+    except requests.exceptions.ConnectionError:
+        return {
+            "success": False,
+            "message": "Quote Backend 서버에 연결할 수 없습니다."
+        }
+    except Exception as e:
+        logger.error(f"get_shipper_analytics error: {e}")
+        return {
+            "success": False,
+            "message": f"오류 발생: {str(e)}"
+        }
+
+
+def get_notifications(
+    user_type: str,
+    user_id: int,
+    unread_only: bool = False,
+    limit: int = 20
+) -> Dict[str, Any]:
+    """
+    알림 목록 조회
+    
+    Args:
+        user_type: 사용자 유형
+        user_id: 사용자 ID
+        unread_only: 읽지 않은 알림만
+        limit: 조회 건수
+    
+    Returns:
+        알림 목록
+    """
+    import requests
+    
+    try:
+        QUOTE_API_BASE = "http://localhost:8001"
+        
+        params = {
+            "user_type": user_type,
+            "user_id": user_id,
+            "limit": limit
+        }
+        if unread_only:
+            params["unread_only"] = "true"
+        
+        response = requests.get(
+            f"{QUOTE_API_BASE}/api/notifications",
+            params=params,
+            timeout=30
+        )
+        
+        if response.status_code == 200:
+            data = response.json()
+            notifications = data.get("notifications", [])
+            return {
+                "success": True,
+                "count": len(notifications),
+                "unread_count": data.get("unread_count", 0),
+                "notifications": notifications
+            }
+        else:
+            error_detail = response.json().get("detail", response.text)
+            return {
+                "success": False,
+                "message": f"알림 조회 실패: {error_detail}"
+            }
+            
+    except requests.exceptions.ConnectionError:
+        return {
+            "success": False,
+            "message": "Quote Backend 서버에 연결할 수 없습니다."
+        }
+    except Exception as e:
+        logger.error(f"get_notifications error: {e}")
+        return {
+            "success": False,
+            "message": f"오류 발생: {str(e)}"
+        }
+
+
+def send_message(
+    bidding_id: int,
+    sender_type: str,
+    sender_id: int,
+    message: str
+) -> Dict[str, Any]:
+    """
+    메시지 발송
+    
+    Args:
+        bidding_id: 비딩 ID
+        sender_type: 발신자 유형 (shipper/forwarder)
+        sender_id: 발신자 ID
+        message: 메시지 내용
+    
+    Returns:
+        발송 결과
+    """
+    import requests
+    
+    try:
+        QUOTE_API_BASE = "http://localhost:8001"
+        
+        response = requests.post(
+            f"{QUOTE_API_BASE}/api/messages",
+            json={
+                "bidding_id": bidding_id,
+                "sender_type": sender_type,
+                "sender_id": sender_id,
+                "content": message
+            },
+            timeout=30
+        )
+        
+        if response.status_code == 200:
+            result = response.json()
+            return {
+                "success": True,
+                "message": "메시지가 발송되었습니다.",
+                "message_id": result.get("id")
+            }
+        else:
+            error_detail = response.json().get("detail", response.text)
+            return {
+                "success": False,
+                "message": f"메시지 발송 실패: {error_detail}"
+            }
+            
+    except requests.exceptions.ConnectionError:
+        return {
+            "success": False,
+            "message": "Quote Backend 서버에 연결할 수 없습니다."
+        }
+    except Exception as e:
+        logger.error(f"send_message error: {e}")
+        return {
+            "success": False,
+            "message": f"오류 발생: {str(e)}"
+        }
+
+
+# ============================================================
 # TOOL EXECUTOR (통합 실행기)
 # ============================================================
 
@@ -1802,6 +3179,26 @@ def execute_tool(tool_name: str, parameters: Dict[str, Any]) -> Dict[str, Any]:
         "get_exchange_rates": get_exchange_rates,
         "get_global_alerts": get_global_alerts,
         "navigate_to_page": navigate_to_page,
+        # Phase 0: 화주 견적 업무
+        "get_my_quotes": get_my_quotes,
+        "update_quote_request": update_quote_request,
+        "cancel_quote_request": cancel_quote_request,
+        # Phase 1: 비딩/입찰
+        "submit_bid": submit_bid,
+        "award_bid": award_bid,
+        "get_bidding_detail": get_bidding_detail,
+        "get_bidding_bids": get_bidding_bids,
+        "close_bidding": close_bidding,
+        "get_my_bids": get_my_bids,
+        # Phase 2: 계약/배송
+        "get_contracts": get_contracts,
+        "get_contract_detail": get_contract_detail,
+        "track_shipment": track_shipment,
+        "get_shipments": get_shipments,
+        # Phase 3: 분석/소통
+        "get_shipper_analytics": get_shipper_analytics,
+        "get_notifications": get_notifications,
+        "send_message": send_message,
     }
     
     if tool_name not in tool_map:

@@ -101,7 +101,7 @@ def seed_container_types(db):
             "cbm_limit": False, "sort_order": 1
         },
         {
-            "code": "20DC", "name": "20 Dry Container", "abbreviation": "20'GP",
+            "code": "20DC", "name": "20 Dry Container", "abbreviation": "20'DC",
             "description": "20ft Standard Dry Container",
             "size": "20", "category": "DC", "size_teu": 1.0,
             "iso_standard": "22G0", "customs_port_standard": "22GP",
@@ -152,7 +152,7 @@ def seed_container_types(db):
             "cbm_limit": False, "sort_order": 6
         },
         {
-            "code": "40DC", "name": "40 Dry Container", "abbreviation": "40'GP",
+            "code": "40DC", "name": "40 Dry Container", "abbreviation": "40'DC",
             "description": "40ft Standard Dry Container",
             "size": "40", "category": "DC", "size_teu": 2.0,
             "iso_standard": "42G0", "customs_port_standard": "42GP",

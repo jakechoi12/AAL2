@@ -7,7 +7,7 @@ from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
-from sqlalchemy import or_, and_
+from sqlalchemy import or_, and_, func
 from typing import List, Optional
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -28,6 +28,8 @@ def get_bok_exchange_rate(currency: str, cache_key: str = None) -> float:
     
     Returns: KRW 환율 (1 currency = X KRW)
     """
+    default_rates = {"USD": 1450.0, "EUR": 1550.0, "JPY": 9.5, "CNY": 200.0}
+    
     try:
         end_date = datetime.now().strftime("%Y%m%d")
         start_date = (datetime.now() - timedelta(days=7)).strftime("%Y%m%d")
@@ -47,19 +49,34 @@ def get_bok_exchange_rate(currency: str, cache_key: str = None) -> float:
         
         if response.status_code == 200:
             data = response.json()
+            
+            # BOK API 응답 형식: {"StatisticSearch": {"row": [...]}}
+            stat_search = data.get("StatisticSearch", {})
+            rows = stat_search.get("row", [])
+            
+            if rows and len(rows) > 0:
+                # 최신 환율 반환 (row의 마지막 항목)
+                latest = rows[-1]
+                rate = float(latest.get("DATA_VALUE", 0))
+                if rate > 0:
+                    print(f"[Exchange Rate] {currency}: {rate} KRW (from BOK API)")
+                    return rate
+            
+            # 기존 형식 호환성: data 배열 체크
             if data.get("data") and len(data["data"]) > 0:
-                # 최신 환율 반환
                 latest = data["data"][-1]
-                return float(latest.get("DATA_VALUE", 0))
+                rate = float(latest.get("DATA_VALUE", 0))
+                if rate > 0:
+                    print(f"[Exchange Rate] {currency}: {rate} KRW (from data array)")
+                    return rate
         
         # 실패 시 기본값 반환
-        default_rates = {"USD": 1450.0, "EUR": 1550.0, "JPY": 9.5, "CNY": 200.0}
+        print(f"[Exchange Rate] {currency}: Using default {default_rates.get(currency.upper())} (API failed or no data)")
         return default_rates.get(currency.upper(), 1.0)
         
     except Exception as e:
         print(f"[Exchange Rate] Error fetching rate for {currency}: {e}")
         # 기본값 반환
-        default_rates = {"USD": 1450.0, "EUR": 1550.0, "JPY": 9.5, "CNY": 200.0}
         return default_rates.get(currency.upper(), 1.0)
 
 from database import get_db, engine
@@ -175,6 +192,123 @@ app.add_middleware(
 # UTILITY FUNCTIONS
 # ==========================================
 
+def normalize_container_type(value: str) -> str:
+    """
+    비표준 컨테이너 타입 값을 표준 abbreviation으로 변환
+    다양한 입력 형식을 일관된 형식으로 정규화
+    """
+    if not value:
+        return value
+    
+    # 대문자 변환 및 특수문자 제거
+    normalized = value.upper().replace("'", "").replace("'", "").replace(" ", "").replace("FT", "")
+    
+    # 표준 매핑 테이블
+    mapping = {
+        # 20ft Dry Container
+        "20GP": "20'GP",
+        "20DC": "20'GP",
+        "20DRY": "20'GP",
+        "20DRYCONTAINER": "20'GP",
+        "20STDRY": "20'GP",
+        "20STANDARD": "20'GP",
+        "22GP": "20'GP",
+        "22G0": "20'GP",
+        # 40ft Dry Container
+        "40GP": "40'GP",
+        "40DC": "40'GP",
+        "40DRY": "40'GP",
+        "40DRYCONTAINER": "40'GP",
+        "40STDRY": "40'GP",
+        "40STANDARD": "40'GP",
+        "42GP": "40'GP",
+        "42G0": "40'GP",
+        # 40ft High Cube
+        "40HC": "40'HC",
+        "40HQ": "40'HC",
+        "40HIGHCUBE": "40'HC",
+        "40HIGH": "40'HC",
+        "4HDC": "40'HC",
+        "45G0": "40'HC",
+        "45GP": "40'HC",
+        # 20ft Reefer
+        "20RF": "20'RF",
+        "20REEFER": "20'RF",
+        "22R0": "20'RF",
+        # 40ft Reefer
+        "40RF": "40'RF",
+        "40REEFER": "40'RF",
+        "42R0": "40'RF",
+        # 40ft Reefer High Cube
+        "40RH": "40'RH",
+        "40REEFERHC": "40'RH",
+        "45R0": "40'RH",
+        # 20ft Open Top
+        "20OT": "20'OT",
+        "20OPENTOP": "20'OT",
+        "22U0": "20'OT",
+        # 40ft Open Top
+        "40OT": "40'OT",
+        "40OPENTOP": "40'OT",
+        "42U0": "40'OT",
+        # 20ft Flat Rack
+        "20FR": "20'FR",
+        "20FLATRACK": "20'FR",
+        "22P1": "20'FR",
+        # 40ft Flat Rack
+        "40FR": "40'FR",
+        "40FLATRACK": "40'FR",
+        "42P1": "40'FR",
+        # 20ft Tank
+        "20TK": "20'TK",
+        "20TANK": "20'TK",
+        "22K0": "20'TK",
+    }
+    
+    return mapping.get(normalized, value)
+
+
+def find_container_type(db: Session, ct_value: str):
+    """
+    다양한 방식으로 컨테이너 타입 검색 (code, abbreviation, name)
+    """
+    if not ct_value:
+        return None
+    
+    # 1. 먼저 code로 정확히 검색
+    container = db.query(ContainerType).filter(
+        ContainerType.code == ct_value
+    ).first()
+    if container:
+        return container
+    
+    # 2. abbreviation으로 검색
+    container = db.query(ContainerType).filter(
+        ContainerType.abbreviation == ct_value
+    ).first()
+    if container:
+        return container
+    
+    # 3. name으로 검색 (대소문자 무시)
+    container = db.query(ContainerType).filter(
+        func.lower(ContainerType.name) == ct_value.lower()
+    ).first()
+    if container:
+        return container
+    
+    # 4. 정규화된 값으로 다시 검색
+    normalized = normalize_container_type(ct_value)
+    if normalized != ct_value:
+        # abbreviation으로 검색 (정규화 후)
+        container = db.query(ContainerType).filter(
+            ContainerType.abbreviation == normalized
+        ).first()
+        if container:
+            return container
+    
+    return None
+
+
 def generate_cargo_summary(
     shipping_type: str, 
     load_type: str, 
@@ -196,26 +330,29 @@ def generate_cargo_summary(
     try:
         # FCL - Container based
         if shipping_type == "ocean" and load_type == "FCL":
-            # Group by container type
+            # Group by container type (정규화된 값 기준)
             container_counts = {}
             for cargo in cargo_details:
-                ct_code = cargo.container_type
-                if ct_code:
+                ct_value = cargo.container_type
+                if ct_value:
                     qty = cargo.qty or 1
-                    if ct_code not in container_counts:
-                        container_counts[ct_code] = {"qty": 0, "abbreviation": None}
-                    container_counts[ct_code]["qty"] += qty
+                    # 정규화된 키 사용
+                    normalized_key = normalize_container_type(ct_value)
+                    if normalized_key not in container_counts:
+                        container_counts[normalized_key] = {"qty": 0, "original": ct_value}
+                    container_counts[normalized_key]["qty"] += qty
             
             # Get abbreviations from database
             summaries = []
-            for ct_code, data in container_counts.items():
-                container = db.query(ContainerType).filter(
-                    ContainerType.code == ct_code
-                ).first()
+            for normalized_key, data in container_counts.items():
+                # 다양한 방식으로 컨테이너 타입 검색
+                container = find_container_type(db, data["original"])
+                
                 if container and container.abbreviation:
                     abbr = container.abbreviation
                 else:
-                    abbr = ct_code  # fallback to code
+                    # 정규화된 값 사용 (fallback)
+                    abbr = normalized_key
                 summaries.append(f"{abbr} × {data['qty']}")
             
             return ", ".join(summaries) if summaries else None
@@ -245,23 +382,27 @@ def generate_cargo_summary(
             # Group by truck type
             truck_counts = {}
             for cargo in cargo_details:
-                tt_code = cargo.truck_type
-                if tt_code:
+                tt_value = cargo.truck_type
+                if tt_value:
                     qty = cargo.qty or 1
-                    if tt_code not in truck_counts:
-                        truck_counts[tt_code] = {"qty": 0, "abbreviation": None}
-                    truck_counts[tt_code]["qty"] += qty
+                    if tt_value not in truck_counts:
+                        truck_counts[tt_value] = {"qty": 0}
+                    truck_counts[tt_value]["qty"] += qty
             
             # Get abbreviations from database
             summaries = []
-            for tt_code, data in truck_counts.items():
+            for tt_value, data in truck_counts.items():
+                # 다양한 방식으로 트럭 타입 검색
                 truck = db.query(TruckType).filter(
-                    TruckType.code == tt_code
+                    (TruckType.code == tt_value) |
+                    (TruckType.abbreviation == tt_value) |
+                    (func.lower(TruckType.name) == tt_value.lower())
                 ).first()
+                
                 if truck and truck.abbreviation:
                     abbr = truck.abbreviation
                 else:
-                    abbr = tt_code  # fallback to code
+                    abbr = tt_value  # fallback to original value
                 summaries.append(f"{abbr} × {data['qty']}")
             
             return ", ".join(summaries) if summaries else None
@@ -1207,12 +1348,21 @@ def get_bidding_list(
             db
         )
         
+        # Get port names for POL/POD
+        pol_port = db.query(Port).filter(Port.code == qr.pol).first()
+        pod_port = db.query(Port).filter(Port.code == qr.pod).first()
+        
+        pol_name = f"{pol_port.name}, {pol_port.country}".upper() if pol_port else None
+        pod_name = f"{pod_port.name}, {pod_port.country}".upper() if pod_port else None
+        
         items.append(BiddingListItem(
             id=b.id,
             bidding_no=b.bidding_no,
             customer_company=qr.customer.company,
             pol=qr.pol,
             pod=qr.pod,
+            pol_name=pol_name,
+            pod_name=pod_name,
             shipping_type=qr.shipping_type,
             load_type=qr.load_type,
             cargo_summary=cargo_summary,

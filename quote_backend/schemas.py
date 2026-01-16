@@ -444,6 +444,8 @@ class BiddingListItem(BaseModel):
     customer_company: str
     pol: str
     pod: str
+    pol_name: Optional[str] = None  # 항구 이름 (e.g., "BUSAN, KOREA")
+    pod_name: Optional[str] = None  # 항구 이름 (e.g., "ROTTERDAM, NETHERLANDS")
     shipping_type: str
     load_type: str
     cargo_summary: Optional[str] = None  # 물량 요약 (e.g., "20'GP × 3", "32.5 CBM", "1,500 KGS")

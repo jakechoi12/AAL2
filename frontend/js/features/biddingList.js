@@ -627,8 +627,9 @@ const BiddingList = {
         const rowClass = isExpired ? 'expired-row' : '';
 
         // Format average bid price
+        // 평균 입찰가 정수화
         const avgPriceFormatted = item.avg_bid_price 
-            ? `$${item.avg_bid_price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+            ? `$${Math.round(item.avg_bid_price).toLocaleString('en-US')}`
             : '-';
 
         return `
@@ -640,16 +641,15 @@ const BiddingList = {
                 </td>
                 <td>${item.customer_company}</td>
                 <td>
-                    <div class="route-cell">
-                        <span>${item.pol}</span>
-                        <span class="route-arrow">→</span>
-                        <span>${item.pod}</span>
-                    </div>
+                    <span class="port-cell">${this.formatPort(item.pol, item.pol_name)}</span>
+                </td>
+                <td>
+                    <span class="port-cell">${this.formatPort(item.pod, item.pod_name)}</span>
                 </td>
                 <td>
                     <span class="type-badge ${item.shipping_type}">
                         <i class="fas fa-${this.getShippingIcon(item.shipping_type)}"></i>
-                        ${item.shipping_type.toUpperCase()} / ${item.load_type}
+                        ${item.shipping_type.toUpperCase()} / ${item.load_type.toUpperCase()}
                     </span>
                 </td>
                 <td>
@@ -2344,11 +2344,23 @@ const BiddingList = {
     formatDate(dateStr) {
         if (!dateStr) return '-';
         const date = new Date(dateStr);
-        return date.toLocaleDateString('ko-KR', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit'
-        });
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}.${month}.${day}`;
+    },
+
+    /**
+     * Format port code with name
+     * @param {string} code - Port code (e.g., KRPUS)
+     * @param {string} name - Port name (e.g., BUSAN, KOREA)
+     * @returns {string} Formatted port string (e.g., KRPUS(BUSAN, KOREA))
+     */
+    formatPort(code, name) {
+        if (name) {
+            return `${code}(${name})`;
+        }
+        return code || '-';
     },
 
     formatDateTime(dateStr) {

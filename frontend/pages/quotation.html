@@ -1116,6 +1116,141 @@
             }
         }
 
+        /* Customer Info Popup Modal Styles */
+        .customer-info-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+        .customer-info-modal-overlay.show {
+            display: flex;
+        }
+        .customer-info-modal {
+            background: #1c1c1f;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            border: 1px solid var(--border-color);
+            animation: scaleIn 0.3s ease;
+        }
+        .customer-info-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .customer-info-modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .customer-info-modal-title i {
+            color: var(--accent-color);
+        }
+        .customer-info-modal-close {
+            background: none;
+            border: none;
+            color: var(--text-sub);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 5px;
+            transition: color 0.2s;
+        }
+        .customer-info-modal-close:hover {
+            color: var(--text-main);
+        }
+        .customer-info-modal-body {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .customer-info-modal-body .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .customer-info-modal-body .input-group label {
+            font-size: 0.85rem;
+            color: var(--text-sub);
+        }
+        .customer-info-modal-body .form-input {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            color: white;
+            padding: 10px 12px;
+            border-radius: 6px;
+            font-family: inherit;
+        }
+        .customer-info-modal-body .form-input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+        .customer-info-modal-body .form-input.error {
+            border-color: #ef4444;
+        }
+        .customer-info-modal-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .customer-info-modal-footer {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+            justify-content: flex-end;
+        }
+        .customer-info-btn {
+            padding: 10px 24px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+        .customer-info-btn-cancel {
+            background: #374151;
+            color: white;
+        }
+        .customer-info-btn-cancel:hover {
+            background: #4b5563;
+        }
+        .customer-info-btn-submit {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+        }
+        .customer-info-btn-submit:hover {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        }
+        .customer-info-notice {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            font-size: 0.85rem;
+            color: #93c5fd;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .customer-info-notice i {
+            margin-top: 2px;
+        }
+
         /* Autocomplete Styles */
         .autocomplete-wrapper {
             position: relative;
@@ -1827,7 +1962,7 @@
                 </div>
 
                 <div class="detail-row" id="row-invoice">
-                    <label>Invoice Value(USD) <span class="text-red">*</span></label>
+                    <label>Invoice Value(USD)</label>
                     <div class="input-group" style="width: 200px;">
                         <input type="text" class="form-input number-format" id="invoice-val" placeholder="0" inputmode="numeric" maxlength="20">
                     </div>
@@ -1839,7 +1974,7 @@
                 <div class="section-header">Incoterms <i class="far fa-question-circle info-icon" title="Terms of Sale - 비딩 시 명시됩니다"></i></div>
                 <div class="grid-3" id="incoterm-container">
                     <div class="incoterm-card" onclick="setInco(this, 'EXW')"><div class="title">EXW</div><div class="desc">Ex Works<br>Only responsible until goods leave factory.</div></div>
-                    <div class="incoterm-card active" onclick="setInco(this, 'FOB')"><div class="title">FOB</div><div class="desc">Free-on Board<br>Costs until loaded at origin.</div></div>
+                    <div class="incoterm-card" onclick="setInco(this, 'FOB')"><div class="title">FOB</div><div class="desc">Free-on Board<br>Costs until loaded at origin.</div></div>
                     <div class="incoterm-card" onclick="setInco(this, 'CFR')"><div class="title">CFR</div><div class="desc">Cost and Freight<br>Pays transport to destination.</div></div>
                     <div class="incoterm-card" onclick="setInco(this, 'CIF')"><div class="title">CIF</div><div class="desc">Cost, Insurance & Freight<br>Pays freight + insurance.</div></div>
                     <div class="incoterm-card" onclick="setInco(this, 'DAP')"><div class="title">DAP</div><div class="desc">Delivered at Place<br>Ships to buyer's location.</div></div>
@@ -1847,8 +1982,8 @@
                 </div>
             </div>
 
-            <!-- Customer Information -->
-            <div class="section">
+            <!-- Customer Information (숨김 - 비로그인 시 팝업으로 처리) -->
+            <div class="section" id="customer-info-section" style="display: none;">
                 <div class="section-header">Customer Information <i class="far fa-question-circle info-icon"></i></div>
                 <div class="grid-3" style="margin-bottom: 1rem;">
                     <div class="input-group"><label>Company Name <span class="text-red">*</span></label><input type="text" class="form-input" id="c-company" placeholder="Company Name" maxlength="50"></div>
@@ -1936,7 +2071,7 @@
         const state = {
             trade: 'export',
             ship: 'ocean',
-            incoterms: 'FOB',
+            incoterms: '',  // 선택 안됨 상태로 시작
             load: 'FCL',
             containerTypes: [],  // Container types from API
             quickQuotation: null  // Quick Quotation 결과 저장
@@ -2395,11 +2530,19 @@
                     dropdown.appendChild(option);
                 });
                 
-                // Restore previous selection if exists
+                // Restore previous selection if exists, otherwise default to 20 Dry Container
                 if (currentValue) {
                     const matchingOption = Array.from(dropdown.options).find(opt => opt.value === currentValue);
                     if (matchingOption) {
                         dropdown.value = currentValue;
+                    }
+                } else {
+                    // 기본값: 20 Dry Container (code: 20DC)
+                    const defaultOption = Array.from(dropdown.options).find(opt => 
+                        opt.dataset.code === '20DC' || opt.value.includes('20 Dry')
+                    );
+                    if (defaultOption) {
+                        dropdown.value = defaultOption.value;
                     }
                 }
                 
@@ -3030,44 +3173,15 @@
         // ==========================================
         
         /**
-         * 로그인 사용자 정보로 Customer Information 자동 완성
+         * 로그인 상태에 따라 Summary에 Customer Information 표시
+         * (Customer Info 섹션은 숨겨져 있으므로 Summary만 업데이트)
          */
         function populateCustomerInfoFromAuth() {
-            // Auth 모듈과 로그인 상태 확인
+            // Summary 업데이트 - 로그인 상태에 따라 다르게 표시됨
+            updateSummary();
+            
             if (window.Auth && Auth.user) {
-                const user = Auth.user;
-                
-                // 화주(shipper)인 경우에만 자동 완성
-                if (user.user_type === 'shipper') {
-                    // Company Name
-                    const companyInput = document.getElementById('c-company');
-                    if (companyInput && user.company) {
-                        companyInput.value = user.company;
-                    }
-                    
-                    // Name
-                    const nameInput = document.getElementById('c-name');
-                    if (nameInput && user.name) {
-                        nameInput.value = user.name;
-                    }
-                    
-                    // Email
-                    const emailInput = document.getElementById('c-email');
-                    if (emailInput && user.email) {
-                        emailInput.value = user.email;
-                    }
-                    
-                    // Phone
-                    const phoneInput = document.getElementById('c-phone');
-                    if (phoneInput && user.phone) {
-                        phoneInput.value = user.phone;
-                    }
-                    
-                    // Summary 업데이트
-                    updateSummary();
-                    
-                    console.log('✅ Customer Information auto-filled from login data');
-                }
+                console.log('✅ Customer Information will be auto-filled from login data on submit');
             }
         }
 
@@ -3709,9 +3823,16 @@
         }
 
         function setInco(el, code) {
-            document.getElementById('incoterm-container').querySelectorAll('.incoterm-card').forEach(c => c.classList.remove('active'));
+            const container = document.getElementById('incoterm-container');
+            container.querySelectorAll('.incoterm-card').forEach(c => c.classList.remove('active'));
             el.classList.add('active');
             state.incoterms = code;
+            
+            // 에러 스타일 제거
+            container.style.border = '';
+            container.style.borderRadius = '';
+            container.style.padding = '';
+            
             updateAdditionalDetails();
         }
 
@@ -3972,7 +4093,7 @@
                 sLoadEl.innerText = state.load;
             }
             
-            document.getElementById('s-inco').innerText = state.incoterms;
+            document.getElementById('s-inco').innerText = state.incoterms || '-';
             
             // Update Schedules label based on trade mode
             const scheduleLabel = document.getElementById('s-schedule-label');
@@ -4191,18 +4312,38 @@
             
             document.getElementById('s-add').innerHTML = adds.length > 0 ? adds.join('<br>') : 'None';
 
-            // Customer
-            const co = document.getElementById('c-company').value;
-            const name = document.getElementById('c-name').value;
-            const email = document.getElementById('c-email').value;
-            const phone = document.getElementById('c-phone').value;
+            // Customer - 로그인 상태에 따라 다르게 표시
+            let co, name, email, phone;
+            
+            if (window.Auth && Auth.user) {
+                // 로그인된 경우: Auth에서 정보 가져오기
+                co = Auth.user.company || '';
+                name = Auth.user.name || '';
+                email = Auth.user.email || '';
+                phone = Auth.user.phone || '';
+            } else {
+                // 비로그인: 숨겨진 폼 필드 또는 팝업에서 입력받은 정보
+                co = document.getElementById('c-company').value;
+                name = document.getElementById('c-name').value;
+                email = document.getElementById('c-email').value;
+                phone = document.getElementById('c-phone').value;
+            }
             
             let custParts = [];
             if (co || name) custParts.push(`${co} / ${name}`);
             if (email) custParts.push(email);
             if (phone) custParts.push(phone);
             
-            document.getElementById('s-cust').innerHTML = custParts.length > 0 ? custParts.join('<br>') : '-';
+            // 로그인 상태 표시 추가
+            if (window.Auth && Auth.user) {
+                document.getElementById('s-cust').innerHTML = custParts.length > 0 
+                    ? custParts.join('<br>') + '<br><span style="color:#10b981; font-size:0.75em;"><i class="fas fa-check-circle"></i> 로그인됨</span>'
+                    : '-';
+            } else {
+                document.getElementById('s-cust').innerHTML = custParts.length > 0 
+                    ? custParts.join('<br>') 
+                    : '<span style="color:#9ca3af; font-size:0.85em;">Submit 시 입력</span>';
+            }
         }
 
         // ==========================================
@@ -4350,6 +4491,18 @@
                 pod.classList.add('error');
             }
             
+            // Incoterms validation
+            if (!state.incoterms) {
+                errors.push('Incoterms is required');
+                // Incoterm 카드들에 시각적 피드백 추가
+                const incoContainer = document.getElementById('incoterm-container');
+                if (incoContainer) {
+                    incoContainer.style.border = '1px solid #ef4444';
+                    incoContainer.style.borderRadius = '8px';
+                    incoContainer.style.padding = '8px';
+                }
+            }
+            
             // ETD validation
             const etdYear = document.getElementById('etd-year');
             const etdMonth = document.getElementById('etd-month');
@@ -4395,13 +4548,6 @@
                         showDateError('eta', 'ETA cannot be earlier than ETD.');
                     }
                 }
-            }
-            
-            // Invoice Value validation
-            const invoiceVal = document.getElementById('invoice-val');
-            if (!invoiceVal.value || parseFloat(invoiceVal.value.replace(/,/g, '')) <= 0) {
-                errors.push('Invoice Value is required');
-                invoiceVal.classList.add('error');
             }
             
             // FCL Gross Weight validation
@@ -4493,31 +4639,9 @@
                 }
             }
             
-            // Customer Information validation
-            const company = document.getElementById('c-company');
-            const name = document.getElementById('c-name');
-            const email = document.getElementById('c-email');
-            const phone = document.getElementById('c-phone');
-            
-            if (!company.value.trim()) {
-                errors.push('Company Name is required');
-                company.classList.add('error');
-            }
-            if (!name.value.trim()) {
-                errors.push('Name is required');
-                name.classList.add('error');
-            }
-            if (!email.value.trim()) {
-                errors.push('E-mail is required');
-                email.classList.add('error');
-            } else if (!isValidEmail(email.value.trim())) {
-                errors.push('Please enter a valid email address');
-                email.classList.add('error');
-            }
-            if (!phone.value.trim()) {
-                errors.push('Phone is required');
-                phone.classList.add('error');
-            }
+            // Customer Information validation은 로그인 상태에 따라 다르게 처리:
+            // - 로그인: Auth에서 자동 가져옴
+            // - 비로그인: 팝업 모달에서 별도 검증
             
             // Remark validation (when highlighted/required)
             const remarkSection = document.getElementById('remark-section');
@@ -4553,6 +4677,14 @@
             document.querySelectorAll('.date-input-group.error').forEach(el => {
                 el.classList.remove('error');
             });
+            
+            // Remove incoterms error style
+            const incoContainer = document.getElementById('incoterm-container');
+            if (incoContainer) {
+                incoContainer.style.border = '';
+                incoContainer.style.borderRadius = '';
+                incoContainer.style.padding = '';
+            }
             
             // Hide date error messages
             hideDateError('etd');
@@ -4907,34 +5039,33 @@
         // ==========================================
         
         async function submitQuote() {
-            // 로그인 상태 확인
-            if (!window.Auth || !Auth.user) {
-                // 로그인되지 않은 경우 로그인 모달 표시
-                showToast('견적 요청을 위해 로그인이 필요합니다.', 'info');
-                
-                // 로그인 성공 후 콜백: Customer Information 자동 완성 및 재시도 안내
-                Auth.openModalWithCallback(function(user) {
-                    // Customer Information 자동 완성
-                    populateCustomerInfoFromAuth();
-                    
-                    // 사용자에게 Submit 재시도 안내
-                    showToast('로그인 완료! Submit 버튼을 다시 클릭해주세요.', 'success');
-                }, 'shipper');
-                
+            // Validate form (Customer Info 제외한 기본 폼 검증)
+            if (!validateForm()) {
                 return;
             }
             
-            // 화주(shipper)만 견적 요청 가능
+            // 로그인 상태 확인
+            if (!window.Auth || !Auth.user) {
+                // 비로그인 상태 → Customer Information 팝업 표시
+                openCustomerInfoModal();
+                return;
+            }
+            
+            // 로그인된 경우: 화주(shipper)만 견적 요청 가능
             if (Auth.user.user_type !== 'shipper') {
                 showToast('화주(Shipper) 계정으로 로그인해야 견적을 요청할 수 있습니다.', 'error');
                 return;
             }
             
-            // Validate form
-            if (!validateForm()) {
-                return;
-            }
+            // 로그인된 경우: Auth에서 Customer Info 자동 설정
+            setCustomerInfoFromAuth();
             
+            // 실제 제출 로직 실행
+            await executeSubmitQuote();
+        }
+        
+        // 실제 제출 로직 (로그인/비로그인 공통)
+        async function executeSubmitQuote() {
             // Check for FCL weight exceeded (soft block)
             if (state.load === 'FCL') {
                 const exceededRows = validateAllFclWeights();
@@ -5284,6 +5415,112 @@
             return summary;
         }
         
+        // ==========================================
+        // CUSTOMER INFO POPUP MODAL FUNCTIONS
+        // ==========================================
+        
+        function openCustomerInfoModal() {
+            const modal = document.getElementById('customerInfoModal');
+            modal.classList.add('show');
+            
+            // 팝업 필드 초기화
+            document.getElementById('popup-c-company').value = '';
+            document.getElementById('popup-c-title').value = '';
+            document.getElementById('popup-c-name').value = '';
+            document.getElementById('popup-c-email').value = '';
+            document.getElementById('popup-c-phone').value = '';
+            
+            // 에러 클래스 제거
+            modal.querySelectorAll('.form-input').forEach(el => el.classList.remove('error'));
+            
+            // 첫 번째 필드에 포커스
+            setTimeout(() => {
+                document.getElementById('popup-c-company').focus();
+            }, 100);
+        }
+        
+        function closeCustomerInfoModal() {
+            const modal = document.getElementById('customerInfoModal');
+            modal.classList.remove('show');
+        }
+        
+        function validateCustomerInfoPopup() {
+            const errors = [];
+            const modal = document.getElementById('customerInfoModal');
+            
+            // 에러 클래스 초기화
+            modal.querySelectorAll('.form-input').forEach(el => el.classList.remove('error'));
+            
+            const company = document.getElementById('popup-c-company');
+            const name = document.getElementById('popup-c-name');
+            const email = document.getElementById('popup-c-email');
+            const phone = document.getElementById('popup-c-phone');
+            
+            if (!company.value.trim()) {
+                errors.push('Company Name is required');
+                company.classList.add('error');
+            }
+            if (!name.value.trim()) {
+                errors.push('Name is required');
+                name.classList.add('error');
+            }
+            if (!email.value.trim()) {
+                errors.push('E-mail is required');
+                email.classList.add('error');
+            } else if (!isValidEmail(email.value.trim())) {
+                errors.push('Please enter a valid email address');
+                email.classList.add('error');
+            }
+            if (!phone.value.trim()) {
+                errors.push('Phone is required');
+                phone.classList.add('error');
+            }
+            
+            if (errors.length > 0) {
+                showToast(errors[0], 'error');
+                return false;
+            }
+            
+            return true;
+        }
+        
+        function setCustomerInfoFromPopup() {
+            // 팝업에서 입력받은 정보를 숨겨진 폼 필드에 설정
+            document.getElementById('c-company').value = document.getElementById('popup-c-company').value.trim();
+            document.getElementById('c-title').value = document.getElementById('popup-c-title').value.trim();
+            document.getElementById('c-name').value = document.getElementById('popup-c-name').value.trim();
+            document.getElementById('c-email').value = document.getElementById('popup-c-email').value.trim();
+            document.getElementById('c-phone').value = document.getElementById('popup-c-phone').value.trim();
+        }
+        
+        function setCustomerInfoFromAuth() {
+            // 로그인된 사용자 정보를 숨겨진 폼 필드에 설정
+            if (window.Auth && Auth.user) {
+                const user = Auth.user;
+                document.getElementById('c-company').value = user.company || '';
+                document.getElementById('c-title').value = '';  // Auth에 job_title 없음
+                document.getElementById('c-name').value = user.name || '';
+                document.getElementById('c-email').value = user.email || '';
+                document.getElementById('c-phone').value = user.phone || '';
+            }
+        }
+        
+        async function submitWithCustomerInfo() {
+            // 팝업 폼 검증
+            if (!validateCustomerInfoPopup()) {
+                return;
+            }
+            
+            // 팝업에서 Customer Info를 숨겨진 폼에 복사
+            setCustomerInfoFromPopup();
+            
+            // 팝업 닫기
+            closeCustomerInfoModal();
+            
+            // 실제 제출 로직 실행
+            await executeSubmitQuote();
+        }
+        
         function closeSuccessModal() {
             const modal = document.getElementById('success-modal');
             modal.classList.remove('show');
@@ -5307,6 +5544,55 @@
             }
         });
     </script>
+
+    <!-- Customer Information Popup Modal (비로그인 사용자용) -->
+    <div class="customer-info-modal-overlay" id="customerInfoModal">
+        <div class="customer-info-modal">
+            <div class="customer-info-modal-header">
+                <h3 class="customer-info-modal-title">
+                    <i class="fas fa-user-circle"></i>
+                    Customer Information
+                </h3>
+                <button class="customer-info-modal-close" onclick="closeCustomerInfoModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="customer-info-notice">
+                <i class="fas fa-info-circle"></i>
+                <span>비딩 진행을 위해 담당자 정보를 입력해주세요. 입력하신 정보로 포워더가 연락드릴 예정입니다.</span>
+            </div>
+            <div class="customer-info-modal-body">
+                <div class="input-group">
+                    <label>Company Name <span class="text-red">*</span></label>
+                    <input type="text" class="form-input" id="popup-c-company" placeholder="Company Name" maxlength="50">
+                </div>
+                <div class="customer-info-modal-row">
+                    <div class="input-group">
+                        <label>Job Title</label>
+                        <input type="text" class="form-input" id="popup-c-title" placeholder="Position" maxlength="30">
+                    </div>
+                    <div class="input-group">
+                        <label>Name <span class="text-red">*</span></label>
+                        <input type="text" class="form-input" id="popup-c-name" placeholder="Full Name" maxlength="30">
+                    </div>
+                </div>
+                <div class="customer-info-modal-row">
+                    <div class="input-group">
+                        <label>E-mail <span class="text-red">*</span></label>
+                        <input type="email" class="form-input" id="popup-c-email" placeholder="email@example.com" maxlength="50">
+                    </div>
+                    <div class="input-group">
+                        <label>Phone <span class="text-red">*</span></label>
+                        <input type="tel" class="form-input" id="popup-c-phone" placeholder="Phone Number" maxlength="30">
+                    </div>
+                </div>
+            </div>
+            <div class="customer-info-modal-footer">
+                <button class="customer-info-btn customer-info-btn-cancel" onclick="closeCustomerInfoModal()">취소</button>
+                <button class="customer-info-btn customer-info-btn-submit" onclick="submitWithCustomerInfo()">제출하기</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Auth Modal -->
     <div class="auth-modal-overlay" id="authModalOverlay">

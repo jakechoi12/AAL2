@@ -689,23 +689,27 @@ const AIAssistant = (function() {
         messagesEl.scrollTop = messagesEl.scrollHeight;
     }
     
-    // Save message to sessionStorage
+    // Save message to sessionStorage (메인페이지와 공유하는 키 사용)
     function saveMessage(text, type, quoteData = null) {
-        let history = JSON.parse(sessionStorage.getItem('ai_history') || '[]');
-        history.push({ text, type, quoteData, timestamp: Date.now() });
+        let history = JSON.parse(sessionStorage.getItem('ai_conversation') || '[]');
+        // 메인페이지와 호환되는 형식 (role, content)
+        history.push({ role: type, content: text, quoteData, timestamp: Date.now() });
         // Keep only last 50 messages
         if (history.length > 50) history = history.slice(-50);
-        sessionStorage.setItem('ai_history', JSON.stringify(history));
+        sessionStorage.setItem('ai_conversation', JSON.stringify(history));
     }
     
-    // Restore conversation from sessionStorage
+    // Restore conversation from sessionStorage (메인페이지와 공유)
     function restoreConversation() {
-        const history = JSON.parse(sessionStorage.getItem('ai_history') || '[]');
+        const history = JSON.parse(sessionStorage.getItem('ai_conversation') || '[]');
         if (history.length > 0) {
             // Clear default message
             messagesEl.innerHTML = '';
             history.forEach(msg => {
-                addMessage(msg.text, msg.type, msg.quoteData);
+                // 메인페이지 형식(role, content) 또는 기존 형식(type, text) 모두 지원
+                const type = msg.role || msg.type;
+                const text = msg.content || msg.text;
+                addMessage(text, type, msg.quoteData);
             });
         }
     }
@@ -736,9 +740,9 @@ const AIAssistant = (function() {
         }
     }
     
-    // Clear conversation
+    // Clear conversation (메인페이지와 공유하는 대화도 함께 삭제)
     function clearConversation() {
-        sessionStorage.removeItem('ai_history');
+        sessionStorage.removeItem('ai_conversation');
         sessionStorage.removeItem('ai_session_id');
         sessionId = null;
         messagesEl.innerHTML = '<div class="ai-message ai">안녕하세요! 무엇을 도와드릴까요?</div>';
