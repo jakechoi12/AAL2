@@ -21,6 +21,7 @@
     <link rel="stylesheet" href="css/components/unified-cards.css">
     <link rel="stylesheet" href="css/components/unified-buttons.css">
     <link rel="stylesheet" href="css/components/auth.css">
+    <link rel="stylesheet" href="css/components/freight-ticker.css">
     <!-- Sections -->
     <link rel="stylesheet" href="css/sections/hero.css">
     <link rel="stylesheet" href="css/sections/landing.css">
@@ -36,7 +37,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 120px 2rem 60px;
+            padding: 180px 2rem 60px; /* Header (90px) + Ticker (44px) + margin */
             position: relative;
         }
         
@@ -79,7 +80,7 @@
         
         .ai-chat-container {
             width: 100%;
-            max-width: 700px;
+            max-width: 750px;
             background: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 20px;
@@ -90,8 +91,8 @@
         }
         
         .ai-chat-messages {
-            min-height: 200px;
-            max-height: 350px;
+            min-height: 300px;
+            max-height: 450px;
             overflow-y: auto;
             padding: 1.5rem;
             display: flex;
@@ -317,35 +318,41 @@
             background: #059669;
         }
         
-        /* Scroll indicator for AI section */
-        .ai-section-scroll {
-            position: absolute;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            color: var(--text-sub);
-            font-size: 0.85rem;
+        /* Company link button */
+        .company-link-section {
+            margin-top: 3rem;
+            text-align: center;
             opacity: 0;
-            animation: fadeUp 0.8s forwards 1.2s;
+            animation: fadeUp 0.8s forwards 1s;
         }
         
-        .ai-section-scroll i {
-            animation: bounce 2s infinite;
+        .company-link-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 28px;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-sub);
+            font-size: 0.9rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
         }
         
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-            40% { transform: translateY(-10px); }
-            60% { transform: translateY(-5px); }
+        .company-link-btn:hover {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+            transform: translateY(-2px);
+        }
+        
+        .company-link-btn i {
+            font-size: 1rem;
         }
         
         @media (max-width: 768px) {
             .ai-assistant-section {
-                padding: 100px 1rem 40px;
+                padding: 170px 1rem 40px; /* Header (65px) + Ticker (38px) + margin */
             }
             
             .ai-chat-container {
@@ -353,8 +360,8 @@
             }
             
             .ai-chat-messages {
-                min-height: 150px;
-                max-height: 250px;
+                min-height: 200px;
+                max-height: 350px;
             }
             
             .ai-quick-btn {
@@ -364,7 +371,7 @@
         }
     </style>
 </head>
-<body>
+<body class="has-ticker">
 
     <!-- Header -->
     <header>
@@ -374,12 +381,12 @@
         </a>
         <nav>
             <ul>
+                <li><a href="pages/company.html">Company</a></li>
                 <li><a href="pages/quotation.html">Quotation</a></li>
                 <li><a href="pages/shipper-bidding.html">My Quotations</a></li>
                 <li><a href="pages/bidding-list.html">Bidding</a></li>
                 <li><a href="pages/market-data.html">Market Data</a></li>
                 <li><a href="pages/news-intelligence.html">News Intel</a></li>
-                <li><a href="#tools">Tools</a></li>
                 <li><a href="pages/report-insight.html">Report & Insight</a></li>
                 <li><a href="pages/dashboard-shipper.html">Dashboard</a></li>
             </ul>
@@ -391,6 +398,17 @@
             </button>
         </div>
     </header>
+
+    <!-- Freight Deals Ticker -->
+    <div class="freight-ticker-wrapper">
+        <div class="freight-ticker" id="freightTicker">
+            <div class="ticker-label">
+                <i class="fas fa-tags"></i>
+                HOT DEALS
+            </div>
+            <!-- Ticker items will be populated by JavaScript -->
+        </div>
+    </div>
 
     <!-- Main Content -->
     <main>
@@ -447,317 +465,11 @@
                 </div>
             </div>
             
-            <div class="ai-section-scroll">
-                <span>더 알아보기</span>
-                <i class="fas fa-chevron-down"></i>
-            </div>
-        </section>
-
-        <!-- Hero Section -->
-        <section class="container hero-enhanced">
-            <h1>All Insights,<br><span>All About Logistics.</span></h1>
-            <p class="hero-description">
-                실시간 운송 견적 입찰, 연간 비딩 입찰, 경제 지표, 물류 뉴스
-                <br>3D 컨테이너 적재 시뮬레이션 및 관세 계산기까지
-                <br>화주, 포워더 모두를 위한 물류 전문 통합 플랫폼 ALIGNED
-            </p>
-            <div class="cta-container">
-                <a href="pages/quotation.html" class="cta-btn cta-btn-primary">
-                    <i class="fas fa-rocket"></i> 견적 요청하기
-                </a>
-                <a href="#quotation-intro" class="cta-btn cta-btn-secondary">
-                    <i class="fas fa-info-circle"></i> 서비스 둘러보기
-                </a>
-            </div>
-            <div class="hero-scroll-indicator">
-                <span>Scroll</span>
-                <i class="fas fa-chevron-down"></i>
-            </div>
-        </section>
-
-        <!-- Quotation Section (Introduction) -->
-        <section id="quotation-intro" class="container-wide landing-section">
-            <div class="section-header">
-                <h2 class="section-title">Quotation</h2>
-                <span class="section-subtitle">FREIGHT QUOTATION</span>
-            </div>
-            <p class="section-description">
-                단 한 번의 운송 문의로 전세계 포워더들의 견적을 비교하세요.<br>
-                요구 사항에 가장 부합하는 최적의 포워더를 즉시 찾을 수 있습니다.
-            </p>
-            
-            <!-- Icon Flow -->
-            <div class="icon-flow">
-                <div class="icon-flow-step">
-                    <div class="icon-flow-icon">
-                        <span class="icon-flow-step-number">1</span>
-                        <i class="fas fa-file-alt"></i>
-                    </div>
-                    <div class="icon-flow-title">운송 요청서 작성</div>
-                    <div class="icon-flow-desc">화물 정보, 출발지/도착지,<br>일정 등을 입력합니다</div>
-                </div>
-                
-                <div class="icon-flow-connector"></div>
-                
-                <div class="icon-flow-step">
-                    <div class="icon-flow-icon">
-                        <span class="icon-flow-step-number">2</span>
-                        <i class="fas fa-gavel"></i>
-                    </div>
-                    <div class="icon-flow-title">포워더 입찰</div>
-                    <div class="icon-flow-desc">전세계 포워더들이<br>블라인드 경쟁에 입찰합니다</div>
-                </div>
-                
-                <div class="icon-flow-connector"></div>
-                
-                <div class="icon-flow-step">
-                    <div class="icon-flow-icon">
-                        <span class="icon-flow-step-number">3</span>
-                        <i class="fas fa-balance-scale"></i>
-                    </div>
-                    <div class="icon-flow-title">견적 비교</div>
-                    <div class="icon-flow-desc">가격, 리드타임, 서비스를<br>비교 분석합니다</div>
-                </div>
-                
-                <div class="icon-flow-connector"></div>
-                
-                <div class="icon-flow-step">
-                    <div class="icon-flow-icon">
-                        <span class="icon-flow-step-number">4</span>
-                        <i class="fas fa-trophy"></i>
-                    </div>
-                    <div class="icon-flow-title">포워더 선정</div>
-                    <div class="icon-flow-desc">최고의 조건을 제시한<br>포워더를 선택합니다</div>
-                </div>
-            </div>
-            
-            <div class="cta-container">
-                <a href="pages/quotation.html" class="cta-btn cta-btn-primary">
-                    <i class="fas fa-file-invoice-dollar"></i> 견적 요청하기
-                </a>
-                <a href="pages/bidding-list.html" class="cta-btn cta-btn-secondary">
-                    <i class="fas fa-list-alt"></i> 진행중인 입찰 보기
-                </a>
-            </div>
-        </section>
-
-        <!-- Market Data Section (Introduction) -->
-        <section id="market-intro" class="container-wide landing-section">
-            <div class="section-header">
-                <h2 class="section-title">Market Data</h2>
-                <span class="section-subtitle">LIVE INDICES & ANALYTICS</span>
-            </div>
-            <p class="section-description">
-                물류 및 경제 시황을 파악/분석을 위한 모든 지표 데이터를 제공합니다.<br>
-                전략적인 의사결정의 최적화된 근거 자료들을 제공합니다.
-            </p>
-            
-            <div class="landing-features">
-                <div class="landing-feature-card">
-                    <div class="landing-feature-icon">
-                        <i class="fas fa-dollar-sign"></i>
-                    </div>
-                    <h3>환율 (Exchange Rate)</h3>
-                    <p>주요 통화 대비 실시간 환율 정보와 히스토리 차트 분석</p>
-                </div>
-                <div class="landing-feature-card">
-                    <div class="landing-feature-icon">
-                        <i class="fas fa-percentage"></i>
-                    </div>
-                    <h3>금리 (Interest Rate)</h3>
-                    <p>각국 중앙은행 기준금리 추이와 금융 시장 동향</p>
-                </div>
-                <div class="landing-feature-card">
-                    <div class="landing-feature-icon">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                    <h3>GDP & 경제성장률</h3>
-                    <p>국가별 GDP, 1인당 GDP, 경제성장률 비교 분석</p>
-                </div>
-                <div class="landing-feature-card">
-                    <div class="landing-feature-icon">
-                        <i class="fas fa-exchange-alt"></i>
-                    </div>
-                    <h3>수출입 통계</h3>
-                    <p>국가간 교역 현황과 무역수지 데이터</p>
-                </div>
-                <div class="landing-feature-card">
-                    <div class="landing-feature-icon">
-                        <i class="fas fa-ship"></i>
-                    </div>
-                    <h3>해상운임지수</h3>
-                    <p>SCFI, BDI, NCFI 등 주요 해상운임 지수</p>
-                </div>
-                <div class="landing-feature-card">
-                    <div class="landing-feature-icon">
-                        <i class="fas fa-chart-bar"></i>
-                    </div>
-                    <h3>글로벌 주가지수</h3>
-                    <p>세계 주요 증시 지수와 시장 동향</p>
-                </div>
-            </div>
-            
-            <div class="cta-container">
-                <a href="pages/market-data.html" class="cta-btn cta-btn-primary">
-                    <i class="fas fa-chart-area"></i> Market Data 보기
-                </a>
-            </div>
-        </section>
-
-        <!-- War Room Section (Introduction) -->
-        <section id="warroom-intro" class="container-wide landing-section">
-            <div class="landing-two-col">
-                <div class="landing-col-content">
-                    <h2>War Room</h2>
-                    <span class="section-subtitle" style="display:block; margin-bottom:1rem;">GLOBAL ALARM & SUPPLY CHAIN RISK</span>
-                    <p>
-                        전세계에서 발생하는 뉴스들을 15분 단위로 실시간 추적하여 공급망 관리에 도움을 주는 관제 기능입니다.
-                        작은 사건사고부터 국가급 분쟁 및 테러까지 모두 추적합니다.
-                    </p>
-                    <ul class="highlight-list">
-                        <li><i class="fas fa-check-circle"></i> 15분마다 자동 업데이트되는 실시간 뉴스</li>
-                        <li><i class="fas fa-check-circle"></i> GoldsteinScale 기반 위험도 분류</li>
-                        <li><i class="fas fa-check-circle"></i> 지도 기반 글로벌 이벤트 시각화</li>
-                        <li><i class="fas fa-check-circle"></i> 국가/카테고리별 필터링</li>
-                    </ul>
-                    <div class="cta-container" style="justify-content: flex-start;">
-                        <a href="pages/war-room.html" class="cta-btn cta-btn-primary">
-                            <i class="fas fa-satellite-dish"></i> War Room 입장
-                        </a>
-                    </div>
-                </div>
-                <div class="landing-col-visual">
-                    <div class="risk-levels-preview">
-                        <div class="risk-level-item">
-                            <span class="risk-badge extreme">⚠️ EXTREME</span>
-                            <span>전쟁, 대량살상 (-10.0 ~ -8.0)</span>
-                        </div>
-                        <div class="risk-level-item">
-                            <span class="risk-badge severe">🔴 SEVERE</span>
-                            <span>군사공격, 폭력 (-7.9 ~ -6.0)</span>
-                        </div>
-                        <div class="risk-level-item">
-                            <span class="risk-badge high">🟠 HIGH</span>
-                            <span>중간 갈등 (-5.9 ~ -4.0)</span>
-                        </div>
-                        <div class="risk-level-item">
-                            <span class="risk-badge moderate">🟡 MODERATE</span>
-                            <span>경미한 갈등 (-3.9 ~ -2.0)</span>
-                        </div>
-                        <div class="risk-level-item">
-                            <span class="risk-badge low">ℹ️ LOW</span>
-                            <span>정보성 (-1.9 이하)</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Smart Tools Section (Introduction) -->
-        <section id="tools" class="container-wide landing-section">
-            <div class="section-header">
-                <h2 class="section-title">Smart Tools</h2>
-                <span class="section-subtitle">FOR LOGISTICS EXPERTS</span>
-            </div>
-            <p class="section-description">
-                미국 관세 전쟁 대응, 적재 효율성 개선 등 물류 실무자를 위한 스마트 도구들을 제공합니다.<br>
-                3D 컨테이너 적재시뮬레이션과 관세 계산기를 통해 손쉽게 해결하세요.
-            </p>
-            
-            <div class="tool-showcase">
-                <!-- 3D Container Simulation -->
-                <div class="tool-showcase-card">
-                    <div class="tool-showcase-header">
-                        <div class="tool-showcase-icon">
-                            <i class="fas fa-cubes"></i>
-                        </div>
-                        <h3>3D 컨테이너 적재 시뮬레이션</h3>
-                    </div>
-                    <div class="tool-showcase-body">
-                        <p>
-                            적재 효율성을 올리고 적재 계획을 단 1분 안에 세울 수 있는 3D 시뮬레이션입니다.
-                            <br>화물 크기와 수량만 입력하면 최적의 적재 방법을 제안합니다.
-                            <br>적재 계획을 자동화하고 그 효율성을 측정할 수 있습니다.
-                        </p>
-                        <div class="tool-mini-flow">
-                            <div class="tool-mini-step"><i class="fas fa-box"></i> 화물 정보 입력</div>
-                            <span class="tool-mini-arrow">→</span>
-                            <div class="tool-mini-step"><i class="fas fa-cube"></i> 컨테이너 추천</div>
-                            <span class="tool-mini-arrow">→</span>
-                            <div class="tool-mini-step"><i class="fas fa-magic"></i> 자동 최적화</div>
-                            <span class="tool-mini-arrow">→</span>
-                            <div class="tool-mini-step"><i class="fas fa-check-circle"></i> 3D 시각화</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Tariff Calculator -->
-                <div class="tool-showcase-card">
-                    <div class="tool-showcase-header">
-                        <div class="tool-showcase-icon">
-                            <i class="fas fa-calculator"></i>
-                        </div>
-                        <h3>관세 계산기</h3>
-                    </div>
-                    <div class="tool-showcase-body">
-                        <p>
-                            산발적으로 변화하는 미국의 관세 정책에 대응하여 유연하게 공급망 운영 계획을 세울 수 있도록
-                            <br>도움을 주는 도구입니다.
-                            전세계 국가에서 미국으로 수출하는 품목에 대해 HS Code 기반으로 
-                            <br>예상 관세를 산출합니다.
-                        </p>
-                        <div class="tool-mini-flow">
-                            <div class="tool-mini-step"><i class="fas fa-search"></i> HS Code 검색</div>
-                            <span class="tool-mini-arrow">→</span>
-                            <div class="tool-mini-step"><i class="fas fa-dollar-sign"></i> 물품 가격 입력</div>
-                            <span class="tool-mini-arrow">→</span>
-                            <div class="tool-mini-step"><i class="fas fa-percent"></i> 관세율 적용</div>
-                            <span class="tool-mini-arrow">→</span>
-                            <div class="tool-mini-step"><i class="fas fa-file-invoice-dollar"></i> 총 비용 산출</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Report & Insight Section (Introduction) -->
-        <section id="report-intro" class="container-wide landing-section">
-            <div class="section-header">
-                <h2 class="section-title">Report & Insight</h2>
-                <span class="section-subtitle">KNOWLEDGE REPOSITORY</span>
-            </div>
-            <p class="section-description">
-                Global Research, Government, Company로부터 발간되는 모든 리포트들을 모아<br>
-                물류 실무자들이 Insight를 얻을 수 있는 지식 저장소입니다.
-            </p>
-            
-            <div class="report-categories">
-                <div class="report-category-card">
-                    <div class="report-category-icon research">
-                        <i class="fas fa-flask"></i>
-                    </div>
-                    <h3>Global Research</h3>
-                    <p>S&P, KPMG, PWC 등 Global research의 리포트</p>
-                </div>
-                <div class="report-category-card">
-                    <div class="report-category-icon government">
-                        <i class="fas fa-landmark"></i>
-                    </div>
-                    <h3>Government</h3>
-                    <p>각국 정부 및 관련 기관의 정책 보고서 및 통계자료</p>
-                </div>
-                <div class="report-category-card">
-                    <div class="report-category-icon company">
-                        <i class="fas fa-building"></i>
-                    </div>
-                    <h3>Company</h3>
-                    <p>물류/해운사 및 개별 기업의 시장 분석 리포트</p>
-                </div>
-            </div>
-            
-            <div class="cta-container">
-                <a href="pages/report-insight.html" class="cta-btn cta-btn-primary">
-                    <i class="fas fa-book-open"></i> 리포트 보기
+            <div class="company-link-section">
+                <a href="pages/company.html" class="company-link-btn">
+                    <i class="fas fa-info-circle"></i>
+                    서비스 소개 보기
+                    <i class="fas fa-arrow-right"></i>
                 </a>
             </div>
         </section>
@@ -928,12 +640,69 @@
     </div>
 
     <footer>
-        <div class="footer-brand">ALINGED</div>
+        <div class="footer-brand">ALIGNED</div>
         <div class="copyright">&copy; 2026 Aoroa Co.,Ltd</div>
     </footer>
 
     <!-- Auth Script -->
     <script src="js/features/auth.js"></script>
+
+    <!-- Freight Ticker Script -->
+    <script>
+        // Freight Deals Sample Data
+        const freightDeals = [
+            { pol: "BUSAN", pod: "LOS ANGELES", rate: 1850, discount: 18 },
+            { pol: "SHANGHAI", pod: "ROTTERDAM", rate: 2100, discount: 15 },
+            { pol: "NINGBO", pod: "LONG BEACH", rate: 1950, discount: 22 },
+            { pol: "BUSAN", pod: "HAMBURG", rate: 2250, discount: 12 },
+            { pol: "QINGDAO", pod: "NEW YORK", rate: 2400, discount: 20 },
+            { pol: "INCHEON", pod: "SEATTLE", rate: 1780, discount: 25 },
+            { pol: "SHENZHEN", pod: "FELIXSTOWE", rate: 2050, discount: 17 },
+            { pol: "BUSAN", pod: "VANCOUVER", rate: 1920, discount: 14 },
+            { pol: "XIAMEN", pod: "SAVANNAH", rate: 2180, discount: 19 },
+            { pol: "KAOHSIUNG", pod: "OAKLAND", rate: 1890, discount: 21 }
+        ];
+        
+        // Initialize Ticker
+        function initFreightTicker() {
+            const ticker = document.getElementById('freightTicker');
+            if (!ticker) return;
+            
+            // Create ticker items (duplicate for seamless loop)
+            const tickerContent = createTickerContent();
+            ticker.innerHTML = `
+                <div class="ticker-label">
+                    <i class="fas fa-tags"></i>
+                    HOT DEALS
+                </div>
+                ${tickerContent}
+                ${tickerContent}
+            `;
+        }
+        
+        function createTickerContent() {
+            return freightDeals.map(deal => `
+                <div class="freight-ticker-item" onclick="handleTickerClick('${deal.pol}', '${deal.pod}')">
+                    <span class="ticker-icon">🚢</span>
+                    <div class="ticker-route">
+                        <span class="port">${deal.pol}</span>
+                        <span class="arrow">→</span>
+                        <span class="port">${deal.pod}</span>
+                    </div>
+                    <span class="ticker-price">$${deal.rate.toLocaleString()}</span>
+                    <span class="ticker-discount">${deal.discount}% OFF</span>
+                </div>
+            `).join('');
+        }
+        
+        function handleTickerClick(pol, pod) {
+            // Navigate to quotation page with pre-filled route
+            window.location.href = `pages/quotation.html?pol=${encodeURIComponent(pol)}&pod=${encodeURIComponent(pod)}`;
+        }
+        
+        // Initialize on DOM ready
+        document.addEventListener('DOMContentLoaded', initFreightTicker);
+    </script>
 
     <!-- Main AI Chat Script -->
     <script>
@@ -1109,57 +878,6 @@
                 mainChatMessages.scrollTop = mainChatMessages.scrollHeight;
             }
         }
-    </script>
-
-    <!-- Minimal Scripts for Landing Page -->
-    <script>
-        // Smooth scroll for anchor links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                const targetId = this.getAttribute('href');
-                if (targetId === '#') return;
-                
-                const target = document.querySelector(targetId);
-                if (target) {
-                    e.preventDefault();
-                    target.scrollIntoView({ behavior: 'smooth' });
-                }
-            });
-        });
-        
-        // Reveal animation on scroll
-        const revealElements = document.querySelectorAll('.landing-section, .icon-flow-step, .landing-feature-card, .tool-showcase-card, .report-category-card');
-        
-        const revealOnScroll = () => {
-            revealElements.forEach(el => {
-                const rect = el.getBoundingClientRect();
-                const windowHeight = window.innerHeight;
-                
-                if (rect.top < windowHeight * 0.85) {
-                    el.style.opacity = '1';
-                    el.style.transform = 'translateY(0)';
-                }
-            });
-        };
-        
-        // Initial styles for animation
-        revealElements.forEach(el => {
-            el.style.opacity = '0';
-            el.style.transform = 'translateY(30px)';
-            el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-        });
-        
-        // Listen for scroll
-        window.addEventListener('scroll', revealOnScroll);
-        window.addEventListener('load', revealOnScroll);
-        
-        // Hero animations
-        document.addEventListener('DOMContentLoaded', () => {
-            const hero = document.querySelector('.hero-enhanced');
-            if (hero) {
-                hero.style.opacity = '1';
-            }
-        });
     </script>
 </body>
 </html>
