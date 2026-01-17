@@ -66,25 +66,6 @@
             </div>
         </div>
 
-        <!-- Shipper Info Bar (shown when logged in) -->
-        <div id="shipperBar" class="forwarder-bar shipper-bar" style="display: none;">
-            <div class="forwarder-info">
-                <div class="forwarder-avatar shipper-avatar" id="shipperAvatar">S</div>
-                <div class="forwarder-details">
-                    <h4 id="shipperCompany">Company Name</h4>
-                    <span id="shipperEmail">email@company.com</span>
-                </div>
-            </div>
-            <div class="shipper-bar-actions">
-                <a href="quotation.html" class="btn-new-quote">
-                    <i class="fas fa-plus"></i> 새 운송 요청
-                </a>
-                <button class="btn-logout" onclick="ShipperBidding.logout()">
-                    <i class="fas fa-sign-out-alt"></i> 로그아웃
-                </button>
-            </div>
-        </div>
-
         <!-- Dashboard Stats -->
         <div class="bidding-dashboard">
             <div class="stat-card total">
@@ -154,13 +135,16 @@
                 <thead>
                     <tr>
                         <th>Bidding No</th>
-                        <th>구간</th>
+                        <th>POL</th>
+                        <th>POD</th>
                         <th>운송타입</th>
+                        <th>물량</th>
                         <th>ETD</th>
+                        <th>Deadline</th>
                         <th>상태</th>
                         <th>입찰수</th>
-                        <th>최저가 (KRW)</th>
-                        <th>운송사 선정</th>
+                        <th>최저가</th>
+                        <th>액션</th>
                     </tr>
                 </thead>
                 <tbody id="biddingTableBody">
@@ -231,6 +215,7 @@
                                 <th class="col-transit">T/T</th>
                                 <th class="col-carrier">선사/항공사</th>
                                 <th class="col-action">선정</th>
+                                <th class="col-detail">상세</th>
                             </tr>
                         </thead>
                         <tbody id="bidListBody">

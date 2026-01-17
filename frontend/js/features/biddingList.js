@@ -1218,9 +1218,12 @@ const BiddingList = {
                 }
                 
             } else {
-                // Clear form - 빈 상태로 시작 (각 그룹에서 Add 버튼으로 추가)
+                // Clear form - 운송 타입에 맞는 기본 항목 자동 생성
                 this.currentBid = null;
                 this.lineItems = [];
+                
+                // 기본 항목 자동 생성 (운송 타입별)
+                this.generatePresetItems();
                 
                 // Clear transport fields (ETD는 원본 값 유지)
                 const bidCarrier = document.getElementById('bidCarrier');
@@ -1244,9 +1247,6 @@ const BiddingList = {
                 if (bidRemark) bidRemark.value = '';
                 if (bidTT) bidTT.value = '';
             }
-
-            // 조건에 따라 그룹 가시성 업데이트
-            this.updateGroupVisibility();
             
             // 라인 아이템 테이블 렌더링
             this.renderLineItems();
@@ -1308,233 +1308,222 @@ const BiddingList = {
     },
 
     // ==========================================
-    // LINE ITEMS MANAGEMENT (비용 항목 관리)
+    // LINE ITEMS MANAGEMENT (비용 항목 관리) - 단순화된 단일 테이블 구조
     // ==========================================
 
     /**
-     * 5개 고정 그룹 정의
-     * ORIGIN_LOCAL → ORIGIN_PORT → FREIGHT → DEST_PORT → DEST_LOCAL
+     * 코드별 카테고리 자동 분류 매핑
+     * Code → Summary Category (FREIGHT, PORT, LOCAL)
      */
-    RATE_GROUPS: ['ORIGIN_LOCAL', 'ORIGIN_PORT', 'FREIGHT', 'DEST_PORT', 'DEST_LOCAL'],
-    
-    /**
-     * 그룹별 허용 카테고리 코드 매핑
-     */
-    GROUP_CATEGORY_MAP: {
-        'ORIGIN_LOCAL': ['LOCAL_CHARGES'],
-        'ORIGIN_PORT': ['PORT_CHARGES'],
-        'FREIGHT': ['OCEAN', 'AIR'],
-        'DEST_PORT': ['PORT_CHARGES'],
-        'DEST_LOCAL': ['LOCAL_CHARGES']
-    },
-    
-    /**
-     * 조건별 그룹 출력 규칙
-     * [shipping_type][trade_mode][incoterms] = 표시할 그룹 배열
-     */
-    GROUP_DISPLAY_RULES: {
-        'air': {
-            'export': {
-                'CIF': ['ORIGIN_LOCAL', 'ORIGIN_PORT', 'FREIGHT'],
-                'CFR': ['ORIGIN_LOCAL', 'ORIGIN_PORT', 'FREIGHT'],
-                'FOB': ['ORIGIN_LOCAL', 'ORIGIN_PORT'],
-                'EXW': [],
-                'DAP': ['ORIGIN_LOCAL', 'ORIGIN_PORT', 'FREIGHT', 'DEST_PORT', 'DEST_LOCAL'],
-                'DDP': ['ORIGIN_LOCAL', 'ORIGIN_PORT', 'FREIGHT', 'DEST_PORT', 'DEST_LOCAL']
-            },
-            'import': {
-                'CIF': [],
-                'CFR': [],
-                'FOB': ['FREIGHT', 'DEST_LOCAL'],
-                'EXW': ['ORIGIN_LOCAL', 'ORIGIN_PORT', 'FREIGHT', 'DEST_PORT', 'DEST_LOCAL'],
-                'DAP': [],
-                'DDP': []
-            }
-        },
-        'ocean': {
-            'export': {
-                'CIF': ['ORIGIN_LOCAL', 'ORIGIN_PORT', 'FREIGHT'],
-                'CFR': ['ORIGIN_LOCAL', 'ORIGIN_PORT', 'FREIGHT'],
-                'FOB': ['ORIGIN_LOCAL', 'ORIGIN_PORT'],
-                'EXW': [],
-                'DAP': ['ORIGIN_LOCAL', 'ORIGIN_PORT', 'FREIGHT', 'DEST_PORT', 'DEST_LOCAL'],
-                'DDP': ['ORIGIN_LOCAL', 'ORIGIN_PORT', 'FREIGHT', 'DEST_PORT', 'DEST_LOCAL']
-            },
-            'import': {
-                'CIF': [],
-                'CFR': [],
-                'FOB': ['FREIGHT', 'DEST_LOCAL'],
-                'EXW': ['ORIGIN_LOCAL', 'ORIGIN_PORT', 'FREIGHT', 'DEST_PORT', 'DEST_LOCAL'],
-                'DAP': ['DEST_LOCAL'],
-                'DDP': ['DEST_LOCAL']
-            }
-        }
-    },
-    
-    /**
-     * 현재 조건에 따라 표시할 그룹 목록 반환
-     * @returns {Array} 표시할 그룹 키 배열
-     */
-    getVisibleGroups() {
-        const tradeMode = this.currentBidding?.trade_mode?.toLowerCase() || 'export';
-        const shippingType = this.currentBidding?.shipping_type?.toLowerCase() || 'ocean';
-        const incoterms = this.currentBidding?.incoterms?.toUpperCase() || 'FOB';
-        
-        const rules = this.GROUP_DISPLAY_RULES[shippingType]?.[tradeMode]?.[incoterms];
-        
-        // 규칙이 없으면 기본값 반환 (FREIGHT만)
-        if (!rules) {
-            console.warn(`No display rule for: ${shippingType}/${tradeMode}/${incoterms}, using default`);
-            return ['FREIGHT'];
-        }
-        
-        return rules;
-    },
-    
-    /**
-     * 조건에 따라 그룹 표시/숨김 처리
-     */
-    updateGroupVisibility() {
-        const visibleGroups = this.getVisibleGroups();
-        
-        console.log(`📋 Visible groups for ${this.currentBidding?.trade_mode}/${this.currentBidding?.shipping_type}/${this.currentBidding?.incoterms}:`, visibleGroups);
-        
-        this.RATE_GROUPS.forEach(groupKey => {
-            const groupEl = document.getElementById(`rateGroup_${groupKey}`);
-            if (groupEl) {
-                const isVisible = visibleGroups.includes(groupKey);
-                groupEl.style.display = isVisible ? 'block' : 'none';
-            }
-        });
-    },
-    
-    /**
-     * Render line items - 5개 고정 그룹 섹션에 각각 렌더링
-     */
-    renderLineItems() {
-        // 각 그룹별로 해당하는 라인 아이템을 필터링하여 렌더링
-        this.RATE_GROUPS.forEach(groupKey => {
-            this.renderGroupItems(groupKey);
-        });
-        
-        // Freight 섹션 타이틀 업데이트 (shipping_type에 따라)
-        this.updateFreightTitle();
-        
-        // 소계 및 총계 업데이트
-        this.calculateGroupSubtotals();
-    },
-    
-    /**
-     * 특정 그룹의 라인 아이템만 렌더링
-     * @param {string} groupKey - ORIGIN_LOCAL, ORIGIN_PORT, FREIGHT, DEST_PORT, DEST_LOCAL
-     */
-    renderGroupItems(groupKey) {
-        const tbody = document.getElementById(`rateGroupBody_${groupKey}`);
-        if (!tbody) return;
-        
-        // 해당 그룹의 아이템만 필터링
-        const groupItems = this.lineItems.filter((item, idx) => {
-            return item.rateGroup === groupKey;
-        });
-        
-        if (groupItems.length === 0) {
-            tbody.innerHTML = `
-                <tr class="rate-group-empty-row">
-                    <td colspan="9">
-                        <div class="rate-group-empty">
-                            <i class="fas fa-plus-circle"></i>
-                            <span>항목을 추가하려면 Add 버튼을 클릭하세요</span>
-                        </div>
-                    </td>
-                </tr>
-            `;
-            return;
-        }
-        
-        // 라인 아이템 렌더링
-        tbody.innerHTML = groupItems.map(item => {
-            const originalIdx = this.lineItems.indexOf(item);
-            return this.renderLineItemRow(item, originalIdx, groupKey);
-        }).join('');
-    },
-    
-    /**
-     * Freight 섹션 타이틀 업데이트 (shipping_type에 따라)
-     */
-    updateFreightTitle() {
-        const titleEl = document.getElementById('freightTitle');
-        const iconEl = document.getElementById('freightIcon');
-        
-        if (!titleEl || !iconEl) return;
-        
-        const shippingType = this.currentBidding?.shipping_type || 'ocean';
-        
-        if (shippingType === 'air') {
-            titleEl.textContent = 'Air Freight';
-            iconEl.className = 'fas fa-plane';
-        } else {
-            titleEl.textContent = 'Ocean Freight';
-            iconEl.className = 'fas fa-ship';
-        }
-    },
-    
-    /**
-     * 각 그룹별 소계 및 전체 합계 계산
-     */
-    calculateGroupSubtotals() {
-        let grandTotal = 0;
-        
-        this.RATE_GROUPS.forEach(groupKey => {
-            const groupItems = this.lineItems.filter(item => item.rateGroup === groupKey);
-            const subtotal = groupItems.reduce((sum, item) => sum + this.calculateLineAmount(item), 0);
-            
-            const subtotalEl = document.getElementById(`subtotal_${groupKey}`);
-            if (subtotalEl) {
-                subtotalEl.textContent = subtotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            }
-            
-            grandTotal += subtotal;
-        });
-        
-        // 전체 합계 업데이트
-        const totalEl = document.getElementById('bidTotalAmount');
-        if (totalEl) {
-            totalEl.textContent = grandTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        }
-    },
-    
-    /**
-     * 그룹별 허용되는 운임 코드 가져오기
-     * @param {string} groupKey - ORIGIN_LOCAL, ORIGIN_PORT, FREIGHT, DEST_PORT, DEST_LOCAL
-     * @returns {Array} 허용되는 freight codes
-     */
-    getCodesForGroup(groupKey) {
-        const shippingType = this.currentBidding?.shipping_type || 'ocean';
-        const allowedCategories = this.GROUP_CATEGORY_MAP[groupKey] || [];
-        
-        // FREIGHT 그룹의 경우 shipping_type에 따라 필터링
-        let filteredCategories = allowedCategories;
-        if (groupKey === 'FREIGHT') {
-            filteredCategories = shippingType === 'air' ? ['AIR'] : ['OCEAN'];
-        }
-        
-        // 해당 카테고리의 코드만 필터링
-        return this.freightCodes.filter(fc => filteredCategories.includes(fc.categoryCode));
+    CODE_CATEGORY_MAP: {
+        // FREIGHT 카테고리
+        'FRT': 'FREIGHT', 'OFR': 'FREIGHT', 'AFT': 'FREIGHT', 'AFR': 'FREIGHT',
+        'BAF': 'FREIGHT', 'CAF': 'FREIGHT', 'LSS': 'FREIGHT', 'EBS': 'FREIGHT',
+        'PSS': 'FREIGHT', 'GRI': 'FREIGHT', 'PCS': 'FREIGHT', 'IFA': 'FREIGHT',
+        // PORT 카테고리
+        'THC': 'PORT', 'OTHC': 'PORT', 'DTHC': 'PORT', 'WFG': 'PORT', 
+        'CFS': 'PORT', 'OCFS': 'PORT', 'DCFS': 'PORT', 'ATHC': 'PORT',
+        'LCL': 'PORT',
+        // LOCAL 카테고리
+        'DOC': 'LOCAL', 'BL': 'LOCAL', 'AWB': 'LOCAL', 'SEAL': 'LOCAL',
+        'AMS': 'LOCAL', 'ENS': 'LOCAL', 'AFR_FEE': 'LOCAL', 'ISF': 'LOCAL',
+        'HANDLING': 'LOCAL', 'TRUCKING': 'LOCAL', 'TRK': 'LOCAL',
+        'CUSTOMS': 'LOCAL', 'INSURANCE': 'LOCAL', 'WAREHOUSE': 'LOCAL'
     },
 
     /**
-     * Render single line item row
+     * 운송 타입별 기본 항목 정의 (자동 생성용)
+     * shipping_type + load_type → preset codes
+     */
+    PRESET_CODES: {
+        'ocean_FCL': ['FRT', 'THC', 'DOC'],
+        'ocean_LCL': ['FRT', 'THC', 'CFS', 'DOC'],
+        'air': ['AFT', 'ATHC', 'DOC'],
+        'truck': ['TRK', 'DOC']
+    },
+
+    /**
+     * 코드별 기본 Unit 매핑 (특정 항목은 Load Type 무관)
+     */
+    DEFAULT_UNITS_BY_CODE: {
+        // Document 관련 - B/L(AWB)
+        'DOC': 'B/L(AWB)', 'DOO': 'B/L(AWB)', 'EDI': 'B/L(AWB)',
+        'CNF': 'B/L(AWB)', 'AFS': 'B/L(AWB)', 'AMS': 'B/L(AWB)',
+        'SRR': 'B/L(AWB)', 'BL': 'B/L(AWB)', 'AWB': 'B/L(AWB)',
+        // 기간 관련 - Day
+        'DEM': 'Day', 'DET': 'Day',
+        // Trucking - Shipment
+        'TRO': 'Shipment', 'BOS': 'Shipment', 'TRK': 'Shipment',
+        // 기타 건별 - Shipment
+        'HDC': 'Shipment', 'CHF': 'Shipment', 'CNL': 'Shipment',
+        'INP': 'Shipment', 'PAC': 'Shipment'
+    },
+
+    /**
+     * Load Type별 기본 Unit
+     */
+    DEFAULT_UNITS_BY_LOAD_TYPE: {
+        'FCL': 'CNTR',
+        'LCL': 'R/TON',
+        'Air': 'C.W',
+        'FTL': 'Shipment',
+        'LTL': 'R/TON',
+        'Bulk': 'R/TON'
+    },
+
+    /**
+     * 코드와 Load Type에 따른 기본 Unit 반환
+     * @param {string} code - 운임 코드
+     * @param {string} loadType - FCL, LCL, Air 등
+     * @returns {string} 추천 Unit
+     */
+    getDefaultUnit(code, loadType) {
+        // 1. 코드별 특정 Unit이 있으면 우선 적용
+        if (this.DEFAULT_UNITS_BY_CODE[code]) {
+            return this.DEFAULT_UNITS_BY_CODE[code];
+        }
+        // 2. Load Type별 기본 Unit 적용
+        return this.DEFAULT_UNITS_BY_LOAD_TYPE[loadType] || 'CNTR';
+    },
+
+    /**
+     * 운송 타입에 따른 기본 코드 목록 반환
+     * @param {string} shippingType - ocean, air, truck
+     * @param {string} loadType - FCL, LCL 등
+     * @returns {Array} 기본 코드 배열
+     */
+    getPresetCodes(shippingType, loadType) {
+        const type = shippingType?.toLowerCase() || 'ocean';
+        const load = loadType?.toUpperCase() || 'FCL';
+        
+        // 조합 키로 먼저 찾기
+        const key = `${type}_${load}`;
+        if (this.PRESET_CODES[key]) {
+            return this.PRESET_CODES[key];
+        }
+        
+        // 타입만으로 찾기
+        if (this.PRESET_CODES[type]) {
+            return this.PRESET_CODES[type];
+        }
+        
+        // 기본값
+        return ['FRT', 'DOC'];
+    },
+
+    /**
+     * 코드에서 Summary 카테고리 추출
+     * @param {string} code - 운임 코드
+     * @returns {string} FREIGHT, PORT, LOCAL 중 하나
+     */
+    getCodeCategory(code) {
+        return this.CODE_CATEGORY_MAP[code?.toUpperCase()] || 'LOCAL';
+    },
+
+    /**
+     * Render line items - 단일 통합 테이블에 렌더링
+     */
+    renderLineItems() {
+        const tbody = document.getElementById('unifiedRateBody');
+        const emptyState = document.getElementById('rateEmptyState');
+        
+        if (!tbody) return;
+        
+        if (this.lineItems.length === 0) {
+            tbody.innerHTML = '';
+            if (emptyState) emptyState.style.display = 'flex';
+            return;
+        }
+        
+        if (emptyState) emptyState.style.display = 'none';
+        
+        // 모든 라인 아이템 렌더링
+        tbody.innerHTML = this.lineItems.map((item, idx) => 
+            this.renderLineItemRow(item, idx)
+        ).join('');
+        
+        // Summary 업데이트
+        this.updateCategorySummary();
+    },
+
+    /**
+     * 카테고리별 Summary 업데이트
+     */
+    updateCategorySummary() {
+        // 환율 정의
+        const exchangeRates = {
+            'USD': 1,
+            'KRW': 0.00075,
+            'EUR': 1.08,
+            'JPY': 0.0067,
+            'CNY': 0.14
+        };
+        
+        let freightSum = 0, portSum = 0, localSum = 0;
+        
+        this.lineItems.forEach(item => {
+            const amount = this.calculateLineAmount(item);
+            const rate = exchangeRates[item.currency] || 1;
+            const usdAmount = amount * rate;
+            
+            const category = this.getCodeCategory(item.code);
+            if (category === 'FREIGHT') freightSum += usdAmount;
+            else if (category === 'PORT') portSum += usdAmount;
+            else localSum += usdAmount;
+        });
+        
+        // Summary 표시 업데이트
+        const formatAmount = (val) => '$' + val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        
+        const sumFreight = document.getElementById('sumFreight');
+        const sumPort = document.getElementById('sumPort');
+        const sumLocal = document.getElementById('sumLocal');
+        const totalEl = document.getElementById('bidTotalAmount');
+        
+        if (sumFreight) sumFreight.textContent = formatAmount(freightSum);
+        if (sumPort) sumPort.textContent = formatAmount(portSum);
+        if (sumLocal) sumLocal.textContent = formatAmount(localSum);
+        if (totalEl) totalEl.textContent = (freightSum + portSum + localSum).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    },
+
+    /**
+     * 카테고리별 배지 정보 반환
+     * @param {string} category - FREIGHT, PORT, LOCAL
+     * @returns {Object} { icon, label, class }
+     */
+    getCategoryBadge(category) {
+        const badges = {
+            'FREIGHT': { icon: 'fa-ship', label: 'Freight', class: 'badge-freight' },
+            'PORT': { icon: 'fa-anchor', label: 'Port', class: 'badge-port' },
+            'LOCAL': { icon: 'fa-warehouse', label: 'Local', class: 'badge-local' }
+        };
+        return badges[category] || badges['LOCAL'];
+    },
+
+    /**
+     * Render single line item row - 개선된 구조 (항목명 + 카테고리 배지)
      * @param {Object} item - 라인 아이템 데이터
      * @param {number} idx - lineItems 배열에서의 인덱스
-     * @param {string} groupKey - 해당 그룹 키 (ORIGIN_LOCAL 등)
      */
-    renderLineItemRow(item, idx, groupKey) {
-        // 해당 그룹에서 허용되는 운임 코드만 가져오기
-        const availableCodes = this.getCodesForGroup(groupKey || item.rateGroup);
+    renderLineItemRow(item, idx) {
+        // 모든 운임 코드 (shipping_type에 따라 필터링)
+        const shippingType = this.currentBidding?.shipping_type || 'ocean';
+        const availableCodes = this.freightCodes.filter(fc => {
+            // air일 때는 ocean 전용 코드 제외, ocean일 때는 air 전용 코드 제외
+            if (shippingType === 'air' && fc.categoryCode === 'OCEAN') return false;
+            if (shippingType === 'ocean' && fc.categoryCode === 'AIR') return false;
+            return true;
+        });
         
-        const codeOptions = availableCodes.map(fc => 
-            `<option value="${fc.code}" ${item.code === fc.code ? 'selected' : ''}>${fc.code} - ${fc.name_ko || fc.category}</option>`
-        ).join('');
+        // 항목명(name_ko) 표시 드롭다운 - code는 내부값으로
+        const codeOptions = availableCodes.map(fc => {
+            const displayName = fc.name_ko || fc.name_en || fc.code;
+            return `<option value="${fc.code}" ${item.code === fc.code ? 'selected' : ''}>${displayName}</option>`;
+        }).join('');
+
+        // 선택된 코드의 카테고리
+        const category = this.getCodeCategory(item.code);
+        const badge = this.getCategoryBadge(category);
 
         // 선택된 코드의 허용 단위
         const availableUnits = this.getUnitsForCode(item.code);
@@ -1546,10 +1535,6 @@ const BiddingList = {
             `<option value="${c}" ${item.currency === c ? 'selected' : ''}>${c}</option>`
         ).join('');
 
-        const taxOptions = TAX_OPTIONS.map(t => 
-            `<option value="${t}" ${item.tax === t ? 'selected' : ''}>${t}</option>`
-        ).join('');
-
         const amount = this.calculateLineAmount(item);
 
         return `
@@ -1559,10 +1544,16 @@ const BiddingList = {
                         <i class="fas fa-times"></i>
                     </button>
                 </td>
-                <td class="col-code">
-                    <select class="bid-line-select" onchange="BiddingList.updateLineItem(${idx}, 'code', this.value)">
+                <td class="col-item">
+                    <select class="bid-line-select item-select" onchange="BiddingList.updateLineItem(${idx}, 'code', this.value)">
                         ${codeOptions}
                     </select>
+                </td>
+                <td class="col-category">
+                    <span class="category-badge ${badge.class}">
+                        <i class="fas ${badge.icon}"></i>
+                        <span>${badge.label}</span>
+                    </span>
                 </td>
                 <td class="col-unit">
                     <select class="bid-line-select" onchange="BiddingList.updateLineItem(${idx}, 'unit', this.value)">
@@ -1575,7 +1566,7 @@ const BiddingList = {
                            onchange="BiddingList.updateLineItem(${idx}, 'qty', this.value)">
                 </td>
                 <td class="col-rate">
-                    <input type="number" class="bid-line-input" value="${item.rate}" step="0.01" min="0"
+                    <input type="number" class="bid-line-input rate-input" value="${item.rate || ''}" step="0.01" min="0"
                            onchange="BiddingList.updateLineItem(${idx}, 'rate', this.value)" 
                            placeholder="0.00">
                 </td>
@@ -1583,16 +1574,6 @@ const BiddingList = {
                     <select class="bid-line-select" onchange="BiddingList.updateLineItem(${idx}, 'currency', this.value)">
                         ${currencyOptions}
                     </select>
-                </td>
-                <td class="col-tax">
-                    <select class="bid-line-select" onchange="BiddingList.updateLineItem(${idx}, 'tax', this.value)">
-                        ${taxOptions}
-                    </select>
-                </td>
-                <td class="col-vat">
-                    <input type="number" class="bid-line-input" value="${item.vat}" step="1" min="0" max="100"
-                           onchange="BiddingList.updateLineItem(${idx}, 'vat', this.value)" 
-                           ${item.tax === '영세' ? 'disabled' : ''}>
                 </td>
                 <td class="col-amount">
                     <span class="line-amount" id="lineAmount_${idx}">${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
@@ -1602,39 +1583,65 @@ const BiddingList = {
     },
 
     /**
-     * Add new line item to specific group
-     * @param {string} groupKey - ORIGIN_LOCAL, ORIGIN_PORT, FREIGHT, DEST_PORT, DEST_LOCAL
+     * 운송 타입에 맞는 기본 항목을 자동 생성
      */
-    addLineItemToGroup(groupKey) {
+    generatePresetItems() {
+        const shippingType = this.currentBidding?.shipping_type || 'ocean';
+        const loadType = this.currentBidding?.load_type || 'FCL';
+        const presetCodes = this.getPresetCodes(shippingType, loadType);
+        
+        console.log(`📋 Auto-generating preset items for ${shippingType}/${loadType}:`, presetCodes);
+        
+        presetCodes.forEach((codeStr, idx) => {
+            const freightCode = this.freightCodes.find(fc => fc.code === codeStr);
+            if (!freightCode) return;
+            
+            // 기본 Unit 자동 추천 (코드 + Load Type 기반)
+            const recommendedUnit = this.getDefaultUnit(codeStr, loadType);
+            // 추천 Unit이 허용 목록에 있으면 사용, 없으면 첫 번째 허용 단위
+            let defaultUnit = recommendedUnit;
+            if (freightCode.units && freightCode.units.length > 0) {
+                defaultUnit = freightCode.units.includes(recommendedUnit) 
+                    ? recommendedUnit 
+                    : freightCode.units[0];
+            }
+            
+            this.lineItems.push({
+                id: idx,
+                code: freightCode.code,
+                category: freightCode.category,
+                group: freightCode.group || 'ETC',
+                categoryCode: freightCode.categoryCode || 'OTHER',
+                unit: defaultUnit,
+                qty: 1,
+                rate: 0,  // Rate는 포워더가 입력
+                currency: freightCode.defaultCurrency || 'USD',
+                tax: '영세',
+                vat: 0
+            });
+        });
+    },
+
+    /**
+     * Add new line item - 단순화된 버전
+     */
+    addLineItem() {
         const newId = this.lineItems.length > 0 
             ? Math.max(...this.lineItems.map(i => i.id)) + 1 
             : 0;
 
-        // 해당 그룹에서 허용되는 운임 코드 가져오기
-        const availableCodes = this.getCodesForGroup(groupKey);
         const shippingType = this.currentBidding?.shipping_type || 'ocean';
+        const loadType = this.currentBidding?.load_type || 'FCL';
         
-        // 그룹별 기본 코드 선택
-        let defaultCode = null;
+        // 기본 코드 선택
+        const defaultCodeStr = shippingType === 'air' ? 'AFT' : 'FRT';
+        let defaultCode = this.freightCodes.find(fc => fc.code === defaultCodeStr);
         
-        if (groupKey === 'FREIGHT') {
-            // FREIGHT 그룹: shipping_type에 따라
-            const defaultCodeStr = shippingType === 'air' ? 'AFT' : 'FRT';
-            defaultCode = availableCodes.find(fc => fc.code === defaultCodeStr);
-        } else if (groupKey === 'ORIGIN_LOCAL' || groupKey === 'DEST_LOCAL') {
-            // LOCAL: DOC 또는 첫 번째 코드
-            defaultCode = availableCodes.find(fc => fc.code === 'DOC') || availableCodes[0];
-        } else if (groupKey === 'ORIGIN_PORT' || groupKey === 'DEST_PORT') {
-            // PORT: THC 또는 첫 번째 코드
-            defaultCode = availableCodes.find(fc => fc.code === 'THC') || availableCodes[0];
+        // Fallback
+        if (!defaultCode && this.freightCodes.length > 0) {
+            defaultCode = this.freightCodes[0];
         }
         
-        // Fallback: 첫 번째 가용 코드
-        if (!defaultCode && availableCodes.length > 0) {
-            defaultCode = availableCodes[0];
-        }
-        
-        // 최종 Fallback
         if (!defaultCode) {
             defaultCode = {
                 code: 'ETC',
@@ -1646,10 +1653,14 @@ const BiddingList = {
             };
         }
         
-        // 기본 단위 선택
-        const defaultUnit = defaultCode.units && defaultCode.units.length > 0 
-            ? defaultCode.units[0] 
-            : (this.freightUnits[0] || 'CNTR');
+        // 기본 Unit 자동 추천 (코드 + Load Type 기반)
+        const recommendedUnit = this.getDefaultUnit(defaultCodeStr, loadType);
+        let defaultUnit = recommendedUnit;
+        if (defaultCode.units && defaultCode.units.length > 0) {
+            defaultUnit = defaultCode.units.includes(recommendedUnit) 
+                ? recommendedUnit 
+                : defaultCode.units[0];
+        }
 
         this.lineItems.push({
             id: newId,
@@ -1657,7 +1668,6 @@ const BiddingList = {
             category: defaultCode.category,
             group: defaultCode.group || 'ETC',
             categoryCode: defaultCode.categoryCode || 'OTHER',
-            rateGroup: groupKey,  // 새 필드: 어떤 그룹에 속하는지
             unit: defaultUnit,
             qty: 1,
             rate: 0,
@@ -1668,13 +1678,20 @@ const BiddingList = {
 
         this.renderLineItems();
         this.calculateTotal();
+        
+        // 새로 추가된 항목의 Rate 필드에 포커스
+        setTimeout(() => {
+            const newRow = document.querySelector(`tr[data-line-idx="${this.lineItems.length - 1}"] .rate-input`);
+            if (newRow) newRow.focus();
+        }, 100);
     },
-    
+
     /**
-     * (레거시) 기존 addLineItem 호환용 - FREIGHT 그룹에 추가
+     * (레거시 호환) addLineItemToGroup - 이제 단순히 addLineItem 호출
+     * @param {string} groupKey - 무시됨
      */
-    addLineItem() {
-        this.addLineItemToGroup('FREIGHT');
+    addLineItemToGroup(groupKey) {
+        this.addLineItem();
     },
 
     /**
@@ -1706,11 +1723,15 @@ const BiddingList = {
                 if (freightCode.defaultCurrency) {
                     this.lineItems[idx].currency = freightCode.defaultCurrency;
                 }
-                // 첫 번째 허용 단위로 설정 (현재 단위가 허용 목록에 없으면)
-                if (freightCode.units && freightCode.units.length > 0) {
-                    if (!freightCode.units.includes(this.lineItems[idx].unit)) {
-                        this.lineItems[idx].unit = freightCode.units[0];
-                    }
+                // 기본 Unit 자동 추천 (코드 + Load Type 기반)
+                const loadType = this.currentBidding?.load_type || 'FCL';
+                const recommendedUnit = this.getDefaultUnit(value, loadType);
+                // 추천 Unit이 허용 목록에 있으면 설정
+                if (freightCode.units && freightCode.units.includes(recommendedUnit)) {
+                    this.lineItems[idx].unit = recommendedUnit;
+                } else if (freightCode.units && freightCode.units.length > 0) {
+                    // 추천 Unit이 없으면 첫 번째 허용 단위로 설정
+                    this.lineItems[idx].unit = freightCode.units[0];
                 }
                 this.renderLineItems();
                 this.calculateTotal();
@@ -1770,7 +1791,7 @@ const BiddingList = {
     },
 
     /**
-     * Calculate total amount from all line items (각 그룹별 소계 포함)
+     * Calculate total amount from all line items (카테고리별 소계 포함)
      */
     calculateTotal() {
         // 환율 정의
@@ -1782,31 +1803,34 @@ const BiddingList = {
             'CNY': 0.14
         };
         
-        let grandTotal = 0;
+        let freightSum = 0, portSum = 0, localSum = 0;
         
-        // 각 그룹별 소계 계산 및 업데이트
-        this.RATE_GROUPS.forEach(groupKey => {
-            const groupItems = this.lineItems.filter(item => item.rateGroup === groupKey);
-            const subtotal = groupItems.reduce((sum, item) => {
-                let amount = this.calculateLineAmount(item);
-                const rate = exchangeRates[item.currency] || 1;
-                return sum + (amount * rate);
-            }, 0);
+        // 카테고리별 소계 계산
+        this.lineItems.forEach(item => {
+            const amount = this.calculateLineAmount(item);
+            const rate = exchangeRates[item.currency] || 1;
+            const usdAmount = amount * rate;
             
-            // 소계 표시 업데이트
-            const subtotalEl = document.getElementById(`subtotal_${groupKey}`);
-            if (subtotalEl) {
-                subtotalEl.textContent = subtotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            }
-            
-            grandTotal += subtotal;
+            const category = this.getCodeCategory(item.code);
+            if (category === 'FREIGHT') freightSum += usdAmount;
+            else if (category === 'PORT') portSum += usdAmount;
+            else localSum += usdAmount;
         });
         
-        // 전체 합계 업데이트
+        const grandTotal = freightSum + portSum + localSum;
+        
+        // Summary 표시 업데이트
+        const formatAmount = (val) => '$' + val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        
+        const sumFreight = document.getElementById('sumFreight');
+        const sumPort = document.getElementById('sumPort');
+        const sumLocal = document.getElementById('sumLocal');
         const totalEl = document.getElementById('bidTotalAmount');
-        if (totalEl) {
-            totalEl.textContent = grandTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        }
+        
+        if (sumFreight) sumFreight.textContent = formatAmount(freightSum);
+        if (sumPort) sumPort.textContent = formatAmount(portSum);
+        if (sumLocal) sumLocal.textContent = formatAmount(localSum);
+        if (totalEl) totalEl.textContent = grandTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
         return grandTotal;
     },
@@ -1878,7 +1902,7 @@ const BiddingList = {
         document.querySelectorAll('.validation-highlight').forEach(el => el.classList.remove('validation-highlight'));
         
         // 1. Rates 섹션 - 최소 1개 비용 항목 필수
-        const ratesSection = document.querySelector('.rates-section');
+        const ratesSection = document.querySelector('.rates-section-unified');
         if (this.lineItems.length === 0) {
             errors.push('최소 1개의 비용 항목을 입력해주세요.');
             if (ratesSection) {

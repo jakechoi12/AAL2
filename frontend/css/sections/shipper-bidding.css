@@ -14,42 +14,8 @@
 }
 
 /* ==========================================
-   SHIPPER BAR
+   NEW QUOTE BUTTON (Empty State)
    ========================================== */
-
-.shipper-bar {
-    background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(16, 185, 129, 0.05));
-    border: 1px solid rgba(34, 197, 94, 0.2);
-}
-
-.shipper-avatar {
-    background: linear-gradient(135deg, #22c55e, #10b981) !important;
-}
-
-.shipper-bar-actions {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-.btn-new-quote {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.6rem 1.2rem;
-    background: linear-gradient(135deg, #22c55e, #10b981);
-    color: white;
-    border-radius: 8px;
-    text-decoration: none;
-    font-weight: 500;
-    font-size: 0.9rem;
-    transition: all 0.2s ease;
-}
-
-.btn-new-quote:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
-}
 
 .btn-new-quote-large {
     display: inline-flex;
@@ -531,11 +497,6 @@
    ========================================== */
 
 @media (max-width: 768px) {
-    .shipper-bar-actions {
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-    
     .modal-header {
         flex-wrap: wrap;
         gap: 1rem;
@@ -558,5 +519,212 @@
     .col-carrier,
     .col-transit {
         display: none;
+    }
+}
+
+/* ==========================================
+   NEW TABLE COLUMNS (POL/POD, Volume, Deadline)
+   ========================================== */
+
+.port-code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-main);
+}
+
+.volume-cell {
+    font-size: 0.85rem;
+    color: var(--text-sub);
+}
+
+/* Deadline Badge */
+.deadline-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+}
+
+.deadline-badge .d-day {
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    background: rgba(100, 116, 139, 0.15);
+    color: var(--text-sub);
+}
+
+.deadline-badge.warning .d-day {
+    background: rgba(251, 191, 36, 0.2);
+    color: #fbbf24;
+}
+
+.deadline-badge.urgent .d-day {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    animation: pulse-urgent 1.5s ease-in-out infinite;
+}
+
+.deadline-badge.expired .d-day {
+    background: rgba(100, 116, 139, 0.3);
+    color: var(--text-muted);
+}
+
+@keyframes pulse-urgent {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+/* ==========================================
+   BID DETAIL ACCORDION
+   ========================================== */
+
+.col-detail {
+    width: 50px;
+    text-align: center;
+}
+
+.btn-toggle-detail {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: var(--bg-hover);
+    border: 1px solid var(--border-main);
+    border-radius: 6px;
+    color: var(--text-sub);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-toggle-detail:hover {
+    background: var(--bg-card);
+    color: var(--accent-blue);
+    border-color: var(--accent-blue);
+}
+
+.bid-main-row.expanded {
+    background: rgba(59, 130, 246, 0.05);
+}
+
+.bid-main-row.expanded .btn-toggle-detail {
+    background: var(--accent-blue);
+    color: white;
+    border-color: var(--accent-blue);
+}
+
+.bid-detail-row {
+    background: var(--bg-hover);
+}
+
+.bid-detail-row td {
+    padding: 0 !important;
+}
+
+.bid-detail-content {
+    padding: 1.25rem 1.5rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    border-left: 3px solid var(--accent-blue);
+    margin-left: 1rem;
+}
+
+.detail-section {
+    min-width: 0;
+}
+
+.detail-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-main);
+}
+
+.detail-title i {
+    color: var(--accent-blue);
+}
+
+/* Detail Breakdown */
+.detail-breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.breakdown-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    background: var(--bg-card);
+    border-radius: 6px;
+    font-size: 0.85rem;
+}
+
+.breakdown-item.total {
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    font-weight: 600;
+}
+
+.breakdown-label {
+    color: var(--text-sub);
+}
+
+.breakdown-value {
+    color: var(--text-main);
+    font-weight: 500;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.breakdown-item.total .breakdown-value {
+    color: var(--accent-blue);
+}
+
+/* Detail Info Grid */
+.detail-info-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.info-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.info-value {
+    font-size: 0.85rem;
+    color: var(--text-main);
+}
+
+.info-item.remark .info-value {
+    padding: 0.5rem 0.75rem;
+    background: var(--bg-card);
+    border-radius: 6px;
+    font-style: italic;
+    color: var(--text-sub);
+}
+
+@media (max-width: 768px) {
+    .bid-detail-content {
+        grid-template-columns: 1fr;
+        gap: 1rem;
     }
 }

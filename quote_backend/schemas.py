@@ -542,6 +542,9 @@ class ShipperBidItem(BaseModel):
     rating_count: int = 0  # 평점 참여 수
     total_amount_krw: float  # KRW 기준 입찰가
     total_amount: float  # 원래 통화 기준 입찰가
+    freight_charge: Optional[float] = None  # 운임
+    local_charge: Optional[float] = None  # 로컬비
+    other_charge: Optional[float] = None  # 기타비용
     etd: Optional[datetime] = None
     eta: Optional[datetime] = None
     transit_time: Optional[str] = None

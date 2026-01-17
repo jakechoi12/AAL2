@@ -318,198 +318,59 @@
                     <div class="remarks-content" id="reqRemarks">-</div>
                 </section>
 
-                <!-- Rates 입력 - 5개 고정 그룹 섹션 -->
-                <section class="qr-section rates-section">
-                    <h4 class="qr-section-title"><span class="required-mark">*</span> Rates</h4>
+                <!-- Rates 입력 - 단일 통합 테이블 -->
+                <section class="qr-section rates-section-unified">
+                    <div class="rates-header-bar">
+                        <h4 class="qr-section-title"><span class="required-mark">*</span> Rates</h4>
+                        <button type="button" class="btn-add-rate" onclick="BiddingList.addLineItem()">
+                            <i class="fas fa-plus"></i> Add Item
+                        </button>
+                    </div>
                     
-                    <!-- 1. Origin Local Charges -->
-                    <div class="rate-group-box" id="rateGroup_ORIGIN_LOCAL">
-                        <div class="rate-group-header-bar">
-                            <span class="rate-group-title">
-                                <i class="fas fa-warehouse"></i>
-                                Origin Local Charges
-                            </span>
-                            <button type="button" class="btn-add-group" onclick="BiddingList.addLineItemToGroup('ORIGIN_LOCAL')">
-                                <i class="fas fa-plus"></i> Add
-                            </button>
-                        </div>
-                        <table class="rate-group-table">
+                    <!-- 단일 통합 테이블 -->
+                    <div class="unified-rate-table-wrapper">
+                        <table class="unified-rate-table" id="unifiedRateTable">
                             <thead>
                                 <tr>
                                     <th class="col-del"></th>
-                                    <th class="col-code">Code</th>
-                                    <th class="col-unit">Unit</th>
-                                    <th class="col-qty">Qty</th>
-                                    <th class="col-rate">Rate</th>
-                                    <th class="col-currency">Curr</th>
-                                    <th class="col-tax">Tax</th>
-                                    <th class="col-vat">VAT%</th>
-                                    <th class="col-amount">Amount</th>
+                                    <th class="col-item">항목</th>
+                                    <th class="col-category">분류</th>
+                                    <th class="col-unit">단위</th>
+                                    <th class="col-qty">수량</th>
+                                    <th class="col-rate">단가</th>
+                                    <th class="col-currency">통화</th>
+                                    <th class="col-amount">금액</th>
                                 </tr>
                             </thead>
-                            <tbody id="rateGroupBody_ORIGIN_LOCAL">
+                            <tbody id="unifiedRateBody">
                                 <!-- 동적 생성 -->
                             </tbody>
-                            <tfoot>
-                                <tr class="group-subtotal-row">
-                                    <td colspan="8" class="subtotal-label">Subtotal</td>
-                                    <td class="subtotal-amount">$ <span id="subtotal_ORIGIN_LOCAL">0.00</span></td>
-                                </tr>
-                            </tfoot>
                         </table>
-                    </div>
-
-                    <!-- 2. Origin Port Charges -->
-                    <div class="rate-group-box" id="rateGroup_ORIGIN_PORT">
-                        <div class="rate-group-header-bar">
-                            <span class="rate-group-title">
-                                <i class="fas fa-anchor"></i>
-                                Origin Port Charges
-                            </span>
-                            <button type="button" class="btn-add-group" onclick="BiddingList.addLineItemToGroup('ORIGIN_PORT')">
-                                <i class="fas fa-plus"></i> Add
-                            </button>
+                        
+                        <!-- Empty State -->
+                        <div class="unified-rate-empty" id="rateEmptyState">
+                            <i class="fas fa-receipt"></i>
+                            <p>운송 타입에 맞는 기본 항목이 자동으로 추가됩니다</p>
                         </div>
-                        <table class="rate-group-table">
-                            <thead>
-                                <tr>
-                                    <th class="col-del"></th>
-                                    <th class="col-code">Code</th>
-                                    <th class="col-unit">Unit</th>
-                                    <th class="col-qty">Qty</th>
-                                    <th class="col-rate">Rate</th>
-                                    <th class="col-currency">Curr</th>
-                                    <th class="col-tax">Tax</th>
-                                    <th class="col-vat">VAT%</th>
-                                    <th class="col-amount">Amount</th>
-                                </tr>
-                            </thead>
-                            <tbody id="rateGroupBody_ORIGIN_PORT">
-                                <!-- 동적 생성 -->
-                            </tbody>
-                            <tfoot>
-                                <tr class="group-subtotal-row">
-                                    <td colspan="8" class="subtotal-label">Subtotal</td>
-                                    <td class="subtotal-amount">$ <span id="subtotal_ORIGIN_PORT">0.00</span></td>
-                                </tr>
-                            </tfoot>
-                        </table>
                     </div>
-
-                    <!-- 3. Freight (Ocean/Air) - shipping_type에 따라 제목 변경 -->
-                    <div class="rate-group-box rate-group-freight" id="rateGroup_FREIGHT">
-                        <div class="rate-group-header-bar freight-header">
-                            <span class="rate-group-title">
-                                <i class="fas fa-ship" id="freightIcon"></i>
-                                <span id="freightTitle">Ocean Freight</span>
-                            </span>
-                            <button type="button" class="btn-add-group" onclick="BiddingList.addLineItemToGroup('FREIGHT')">
-                                <i class="fas fa-plus"></i> Add
-                            </button>
+                    
+                    <!-- Summary (카테고리별 소계) -->
+                    <div class="rates-summary">
+                        <div class="summary-grid">
+                            <div class="summary-item">
+                                <span class="summary-label"><i class="fas fa-ship"></i> Freight</span>
+                                <span class="summary-value" id="sumFreight">$0.00</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label"><i class="fas fa-anchor"></i> Port Charges</span>
+                                <span class="summary-value" id="sumPort">$0.00</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label"><i class="fas fa-warehouse"></i> Local Charges</span>
+                                <span class="summary-value" id="sumLocal">$0.00</span>
+                            </div>
                         </div>
-                        <table class="rate-group-table">
-                            <thead>
-                                <tr>
-                                    <th class="col-del"></th>
-                                    <th class="col-code">Code</th>
-                                    <th class="col-unit">Unit</th>
-                                    <th class="col-qty">Qty</th>
-                                    <th class="col-rate">Rate</th>
-                                    <th class="col-currency">Curr</th>
-                                    <th class="col-tax">Tax</th>
-                                    <th class="col-vat">VAT%</th>
-                                    <th class="col-amount">Amount</th>
-                                </tr>
-                            </thead>
-                            <tbody id="rateGroupBody_FREIGHT">
-                                <!-- 동적 생성 -->
-                            </tbody>
-                            <tfoot>
-                                <tr class="group-subtotal-row">
-                                    <td colspan="8" class="subtotal-label">Subtotal</td>
-                                    <td class="subtotal-amount">$ <span id="subtotal_FREIGHT">0.00</span></td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
-
-                    <!-- 4. Destination Port Charges -->
-                    <div class="rate-group-box" id="rateGroup_DEST_PORT">
-                        <div class="rate-group-header-bar">
-                            <span class="rate-group-title">
-                                <i class="fas fa-anchor"></i>
-                                Destination Port Charges
-                            </span>
-                            <button type="button" class="btn-add-group" onclick="BiddingList.addLineItemToGroup('DEST_PORT')">
-                                <i class="fas fa-plus"></i> Add
-                            </button>
-                        </div>
-                        <table class="rate-group-table">
-                            <thead>
-                                <tr>
-                                    <th class="col-del"></th>
-                                    <th class="col-code">Code</th>
-                                    <th class="col-unit">Unit</th>
-                                    <th class="col-qty">Qty</th>
-                                    <th class="col-rate">Rate</th>
-                                    <th class="col-currency">Curr</th>
-                                    <th class="col-tax">Tax</th>
-                                    <th class="col-vat">VAT%</th>
-                                    <th class="col-amount">Amount</th>
-                                </tr>
-                            </thead>
-                            <tbody id="rateGroupBody_DEST_PORT">
-                                <!-- 동적 생성 -->
-                            </tbody>
-                            <tfoot>
-                                <tr class="group-subtotal-row">
-                                    <td colspan="8" class="subtotal-label">Subtotal</td>
-                                    <td class="subtotal-amount">$ <span id="subtotal_DEST_PORT">0.00</span></td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
-
-                    <!-- 5. Destination Local Charges -->
-                    <div class="rate-group-box" id="rateGroup_DEST_LOCAL">
-                        <div class="rate-group-header-bar">
-                            <span class="rate-group-title">
-                                <i class="fas fa-warehouse"></i>
-                                Destination Local Charges
-                            </span>
-                            <button type="button" class="btn-add-group" onclick="BiddingList.addLineItemToGroup('DEST_LOCAL')">
-                                <i class="fas fa-plus"></i> Add
-                            </button>
-                        </div>
-                        <table class="rate-group-table">
-                            <thead>
-                                <tr>
-                                    <th class="col-del"></th>
-                                    <th class="col-code">Code</th>
-                                    <th class="col-unit">Unit</th>
-                                    <th class="col-qty">Qty</th>
-                                    <th class="col-rate">Rate</th>
-                                    <th class="col-currency">Curr</th>
-                                    <th class="col-tax">Tax</th>
-                                    <th class="col-vat">VAT%</th>
-                                    <th class="col-amount">Amount</th>
-                                </tr>
-                            </thead>
-                            <tbody id="rateGroupBody_DEST_LOCAL">
-                                <!-- 동적 생성 -->
-                            </tbody>
-                            <tfoot>
-                                <tr class="group-subtotal-row">
-                                    <td colspan="8" class="subtotal-label">Subtotal</td>
-                                    <td class="subtotal-amount">$ <span id="subtotal_DEST_LOCAL">0.00</span></td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
-
-                    <!-- Total Amount -->
-                    <div class="rates-total-box">
-                        <div class="rates-total-row">
+                        <div class="summary-total">
                             <span class="total-label">Total Amount (USD)</span>
                             <span class="total-amount">$ <span id="bidTotalAmount">0.00</span></span>
                         </div>

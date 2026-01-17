@@ -102,24 +102,15 @@ const ShipperBidding = {
      * Update auth UI based on login state
      */
     updateAuthUI() {
-        const shipperBar = document.getElementById('shipperBar');
         const loginRequiredState = document.getElementById('loginRequiredState');
         const emptyState = document.getElementById('emptyState');
         const biddingTableBody = document.getElementById('biddingTableBody');
 
         if (this.shipper) {
             // Logged in state
-            if (shipperBar) {
-                shipperBar.style.display = 'flex';
-                document.getElementById('shipperAvatar').textContent = 
-                    this.shipper.company.charAt(0).toUpperCase();
-                document.getElementById('shipperCompany').textContent = this.shipper.company;
-                document.getElementById('shipperEmail').textContent = this.shipper.email;
-            }
             if (loginRequiredState) loginRequiredState.style.display = 'none';
         } else {
             // Logged out state
-            if (shipperBar) shipperBar.style.display = 'none';
             if (biddingTableBody) biddingTableBody.innerHTML = '';
             if (emptyState) emptyState.style.display = 'none';
             if (loginRequiredState) loginRequiredState.style.display = 'block';
@@ -265,20 +256,26 @@ const ShipperBidding = {
         let actionBtn = '';
         if (effectiveStatus === 'open' && item.bid_count > 0) {
             actionBtn = `<button class="action-btn primary" onclick="ShipperBidding.openBidSelectionModal('${item.bidding_no}')">
-                <i class="fas fa-user-check"></i> 운송사 선정
+                <i class="fas fa-user-check"></i> 선정
             </button>`;
         } else if (effectiveStatus === 'open' && item.bid_count === 0) {
-            actionBtn = `<span class="status-text waiting">입찰 대기중</span>`;
+            actionBtn = `<span class="status-text waiting">대기중</span>`;
         } else if (effectiveStatus === 'awarded') {
-            actionBtn = `<span class="status-badge awarded"><i class="fas fa-trophy"></i> ${item.awarded_forwarder || '선정완료'}</span>`;
+            actionBtn = `<span class="status-badge awarded"><i class="fas fa-trophy"></i></span>`;
         } else {
-            actionBtn = `<span class="status-badge ${effectiveStatus}">${this.getStatusLabel(effectiveStatus)}</span>`;
+            actionBtn = `-`;
         }
 
         // Format minimum bid price (KRW)
         const minPriceFormatted = item.min_bid_price_krw 
             ? `₩${Math.round(item.min_bid_price_krw).toLocaleString('ko-KR')}`
             : '-';
+
+        // Format volume
+        const volumeFormatted = item.volume || '-';
+
+        // Format deadline with D-day badge
+        const deadlineBadge = this.formatDeadlineBadge(item.deadline);
 
         const rowClass = isExpired ? 'expired-row' : '';
 
@@ -289,20 +286,17 @@ const ShipperBidding = {
                         ${item.bidding_no}
                     </span>
                 </td>
-                <td>
-                    <div class="route-cell">
-                        <span>${item.pol}</span>
-                        <span class="route-arrow">→</span>
-                        <span>${item.pod}</span>
-                    </div>
-                </td>
+                <td><span class="port-code">${item.pol || '-'}</span></td>
+                <td><span class="port-code">${item.pod || '-'}</span></td>
                 <td>
                     <span class="type-badge ${item.shipping_type}">
                         <i class="fas fa-${this.getShippingIcon(item.shipping_type)}"></i>
                         ${item.shipping_type.toUpperCase()} / ${item.load_type}
                     </span>
                 </td>
+                <td><span class="volume-cell">${volumeFormatted}</span></td>
                 <td>${this.formatDate(item.etd)}</td>
+                <td>${deadlineBadge}</td>
                 <td>
                     <span class="status-badge ${effectiveStatus}">${this.getStatusLabel(effectiveStatus)}</span>
                 </td>
@@ -315,6 +309,30 @@ const ShipperBidding = {
                 <td>${actionBtn}</td>
             </tr>
         `;
+    },
+
+    /**
+     * Format deadline with D-day badge
+     */
+    formatDeadlineBadge(deadline) {
+        if (!deadline) return '-';
+        
+        const deadlineDate = new Date(deadline);
+        const now = new Date();
+        const diffTime = deadlineDate - now;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        const dateStr = this.formatDate(deadline);
+        
+        if (diffDays < 0) {
+            return `<span class="deadline-badge expired">${dateStr} <span class="d-day">마감</span></span>`;
+        } else if (diffDays === 0) {
+            return `<span class="deadline-badge urgent">${dateStr} <span class="d-day">D-Day</span></span>`;
+        } else if (diffDays <= 3) {
+            return `<span class="deadline-badge warning">${dateStr} <span class="d-day">D-${diffDays}</span></span>`;
+        } else {
+            return `<span class="deadline-badge">${dateStr} <span class="d-day">D-${diffDays}</span></span>`;
+        }
     },
 
     /**
@@ -441,7 +459,7 @@ const ShipperBidding = {
     },
 
     /**
-     * Render a bid row
+     * Render a bid row with detail accordion
      */
     renderBidRow(bid) {
         // Render rating stars
@@ -458,8 +476,14 @@ const ShipperBidding = {
         // Rank badge class
         const rankClass = bid.rank === 1 ? 'rank-1' : (bid.rank === 2 ? 'rank-2' : (bid.rank === 3 ? 'rank-3' : ''));
 
+        // Format validity date
+        const validityStr = bid.validity_date ? this.formatDate(bid.validity_date) : '-';
+
+        // Column count for detail row
+        const colSpan = 9;
+
         return `
-            <tr data-bid-id="${bid.id}">
+            <tr data-bid-id="${bid.id}" class="bid-main-row">
                 <td class="col-rank">
                     <span class="rank-badge ${rankClass}">${bid.rank}</span>
                 </td>
@@ -490,8 +514,76 @@ const ShipperBidding = {
                         <i class="fas fa-check"></i> 선정
                     </button>
                 </td>
+                <td class="col-detail">
+                    <button class="btn-toggle-detail" onclick="ShipperBidding.toggleBidDetail(${bid.id})" title="상세보기">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </td>
+            </tr>
+            <tr class="bid-detail-row" id="bidDetail_${bid.id}" style="display: none;">
+                <td colspan="${colSpan}">
+                    <div class="bid-detail-content">
+                        <div class="detail-section">
+                            <h5 class="detail-title"><i class="fas fa-file-invoice-dollar"></i> 견적 상세</h5>
+                            <div class="detail-breakdown">
+                                <div class="breakdown-item">
+                                    <span class="breakdown-label">운임 (Freight)</span>
+                                    <span class="breakdown-value">${bid.freight_charge ? `₩${Math.round(bid.freight_charge).toLocaleString('ko-KR')}` : '-'}</span>
+                                </div>
+                                <div class="breakdown-item">
+                                    <span class="breakdown-label">로컬비 (Local)</span>
+                                    <span class="breakdown-value">${bid.local_charge ? `₩${Math.round(bid.local_charge).toLocaleString('ko-KR')}` : '-'}</span>
+                                </div>
+                                <div class="breakdown-item">
+                                    <span class="breakdown-label">기타 (Other)</span>
+                                    <span class="breakdown-value">${bid.other_charge ? `₩${Math.round(bid.other_charge).toLocaleString('ko-KR')}` : '-'}</span>
+                                </div>
+                                <div class="breakdown-item total">
+                                    <span class="breakdown-label">합계</span>
+                                    <span class="breakdown-value">${priceFormatted}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="detail-section">
+                            <h5 class="detail-title"><i class="fas fa-info-circle"></i> 추가 정보</h5>
+                            <div class="detail-info-grid">
+                                <div class="info-item">
+                                    <span class="info-label">견적 유효기간</span>
+                                    <span class="info-value">${validityStr}</span>
+                                </div>
+                                <div class="info-item remark">
+                                    <span class="info-label">비고</span>
+                                    <span class="info-value">${bid.remark || '-'}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
             </tr>
         `;
+    },
+
+    /**
+     * Toggle bid detail accordion
+     */
+    toggleBidDetail(bidId) {
+        const detailRow = document.getElementById(`bidDetail_${bidId}`);
+        const mainRow = document.querySelector(`tr[data-bid-id="${bidId}"]`);
+        const toggleBtn = mainRow?.querySelector('.btn-toggle-detail i');
+        
+        if (!detailRow) return;
+        
+        const isVisible = detailRow.style.display !== 'none';
+        
+        if (isVisible) {
+            detailRow.style.display = 'none';
+            mainRow?.classList.remove('expanded');
+            if (toggleBtn) toggleBtn.className = 'fas fa-chevron-down';
+        } else {
+            detailRow.style.display = 'table-row';
+            mainRow?.classList.add('expanded');
+            if (toggleBtn) toggleBtn.className = 'fas fa-chevron-up';
+        }
     },
 
     /**
