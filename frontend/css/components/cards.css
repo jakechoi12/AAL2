@@ -1,47 +1,101 @@
 /* =====================================================
-   Card Component Styles
+   Card Component Styles - Futuristic Theme
    ===================================================== */
 
-/* Tool Cards */
+/* Tool Cards - Glassmorphism */
 .tool-workspace {
-    background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px;
-    padding: 2.5rem; position: relative;
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 2.5rem; 
+    position: relative;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+}
+
+.tool-workspace:hover {
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
 }
 
 .tool-header {
-    margin-bottom: 2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1.5rem;
-    display: flex; justify-content: space-between; align-items: flex-end;
+    margin-bottom: 2rem; 
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08); 
+    padding-bottom: 1.5rem;
+    display: flex; 
+    justify-content: space-between; 
+    align-items: flex-end;
 }
 
-.tool-header h2 { font-size: 2rem; margin-bottom: 0.5rem; }
+.tool-header h2 { 
+    font-size: 1.75rem; 
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
 
 .live-badge {
-    font-size: 0.8rem; color: #4ade80; background: rgba(74, 222, 128, 0.1);
-    padding: 5px 12px; border-radius: 20px; display: flex; align-items: center; gap: 6px;
+    font-size: 0.75rem; 
+    color: #fff; 
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 5px 12px; 
+    border-radius: 20px; 
+    display: flex; 
+    align-items: center; 
+    gap: 6px;
+    font-weight: 600;
 }
 
-.live-dot { width: 8px; height: 8px; background: #4ade80; border-radius: 50%; animation: Data 2s infinite; }
+.live-dot { 
+    width: 8px; 
+    height: 8px; 
+    background: #fff; 
+    border-radius: 50%; 
+    animation: pulse 2s infinite;
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.9); }
+}
 
 /* Currency Rate Table */
 .currency-rates-table {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid var(--border-color);
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
     padding: 1.5rem;
     margin-bottom: 2rem;
+    transition: all 0.3s ease;
+}
+
+.currency-rates-table:hover {
+    border-color: rgba(255, 255, 255, 0.15);
 }
 
 .currency-rates-header {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    margin-bottom: 1.5rem; 
+    padding-bottom: 1rem; 
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .currency-rates-header h3 {
-    font-size: 1.1rem; font-weight: 600; color: var(--text-main);
+    font-size: 1rem; 
+    font-weight: 600; 
+    color: var(--text-main);
 }
 
 .currency-rates-grid {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+    gap: 1rem;
 }
 
 /* Rates Table Container */
@@ -59,12 +113,17 @@
 }
 
 .currency-rate-item {
-    background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px;
-    padding: 1rem; transition: var(--transition);
+    background: rgba(10, 10, 16, 0.5); 
+    border: 1px solid var(--border-color); 
+    border-radius: 10px;
+    padding: 1rem; 
+    transition: all 0.25s ease;
 }
 
 .currency-rate-item:hover {
-    border-color: var(--accent-color); transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.2); 
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
 }
 
 .currency-rate-header {
@@ -105,29 +164,71 @@
 
 /* Converter Box */
 .converter-box {
-    display: flex; gap: 1rem; align-items: center; background: rgba(255,255,255,0.03);
-    padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem;
+    display: flex; 
+    gap: 1rem; 
+    align-items: center; 
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 1.5rem; 
+    border-radius: 12px; 
+    margin-bottom: 2rem;
+    transition: border-color 0.3s ease;
+}
+
+.converter-box:focus-within {
+    border-color: rgba(255, 255, 255, 0.2);
 }
 
 .input-group { flex: 1; }
-.input-group label { display: block; font-size: 0.8rem; color: var(--text-sub); margin-bottom: 0.5rem; }
+.input-group label { 
+    display: block; 
+    font-size: 0.75rem; 
+    color: var(--text-sub); 
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
 
 .input-wrapper { 
-    display: flex; background: var(--bg-color); border: 1px solid var(--border-color); 
-    padding: 0.8rem; border-radius: 8px; align-items: center; 
+    display: flex; 
+    background: rgba(5, 5, 8, 0.6); 
+    border: 1px solid var(--border-color); 
+    padding: 0.8rem; 
+    border-radius: 10px; 
+    align-items: center;
+    transition: all 0.2s ease;
+}
+
+.input-wrapper:focus-within {
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.05);
 }
 
 .input-wrapper input { 
-    background: transparent; border: none; color: var(--text-main); 
-    font-size: 1.2rem; font-weight: 700; width: 100%; 
+    background: transparent; 
+    border: none; 
+    color: var(--text-main); 
+    font-size: 1.2rem; 
+    font-weight: 700; 
+    width: 100%;
+    outline: none;
 }
 
 .currency-select { 
-    background: transparent; border: none; font-weight: 600; 
-    color: var(--accent-color); cursor: pointer; text-align: right; 
+    background: transparent; 
+    border: none; 
+    font-weight: 600; 
+    color: var(--accent-color); 
+    cursor: pointer; 
+    text-align: right;
+    outline: none;
 }
 
-.currency-select option { background: var(--card-bg); color: var(--text-main); }
+.currency-select option { 
+    background: var(--card-bg); 
+    color: var(--text-main); 
+}
 
 /* Alert Card Styles */
 .alert-card {
@@ -256,16 +357,17 @@
 /* Country Card */
 .country-card {
     padding: 12px;
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: 8px;
-    border-left: 3px solid var(--accent-color);
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 10px;
+    border-left: 3px solid rgba(255, 255, 255, 0.3);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.25s ease;
 }
 
 .country-card:hover {
     background: rgba(255, 255, 255, 0.05);
     transform: translateX(4px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .country-header {
@@ -290,10 +392,11 @@
 .country-count {
     font-size: 0.75rem;
     padding: 3px 10px;
-    background: var(--accent-color);
+    background: var(--gradient-primary);
     color: white;
     border-radius: 12px;
     font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0, 212, 170, 0.3);
 }
 
 .country-stats {

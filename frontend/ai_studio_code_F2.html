@@ -3,254 +3,479 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ALIGNED - All About Logistics</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚚</text></svg>">
+    <title>AAL - AI Agent for Global Logistics</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌐</text></svg>">
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    <!-- External CSS Files - Design System -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- CSS -->
     <link rel="stylesheet" href="css/variables.css">
-    <link rel="stylesheet" href="css/base.css">
-    <link rel="stylesheet" href="css/utilities.css">
-    <!-- Components -->
-    <link rel="stylesheet" href="css/components/header.css">
-    <link rel="stylesheet" href="css/components/buttons.css">
-    <link rel="stylesheet" href="css/components/cards.css">
-    <link rel="stylesheet" href="css/components/unified-cards.css">
-    <link rel="stylesheet" href="css/components/unified-buttons.css">
     <link rel="stylesheet" href="css/components/auth.css">
-    <link rel="stylesheet" href="css/components/freight-ticker.css">
-    <!-- Sections -->
-    <link rel="stylesheet" href="css/sections/hero.css">
-    <link rel="stylesheet" href="css/sections/landing.css">
     <!-- Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <!-- AI Assistant -->
-    <script src="js/features/ai-assistant.js"></script>
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
-        /* AI Assistant Section - Main Page */
-        .ai-assistant-section {
-            min-height: 100vh;
+        /* ============================================
+           Explorer Page - Google Language Explorer Style
+           ============================================ */
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #000;
+            color: #fff;
+            overflow: hidden;
+            height: 100vh;
+        }
+        
+        /* Transparent Header */
+        .header-transparent {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
             display: flex;
-            flex-direction: column;
+            justify-content: space-between;
             align-items: center;
-            justify-content: center;
-            padding: 180px 2rem 60px; /* Header (90px) + Ticker (44px) + margin */
+            padding: 1.5rem 3rem;
+            background: transparent;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #fff;
+            text-decoration: none;
+            letter-spacing: -0.02em;
+        }
+        
+        .logo span {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .header-nav {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        /* Nav Item with Dropdown */
+        .nav-item {
             position: relative;
         }
         
-        .ai-chat-header {
-            text-align: center;
-            margin-bottom: 2.5rem;
-        }
-        
-        .ai-chat-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
-            background: rgba(59, 130, 246, 0.1);
-            border: 1px solid rgba(59, 130, 246, 0.3);
-            border-radius: 20px;
-            color: var(--accent-color);
-            font-size: 0.85rem;
+        .nav-item > a,
+        .nav-item > .nav-toggle {
+            color: #fff;
+            text-decoration: none;
+            font-size: 1rem;
             font-weight: 500;
-            margin-bottom: 1.5rem;
-            opacity: 0;
-            animation: fadeUp 0.8s forwards 0.2s;
+            padding: 0.6rem 1rem;
+            border-radius: 8px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
         }
         
-        .ai-chat-title {
-            font-size: clamp(2rem, 5vw, 3.5rem);
-            font-weight: 700;
-            color: var(--text-main);
-            margin-bottom: 1rem;
-            opacity: 0;
-            animation: fadeUp 0.8s forwards 0.4s;
+        .nav-item > a:hover,
+        .nav-item > .nav-toggle:hover {
+            background: rgba(255, 255, 255, 0.1);
         }
         
-        .ai-chat-subtitle {
-            font-size: 1.1rem;
-            color: var(--text-sub);
-            opacity: 0;
-            animation: fadeUp 0.8s forwards 0.6s;
+        .nav-toggle i {
+            font-size: 0.7rem;
+            transition: transform 0.2s;
         }
         
-        .ai-chat-container {
-            width: 100%;
-            max-width: 750px;
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
+        /* Dropdown Menu */
+        .nav-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            min-width: 180px;
+            background: rgba(20, 20, 20, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 8px 0;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: all 0.2s ease;
+            backdrop-filter: blur(20px);
+            z-index: 200;
+        }
+        
+        .nav-item:hover .nav-dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(4px);
+        }
+        
+        .nav-item:hover .nav-toggle i {
+            transform: rotate(180deg);
+        }
+        
+        .nav-dropdown a {
+            display: block;
+            padding: 10px 16px;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.15s;
+        }
+        
+        .nav-dropdown a:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+        
+        .nav-dropdown .coming-soon,
+        .nav-item > a.coming-soon {
+            color: rgba(255, 255, 255, 0.4);
+        }
+        
+        .nav-dropdown .badge,
+        .nav-item > a .badge {
+            font-size: 0.65rem;
+            padding: 2px 6px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
+            margin-left: 8px;
+        }
+        
+        .header-auth-btn {
+            padding: 0.5rem 1.25rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 20px;
-            overflow: hidden;
-            opacity: 0;
-            animation: fadeUp 0.8s forwards 0.8s;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            color: #fff;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
         }
         
-        .ai-chat-messages {
-            min-height: 300px;
-            max-height: 450px;
-            overflow-y: auto;
-            padding: 1rem;
+        .header-auth-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        /* Main Explorer Container */
+        .explorer-main {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        /* Globe Container - Full Screen Background */
+        #globe-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        #globe-container canvas {
+            cursor: grab;
+        }
+        
+        #globe-container canvas:active {
+            cursor: grabbing;
+        }
+        
+        /* Overlay Content - Centered */
+        .overlay-content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
             display: flex;
             flex-direction: column;
-            gap: 0.75rem;
-        }
-        
-        /* 사이드바와 동일한 메시지 스타일 */
-        .ai-chat-message {
-            max-width: 85%;
-            padding: 0.75rem 1rem;
-            border-radius: 12px;
-            font-size: 0.9rem;
-            line-height: 1.5;
-            animation: messageIn 0.3s ease;
-        }
-        
-        @keyframes messageIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .ai-chat-message.ai {
-            background: #1f2937;
-            border: 1px solid #374151;
-            align-self: flex-start;
-            color: #e5e7eb;
-        }
-        
-        .ai-chat-message.user {
-            background: #1e40af;
-            align-self: flex-end;
-            color: white;
-        }
-        
-        .ai-chat-message.typing {
-            display: flex;
-            gap: 4px;
-            padding: 0.75rem 1.25rem;
-        }
-        
-        .ai-chat-message.typing span {
-            width: 6px;
-            height: 6px;
-            background: #6b7280;
-            border-radius: 50%;
-            animation: typingDot 1.4s infinite;
-        }
-        
-        .ai-chat-message.typing span:nth-child(2) { animation-delay: 0.2s; }
-        .ai-chat-message.typing span:nth-child(3) { animation-delay: 0.4s; }
-        
-        @keyframes typingDot {
-            0%, 60%, 100% { transform: translateY(0); }
-            30% { transform: translateY(-6px); }
-        }
-        
-        .ai-chat-quick-actions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            padding: 0 1.5rem 1rem;
+            align-items: center;
             justify-content: center;
+            padding: 0 20px;
+            pointer-events: none;
+            transition: all 0.4s ease;
         }
         
-        .ai-quick-btn {
-            padding: 10px 18px;
-            background: rgba(59, 130, 246, 0.1);
-            border: 1px solid rgba(59, 130, 246, 0.2);
-            border-radius: 25px;
-            color: var(--accent-color);
-            font-size: 0.85rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
+        .overlay-content > * {
+            pointer-events: auto;
+        }
+        
+        /* Main Title - 항상 유지 */
+        .main-title {
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 300;
+            letter-spacing: -0.02em;
+            color: #fff;
+            text-align: center;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+        
+        /* Sub Title - 항상 유지 */
+        .sub-title {
+            font-size: clamp(0.95rem, 2vw, 1.15rem);
+            color: rgba(255, 255, 255, 0.65);
+            text-align: center;
+            margin-bottom: 2.5rem;
+            max-width: 600px;
+            line-height: 1.6;
+            font-weight: 400;
+        }
+        
+        /* Search Input Container */
+        .search-input {
             display: flex;
             align-items: center;
-            gap: 8px;
+            width: 100%;
+            max-width: 620px;
+            padding: 6px 6px 6px 24px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 40px;
+            transition: all 0.3s ease;
         }
         
-        .ai-quick-btn:hover {
-            background: rgba(59, 130, 246, 0.2);
-            border-color: var(--accent-color);
-            transform: translateY(-2px);
+        /* 대화 시작 시: 가로폭만 확장 */
+        .overlay-content.chat-active .search-input {
+            max-width: 780px;
+            background: rgba(0, 0, 0, 0.6);
+            border-color: rgba(255, 255, 255, 0.2);
         }
         
-        .ai-chat-input-area {
-            display: flex;
-            gap: 12px;
-            padding: 1rem 1.5rem 1.5rem;
-            border-top: 1px solid var(--border-color);
-            background: rgba(0, 0, 0, 0.2);
+        .search-input:focus-within {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.25);
         }
         
-        .ai-chat-input {
+        .search-input i.search-icon {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 1rem;
+            margin-right: 14px;
+        }
+        
+        .search-input input {
             flex: 1;
-            padding: 14px 18px;
-            background: var(--bg-main);
-            border: 1px solid var(--border-color);
-            border-radius: 14px;
-            color: var(--text-main);
-            font-size: 0.95rem;
-            resize: none;
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 1rem;
+            padding: 14px 0;
             outline: none;
-            transition: border-color 0.2s;
-            max-height: 120px;
             font-family: inherit;
         }
         
-        .ai-chat-input:focus {
-            border-color: var(--accent-color);
+        .search-input input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
         }
         
-        .ai-chat-input::placeholder {
-            color: var(--text-sub);
-        }
-        
-        .ai-chat-send {
-            width: 50px;
-            height: 50px;
-            background: var(--accent-color);
+        .search-input button {
+            width: 46px;
+            height: 46px;
+            background: rgba(255, 255, 255, 0.1);
             border: none;
-            border-radius: 14px;
-            color: white;
-            font-size: 1.1rem;
+            border-radius: 50%;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.95rem;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.2s;
             display: flex;
             align-items: center;
             justify-content: center;
         }
         
-        .ai-chat-send:hover {
-            background: #2563eb;
-            transform: scale(1.05);
+        .search-input button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
         }
         
-        .ai-chat-send:disabled {
-            background: var(--border-color);
+        .search-input button:disabled {
+            opacity: 0.5;
             cursor: not-allowed;
-            transform: none;
         }
         
-        /* Quote Result Card */
-        .ai-quote-result {
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.3);
+        /* Stats Overview - Bottom Left */
+        .stats-overview {
+            position: fixed;
+            bottom: 40px;
+            left: 40px;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .stats-overview .stat-item {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .stats-overview .stat-item strong {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #fff;
+            margin-right: 8px;
+        }
+        
+        /* Drag Hint - Bottom Center */
+        .drag-hint {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: opacity 0.3s ease;
+        }
+        
+        /* 대화 시작 시: drag-hint 숨김 */
+        body.chat-active .drag-hint {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .drag-hint i {
+            font-size: 0.9rem;
+        }
+        
+        /* Quick Actions */
+        .quick-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        /* 대화 시작 시: 퀵액션 숨김 */
+        .overlay-content.chat-active .quick-actions {
+            opacity: 0;
+            height: 0;
+            margin: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        
+        .quick-action-btn {
+            padding: 10px 18px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .quick-action-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
+        
+        .quick-action-btn i {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+        
+        /* Chat Response Area - 검색창 아래로 확장 */
+        .chat-response {
+            max-width: 780px;
+            width: 100%;
+            max-height: 0;
+            overflow-y: auto;
+            padding: 0;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 16px;
+            transition: all 0.4s ease;
+            margin-top: 1rem;
+        }
+        
+        /* 대화 시작 시: 아래로 확장 */
+        .chat-response.active {
+            max-height: 50vh;
+            padding: 1rem;
+        }
+        
+        .chat-msg {
+            padding: 1rem 1.25rem;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.15);
             border-radius: 12px;
+            margin-bottom: 0.75rem;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+        }
+        
+        .chat-msg.user {
+            background: rgba(30, 30, 30, 0.95);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .chat-msg.typing {
+            display: flex;
+            gap: 6px;
+            padding: 1rem 1.5rem;
+        }
+        
+        .chat-msg.typing span {
+            width: 8px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            animation: typingDot 1.4s ease-in-out infinite;
+        }
+        
+        .chat-msg.typing span:nth-child(2) { animation-delay: 0.2s; }
+        .chat-msg.typing span:nth-child(3) { animation-delay: 0.4s; }
+        
+        @keyframes typingDot {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+            30% { transform: translateY(-6px); opacity: 1; }
+        }
+        
+        /* Quote Result */
+        .ai-quote-result {
+            background: rgba(0, 0, 0, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
             padding: 1rem;
             margin-top: 1rem;
         }
+        
         
         .ai-quote-result-header {
             display: flex;
             align-items: center;
             gap: 8px;
-            color: #10b981;
-            font-weight: 600;
+            color: #fff;
+            font-weight: 500;
             margin-bottom: 0.75rem;
         }
         
@@ -262,177 +487,161 @@
         }
         
         .ai-quote-result-item {
-            color: var(--text-sub);
+            color: rgba(255, 255, 255, 0.6);
         }
         
         .ai-quote-result-item strong {
-            color: var(--text-main);
+            color: #fff;
         }
         
         .ai-quote-action-btn {
             width: 100%;
             margin-top: 0.75rem;
             padding: 10px;
-            background: #10b981;
-            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 8px;
-            color: white;
-            font-weight: 600;
+            color: #fff;
+            font-weight: 500;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: all 0.2s;
         }
         
         .ai-quote-action-btn:hover {
-            background: #059669;
+            background: rgba(255, 255, 255, 0.15);
         }
         
-        /* Company link button */
-        .company-link-section {
-            margin-top: 3rem;
-            text-align: center;
-            opacity: 0;
-            animation: fadeUp 0.8s forwards 1s;
-        }
-        
-        .company-link-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            padding: 14px 28px;
-            background: transparent;
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            color: var(--text-sub);
-            font-size: 0.9rem;
-            text-decoration: none;
-            transition: all 0.3s ease;
-        }
-        
-        .company-link-btn:hover {
-            border-color: var(--accent-color);
-            color: var(--accent-color);
-            transform: translateY(-2px);
-        }
-        
-        .company-link-btn i {
-            font-size: 1rem;
-        }
-        
+        /* Responsive */
         @media (max-width: 768px) {
-            .ai-assistant-section {
-                padding: 170px 1rem 40px; /* Header (65px) + Ticker (38px) + margin */
+            .header-transparent {
+                padding: 1rem 1.5rem;
             }
             
-            .ai-chat-container {
-                border-radius: 16px;
+            .header-nav {
+                display: none;
             }
             
-            .ai-chat-messages {
-                min-height: 200px;
-                max-height: 350px;
+            .main-title {
+                font-size: 2rem;
             }
             
-            .ai-quick-btn {
+            .stats-overview {
+                left: 20px;
+                bottom: 20px;
+            }
+            
+            .drag-hint {
+                display: none;
+            }
+            
+            .quick-actions {
+                gap: 8px;
+            }
+            
+            .quick-action-btn {
                 padding: 8px 14px;
                 font-size: 0.8rem;
             }
         }
     </style>
 </head>
-<body class="has-ticker">
-
-    <!-- Header -->
-    <header>
-        <a href="/" class="logo">
-            AAL<span>.</span>
-            <div class="full-name">All About Logistics</div>
-        </a>
-        <nav>
-            <ul>
-                <li><a href="pages/company.html">Company</a></li>
-                <li><a href="pages/quotation.html">Quotation</a></li>
-                <li><a href="pages/shipper-bidding.html">My Quotations</a></li>
-                <li><a href="pages/bidding-list.html">Bidding</a></li>
-                <li><a href="pages/market-data.html">Market Data</a></li>
-                <li><a href="pages/news-intelligence.html">News Intel</a></li>
-                <li><a href="pages/report-insight.html">Report & Insight</a></li>
-                <li><a href="pages/dashboard-shipper.html">Dashboard</a></li>
-            </ul>
+<body>
+    <!-- Transparent Header -->
+    <header class="header-transparent">
+        <a href="/" class="logo">AAL<span>.</span></a>
+        <nav class="header-nav">
+            <!-- Company - 단일 -->
+            <div class="nav-item">
+                <a href="pages/company.html">Company</a>
+            </div>
+            <!-- Quotation 그룹 -->
+            <div class="nav-item">
+                <button class="nav-toggle">Quotation <i class="fas fa-chevron-down"></i></button>
+                <div class="nav-dropdown">
+                    <a href="pages/quotation.html">Quote</a>
+                    <a href="pages/bidding-list.html">Bidding</a>
+                    <a href="pages/shipper-bidding.html">My Quotations</a>
+                </div>
+            </div>
+            <!-- Operations 그룹 -->
+            <div class="nav-item">
+                <button class="nav-toggle">Operations <i class="fas fa-chevron-down"></i></button>
+                <div class="nav-dropdown">
+                    <a href="#" class="coming-soon">Contract <span class="badge">준비중</span></a>
+                    <a href="#" class="coming-soon">Tracking <span class="badge">준비중</span></a>
+                </div>
+            </div>
+            <!-- Dashboard - 단일 (준비중) -->
+            <div class="nav-item">
+                <a href="pages/dashboard-shipper.html" class="coming-soon">Dashboard <span class="badge">준비중</span></a>
+            </div>
+            <!-- Intelligence 그룹 -->
+            <div class="nav-item">
+                <button class="nav-toggle">Intelligence <i class="fas fa-chevron-down"></i></button>
+                <div class="nav-dropdown">
+                    <a href="pages/market-data.html">Market Data</a>
+                    <a href="pages/news-intelligence.html">News Intel</a>
+                    <a href="pages/report-insight.html">Report & Insight</a>
+                </div>
+            </div>
         </nav>
-        <!-- Auth Container -->
-        <div class="header-auth" id="headerAuthContainer">
+        <div id="headerAuthContainer">
             <button class="header-auth-btn" onclick="Auth.openModal()">
-                <i class="fas fa-sign-in-alt"></i> 로그인
+                <i class="fas fa-user"></i> Login
             </button>
         </div>
     </header>
 
-    <!-- Freight Deals Ticker -->
-    <div class="freight-ticker-wrapper">
-        <div class="freight-ticker" id="freightTicker">
-            <div class="ticker-label">
-                <i class="fas fa-tags"></i>
-                HOT DEALS
-            </div>
-            <!-- Ticker items will be populated by JavaScript -->
-        </div>
-    </div>
-
     <!-- Main Content -->
-    <main>
-        <!-- AI Assistant Section -->
-        <section class="container ai-assistant-section">
-            <div class="ai-chat-header">
-                <div class="ai-chat-badge">
-                    <i class="fas fa-robot"></i>
-                    <span>AI Assistant</span>
-                </div>
-                <h2 class="ai-chat-title">무엇을 도와드릴까요?</h2>
-                <p class="ai-chat-subtitle">운임 조회, 비딩, 시장 동향 등 물류에 관한 모든 것을 물어보세요</p>
-            </div>
+    <main class="explorer-main">
+        <!-- 3D Globe Canvas -->
+        <div id="globe-container"></div>
+        
+        <!-- Overlay Content -->
+        <div class="overlay-content">
+            <h1 class="main-title">AI Agent for Global Logistics</h1>
+            <p class="sub-title">Automate your logistics with AI-powered platform. Get instant quotes, track shipments, and optimize your supply chain.</p>
             
-            <div class="ai-chat-container" id="main-ai-chat">
-                <div class="ai-chat-messages" id="main-chat-messages">
-                    <!-- 대화 내용은 JavaScript에서 복원됨 -->
+            <!-- Search/Chat Input -->
+            <div class="search-input">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" 
+                       id="main-chat-input" 
+                       placeholder="무엇을 도와드릴까요?" 
+                       onkeydown="handleMainChatKeyDown(event)" />
+                <button id="main-chat-send" onclick="sendMainChat()">
+                    <i class="fas fa-arrow-right"></i>
+                </button>
                 </div>
                 
-                <div class="ai-chat-quick-actions" id="main-quick-actions">
-                    <button class="ai-quick-btn" onclick="mainChatSend('운임을 조회하고 싶어요')">
-                        <i class="fas fa-calculator"></i> 운임 조회
+            <!-- Quick Actions -->
+            <div class="quick-actions" id="main-quick-actions">
+                <button class="quick-action-btn" onclick="mainChatSend('운임을 조회하고 싶어요')">
+                    <i class="fas fa-ship"></i> 운임 조회
                     </button>
-                    <button class="ai-quick-btn" onclick="mainChatSend('현재 진행 중인 비딩 현황을 알려주세요')">
+                <button class="quick-action-btn" onclick="mainChatSend('비딩 현황을 알려주세요')">
                         <i class="fas fa-gavel"></i> 비딩 현황
                     </button>
-                    <button class="ai-quick-btn" onclick="mainChatSend('최근 해운 시장 동향이 어떤가요?')">
+                <button class="quick-action-btn" onclick="mainChatSend('시장 동향이 어떤가요?')">
                         <i class="fas fa-chart-line"></i> 시장 동향
-                    </button>
-                    <button class="ai-quick-btn" onclick="mainChatSend('이 플랫폼에서 무엇을 할 수 있나요?')">
-                        <i class="fas fa-question-circle"></i> 도움말
                     </button>
                 </div>
                 
-                <div class="ai-chat-input-area">
-                    <textarea 
-                        class="ai-chat-input" 
-                        id="main-chat-input" 
-                        placeholder="메시지를 입력하세요..." 
-                        rows="1"
-                        onkeydown="handleMainChatKeyDown(event)"
-                    ></textarea>
-                    <button class="ai-chat-send" id="main-chat-send" onclick="sendMainChat()">
-                        <i class="fas fa-paper-plane"></i>
-                    </button>
-                </div>
+            <!-- Chat Response Area (검색창 아래로 확장) -->
+            <div class="chat-response" id="main-chat-messages"></div>
+        </div>
+            
+        <!-- Stats Overview - Bottom Left -->
+        <div class="stats-overview">
+            <div class="stat-item"><strong>1,000+</strong> Shippers</div>
+            <div class="stat-item"><strong>5,000+</strong> Forwarders</div>
             </div>
             
-            <div class="company-link-section">
-                <a href="pages/company.html" class="company-link-btn">
-                    <i class="fas fa-info-circle"></i>
-                    서비스 소개 보기
-                    <i class="fas fa-arrow-right"></i>
-                </a>
+        <!-- Drag Hint - Bottom Center -->
+        <div class="drag-hint">
+            <i class="fas fa-hand-pointer"></i>
+            Drag to explore
             </div>
-        </section>
     </main>
 
     <!-- Auth Modal -->
@@ -445,7 +654,6 @@
                 </button>
             </div>
             <div class="auth-modal-body">
-                <!-- Step Indicator -->
                 <div class="auth-steps">
                     <div class="auth-step active"></div>
                     <div class="auth-step"></div>
@@ -468,12 +676,9 @@
                             <span class="type-desc">운송 서비스를 제공하는 기업</span>
                         </button>
                     </div>
-                    <div class="auth-divider">
-                        <span>또는</span>
-                    </div>
+                    <div class="auth-divider"><span>또는</span></div>
                     <p class="auth-form-hint" style="text-align: center;">
-                        아직 계정이 없으신가요? 
-                        <a onclick="Auth.showRegisterTypeView()">회원가입</a>
+                        아직 계정이 없으신가요? <a onclick="Auth.showRegisterTypeView()">회원가입</a>
                     </p>
                 </div>
                 
@@ -486,33 +691,23 @@
                     <div class="auth-form">
                         <div class="auth-form-group">
                             <label class="auth-form-label required">이메일</label>
-                            <input type="email" class="auth-form-input" id="loginEmail" 
-                                   placeholder="example@company.com" autocomplete="email">
+                            <input type="email" class="auth-form-input" id="loginEmail" placeholder="example@company.com" autocomplete="email">
                         </div>
                         <div class="auth-form-group">
                             <label class="auth-form-label required">비밀번호</label>
                             <div class="password-field">
-                                <input type="password" class="auth-form-input" id="loginPassword" 
-                                       placeholder="비밀번호를 입력하세요" autocomplete="current-password">
-                                <button type="button" class="password-toggle">
-                                    <i class="fas fa-eye"></i>
-                                </button>
+                                <input type="password" class="auth-form-input" id="loginPassword" placeholder="비밀번호를 입력하세요" autocomplete="current-password">
+                                <button type="button" class="password-toggle"><i class="fas fa-eye"></i></button>
                             </div>
                         </div>
-                        <button class="auth-submit-btn" id="loginSubmitBtn" onclick="Auth.submitLogin()">
-                            로그인
-                        </button>
+                        <button class="auth-submit-btn" id="loginSubmitBtn" onclick="Auth.submitLogin()">로그인</button>
                     </div>
                 </div>
                 
                 <!-- Register Type Selection View -->
                 <div id="registerTypeView" style="display: none;">
-                    <button class="auth-back-btn" onclick="Auth.goBack()">
-                        <i class="fas fa-arrow-left"></i> 뒤로
-                    </button>
-                    <p style="text-align: center; color: var(--text-sub); margin-bottom: 1.5rem;">
-                        회원 유형을 선택해주세요
-                    </p>
+                    <button class="auth-back-btn" onclick="Auth.goBack()"><i class="fas fa-arrow-left"></i> 뒤로</button>
+                    <p style="text-align: center; color: var(--text-sub); margin-bottom: 1.5rem;">회원 유형을 선택해주세요</p>
                     <div class="user-type-selector">
                         <button class="user-type-option" onclick="Auth.selectUserType('shipper')">
                             <i class="fas fa-building"></i>
@@ -526,67 +721,53 @@
                         </button>
                     </div>
                     <p class="auth-form-hint" style="text-align: center; margin-top: 1.5rem;">
-                        이미 계정이 있으신가요? 
-                        <a onclick="Auth.showLoginTypeView()">로그인</a>
+                        이미 계정이 있으신가요? <a onclick="Auth.showLoginTypeView()">로그인</a>
                     </p>
                 </div>
                 
                 <!-- Register Form View -->
                 <div id="registerFormView" style="display: none;">
-                    <button class="auth-back-btn" onclick="Auth.goBack()">
-                        <i class="fas fa-arrow-left"></i> 회원 유형 선택
-                    </button>
+                    <button class="auth-back-btn" onclick="Auth.goBack()"><i class="fas fa-arrow-left"></i> 회원 유형 선택</button>
                     <div class="auth-error"></div>
                     <div class="auth-success"></div>
                     <div class="auth-form">
                         <div class="auth-form-row">
                             <div class="auth-form-group">
                                 <label class="auth-form-label required">회사명</label>
-                                <input type="text" class="auth-form-input" id="regCompany" 
-                                       placeholder="회사명을 입력하세요">
+                                <input type="text" class="auth-form-input" id="regCompany" placeholder="회사명을 입력하세요">
                             </div>
                             <div class="auth-form-group">
                                 <label class="auth-form-label">사업자등록번호</label>
-                                <input type="text" class="auth-form-input" id="regBusinessNo" 
-                                       placeholder="000-00-00000">
+                                <input type="text" class="auth-form-input" id="regBusinessNo" placeholder="000-00-00000">
                             </div>
                         </div>
                         <div class="auth-form-row">
                             <div class="auth-form-group">
                                 <label class="auth-form-label required">담당자명</label>
-                                <input type="text" class="auth-form-input" id="regName" 
-                                       placeholder="담당자명">
+                                <input type="text" class="auth-form-input" id="regName" placeholder="담당자명">
                             </div>
                             <div class="auth-form-group">
                                 <label class="auth-form-label required">연락처</label>
-                                <input type="tel" class="auth-form-input" id="regPhone" 
-                                       placeholder="010-0000-0000">
+                                <input type="tel" class="auth-form-input" id="regPhone" placeholder="010-0000-0000">
                             </div>
                         </div>
                         <div class="auth-form-group">
                             <label class="auth-form-label required">이메일</label>
-                            <input type="email" class="auth-form-input" id="regEmail" 
-                                   placeholder="example@company.com" autocomplete="email">
+                            <input type="email" class="auth-form-input" id="regEmail" placeholder="example@company.com" autocomplete="email">
                         </div>
                         <div class="auth-form-row">
                             <div class="auth-form-group">
                                 <label class="auth-form-label required">비밀번호</label>
                                 <div class="password-field">
-                                    <input type="password" class="auth-form-input" id="regPassword" 
-                                           placeholder="8자 이상, 영문+숫자" autocomplete="new-password">
-                                    <button type="button" class="password-toggle">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
+                                    <input type="password" class="auth-form-input" id="regPassword" placeholder="8자 이상, 영문+숫자" autocomplete="new-password">
+                                    <button type="button" class="password-toggle"><i class="fas fa-eye"></i></button>
                                 </div>
                             </div>
                             <div class="auth-form-group">
                                 <label class="auth-form-label required">비밀번호 확인</label>
                                 <div class="password-field">
-                                    <input type="password" class="auth-form-input" id="regPasswordConfirm" 
-                                           placeholder="비밀번호 재입력" autocomplete="new-password">
-                                    <button type="button" class="password-toggle">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
+                                    <input type="password" class="auth-form-input" id="regPasswordConfirm" placeholder="비밀번호 재입력" autocomplete="new-password">
+                                    <button type="button" class="password-toggle"><i class="fas fa-eye"></i></button>
                                 </div>
                             </div>
                         </div>
@@ -599,78 +780,19 @@
         </div>
     </div>
 
-    <footer>
-        <div class="footer-brand">ALIGNED</div>
-        <div class="copyright">&copy; 2026 Aoroa Co.,Ltd</div>
-    </footer>
-
     <!-- Auth Script -->
     <script src="js/features/auth.js"></script>
 
-    <!-- Freight Ticker Script -->
+    <!-- AI Chat Script -->
     <script>
-        // Freight Deals Sample Data
-        const freightDeals = [
-            { pol: "BUSAN", pod: "LOS ANGELES", rate: 1850, discount: 18 },
-            { pol: "SHANGHAI", pod: "ROTTERDAM", rate: 2100, discount: 15 },
-            { pol: "NINGBO", pod: "LONG BEACH", rate: 1950, discount: 22 },
-            { pol: "BUSAN", pod: "HAMBURG", rate: 2250, discount: 12 },
-            { pol: "QINGDAO", pod: "NEW YORK", rate: 2400, discount: 20 },
-            { pol: "INCHEON", pod: "SEATTLE", rate: 1780, discount: 25 },
-            { pol: "SHENZHEN", pod: "FELIXSTOWE", rate: 2050, discount: 17 },
-            { pol: "BUSAN", pod: "VANCOUVER", rate: 1920, discount: 14 },
-            { pol: "XIAMEN", pod: "SAVANNAH", rate: 2180, discount: 19 },
-            { pol: "KAOHSIUNG", pod: "OAKLAND", rate: 1890, discount: 21 }
-        ];
-        
-        // Initialize Ticker
-        function initFreightTicker() {
-            const ticker = document.getElementById('freightTicker');
-            if (!ticker) return;
-            
-            // Create ticker items (duplicate for seamless loop)
-            const tickerContent = createTickerContent();
-            ticker.innerHTML = `
-                <div class="ticker-label">
-                    <i class="fas fa-tags"></i>
-                    HOT DEALS
-                </div>
-                ${tickerContent}
-                ${tickerContent}
-            `;
-        }
-        
-        function createTickerContent() {
-            return freightDeals.map(deal => `
-                <div class="freight-ticker-item" onclick="handleTickerClick('${deal.pol}', '${deal.pod}')">
-                    <span class="ticker-icon">🚢</span>
-                    <div class="ticker-route">
-                        <span class="port">${deal.pol}</span>
-                        <span class="arrow">→</span>
-                        <span class="port">${deal.pod}</span>
-                    </div>
-                    <span class="ticker-price">$${deal.rate.toLocaleString()}</span>
-                    <span class="ticker-discount">${deal.discount}% OFF</span>
-                </div>
-            `).join('');
-        }
-        
-        function handleTickerClick(pol, pod) {
-            // Navigate to quotation page with pre-filled route
-            window.location.href = `pages/quotation.html?pol=${encodeURIComponent(pol)}&pod=${encodeURIComponent(pod)}`;
-        }
-        
-        // Initialize on DOM ready
-        document.addEventListener('DOMContentLoaded', initFreightTicker);
-    </script>
-
-    <!-- Main AI Chat Script -->
-    <script>
-        // Main AI Chat Configuration
         const MAIN_CHAT_API = 'http://localhost:5000';
         let mainChatLoading = false;
         
-        // 공유 세션 ID 가져오기/생성 (사이드바 AI Assistant와 동일한 세션 사용)
+        const mainChatMessages = document.getElementById('main-chat-messages');
+        const mainChatInput = document.getElementById('main-chat-input');
+        const mainChatSendBtn = document.getElementById('main-chat-send');
+        const mainQuickActions = document.getElementById('main-quick-actions');
+        
         function getSharedSessionId() {
             let sid = sessionStorage.getItem('ai_session_id');
             if (!sid) {
@@ -680,44 +802,6 @@
             return sid;
         }
         
-        // 대화 내용 저장
-        function saveConversation(role, content) {
-            let conv = JSON.parse(sessionStorage.getItem('ai_conversation') || '[]');
-            conv.push({ role, content, timestamp: Date.now() });
-            sessionStorage.setItem('ai_conversation', JSON.stringify(conv));
-        }
-        
-        // 대화 내용 복원
-        function restoreConversation() {
-            const conv = JSON.parse(sessionStorage.getItem('ai_conversation') || '[]');
-            if (conv.length === 0) {
-                // 대화 내용이 없으면 초기 메시지 표시
-                addMainChatMessage('안녕하세요! AAL 물류 플랫폼에 오신 것을 환영합니다. 🚢\n\n운임 조회, 비딩 현황, 시장 동향 등 무엇이든 물어보세요.', 'ai', null, false);
-            } else {
-                // 기존 대화 복원
-                conv.forEach(msg => {
-                    addMainChatMessage(msg.content, msg.role, null, false);
-                });
-                // Quick actions 숨기기
-                if (mainQuickActions) mainQuickActions.style.display = 'none';
-            }
-        }
-        
-        // Elements
-        const mainChatMessages = document.getElementById('main-chat-messages');
-        const mainChatInput = document.getElementById('main-chat-input');
-        const mainChatSendBtn = document.getElementById('main-chat-send');
-        const mainQuickActions = document.getElementById('main-quick-actions');
-        
-        // Auto-resize textarea
-        if (mainChatInput) {
-            mainChatInput.addEventListener('input', function() {
-                this.style.height = 'auto';
-                this.style.height = Math.min(this.scrollHeight, 120) + 'px';
-            });
-        }
-        
-        // Handle Enter key
         function handleMainChatKeyDown(event) {
             if (event.key === 'Enter' && !event.shiftKey) {
                 event.preventDefault();
@@ -725,30 +809,27 @@
             }
         }
         
-        // Send quick action
         function mainChatSend(message) {
             mainChatInput.value = message;
             sendMainChat();
         }
         
-        // Send message
         async function sendMainChat() {
             const message = mainChatInput.value.trim();
             if (!message || mainChatLoading) return;
             
-            // Clear input
             mainChatInput.value = '';
-            mainChatInput.style.height = 'auto';
             
-            // Add user message (저장 포함)
-            addMainChatMessage(message, 'user', null, true);
+            // 대화 시작: 레이아웃 전환 (GPT/Gemini 스타일)
+            const overlayContent = document.querySelector('.overlay-content');
+            overlayContent.classList.add('chat-active');
+            document.body.classList.add('chat-active');
+            mainChatMessages.classList.add('active');
             
-            // Hide quick actions
-            if (mainQuickActions) mainQuickActions.style.display = 'none';
-            
-            // Show typing
+            addMainChatMessage(message, 'user');
             const typingId = showMainTyping();
-            setMainChatLoading(true);
+            mainChatLoading = true;
+            mainChatSendBtn.disabled = true;
             
             try {
                 const response = await fetch(`${MAIN_CHAT_API}/api/ai/chat`, {
@@ -764,108 +845,251 @@
                 removeMainTyping(typingId);
                 
                 if (data.success) {
-                    addMainChatMessage(data.message, 'ai', data.quote_data, true);
+                    addMainChatMessage(data.message, 'ai', data.quote_data);
                 } else {
-                    addMainChatMessage(data.message || '죄송합니다, 오류가 발생했습니다.', 'ai', null, true);
+                    addMainChatMessage(data.message || '죄송합니다, 오류가 발생했습니다.', 'ai');
                 }
-                
             } catch (error) {
-                console.error('Main chat error:', error);
+                console.error('Chat error:', error);
                 removeMainTyping(typingId);
-                addMainChatMessage('서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.', 'ai', null, true);
+                addMainChatMessage('서버에 연결할 수 없습니다.', 'ai');
             }
             
-            setMainChatLoading(false);
+            mainChatLoading = false;
+            mainChatSendBtn.disabled = false;
+            
+            // 입력창에 포커스 유지 & placeholder 변경
+            mainChatInput.placeholder = '메시지를 입력하세요...';
+            mainChatInput.focus();
         }
         
-        // Add message (사이드바와 동일한 스타일)
-        function addMainChatMessage(text, type, quoteData = null, shouldSave = true) {
+        function addMainChatMessage(text, type, quoteData = null) {
             const messageDiv = document.createElement('div');
-            messageDiv.className = `ai-chat-message ${type}`;
+            messageDiv.className = `chat-msg ${type}`;
+            messageDiv.innerHTML = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
             
-            // Format text
-            let formattedText = text
-                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                .replace(/\n/g, '<br>');
-            
-            messageDiv.innerHTML = formattedText;
-            
-            // Add quote card if data exists
             if (quoteData && type === 'ai') {
-                messageDiv.appendChild(createMainQuoteCard(quoteData));
-            }
-            
-            mainChatMessages.appendChild(messageDiv);
-            scrollMainChatToBottom();
-            
-            // 대화 저장 (sessionStorage에 저장하여 사이드바와 공유)
-            if (shouldSave) {
-                saveConversation(type, text);
-            }
-        }
-        
-        // Create quote card
-        function createMainQuoteCard(data) {
             const card = document.createElement('div');
             card.className = 'ai-quote-result';
             card.innerHTML = `
-                <div class="ai-quote-result-header">
-                    <i class="fas fa-check-circle"></i> 견적 조회 준비 완료
-                </div>
+                    <div class="ai-quote-result-header"><i class="fas fa-check-circle"></i> 견적 조회 준비</div>
                 <div class="ai-quote-result-grid">
-                    <div class="ai-quote-result-item">POL: <strong>${data.pol || '-'}</strong></div>
-                    <div class="ai-quote-result-item">POD: <strong>${data.pod || '-'}</strong></div>
-                    <div class="ai-quote-result-item">Type: <strong>${data.container_type || '-'}</strong></div>
-                    <div class="ai-quote-result-item">ETD: <strong>${data.etd || '-'}</strong></div>
+                        <div class="ai-quote-result-item">POL: <strong>${quoteData.pol || '-'}</strong></div>
+                        <div class="ai-quote-result-item">POD: <strong>${quoteData.pod || '-'}</strong></div>
                 </div>
-                <button class="ai-quote-action-btn" onclick="goToQuotationFromMain('${encodeURIComponent(JSON.stringify(data))}')">
-                    <i class="fas fa-arrow-right"></i> 견적 조회 페이지로 이동
+                    <button class="ai-quote-action-btn" onclick="goToQuotation('${encodeURIComponent(JSON.stringify(quoteData))}')">
+                        견적 조회 페이지로 이동 →
                 </button>
             `;
-            return card;
+                messageDiv.appendChild(card);
+            }
+            
+            mainChatMessages.appendChild(messageDiv);
+            // 부드러운 자동 스크롤
+            messageDiv.scrollIntoView({ behavior: 'smooth', block: 'end' });
         }
         
-        // Navigate to quotation
-        function goToQuotationFromMain(encodedData) {
-            const data = JSON.parse(decodeURIComponent(encodedData));
-            sessionStorage.setItem('ai_quote_data', JSON.stringify(data));
-            window.location.href = 'pages/quotation.html?from=ai';
-        }
-        
-        // Show typing (사이드바와 동일한 스타일)
         function showMainTyping() {
             const typingDiv = document.createElement('div');
-            typingDiv.className = 'ai-chat-message ai typing';
-            typingDiv.id = 'main-typing-' + Date.now();
+            typingDiv.className = 'chat-msg ai typing';
+            typingDiv.id = 'typing-' + Date.now();
             typingDiv.innerHTML = '<span></span><span></span><span></span>';
             mainChatMessages.appendChild(typingDiv);
-            scrollMainChatToBottom();
+            mainChatMessages.scrollTop = mainChatMessages.scrollHeight;
             return typingDiv.id;
         }
         
-        // Remove typing
         function removeMainTyping(id) {
             const el = document.getElementById(id);
             if (el) el.remove();
         }
         
-        // Set loading
-        function setMainChatLoading(loading) {
-            mainChatLoading = loading;
-            if (mainChatSendBtn) mainChatSendBtn.disabled = loading;
+        function goToQuotation(encodedData) {
+            const data = JSON.parse(decodeURIComponent(encodedData));
+            sessionStorage.setItem('ai_quote_data', JSON.stringify(data));
+            window.location.href = 'pages/quotation.html?from=ai';
         }
-        
-        // Scroll to bottom
-        function scrollMainChatToBottom() {
-            if (mainChatMessages) {
-                mainChatMessages.scrollTop = mainChatMessages.scrollHeight;
+    </script>
+
+    <!-- Particle Globe Script -->
+    <script>
+        (function initParticleGlobe() {
+            const container = document.getElementById('globe-container');
+            if (!container) return;
+            
+            // Scene
+            const scene = new THREE.Scene();
+            
+            // Camera - moved back for smaller globe
+            const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 2.4;
+            
+            // Renderer
+            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.setClearColor(0x000000, 1);
+            container.appendChild(renderer.domElement);
+            
+            // Continent data (simplified coordinates for major landmasses)
+            const continentData = [
+                // North America
+                { latRange: [25, 70], lonRange: [-170, -50], density: 0.6 },
+                // South America
+                { latRange: [-55, 10], lonRange: [-80, -35], density: 0.5 },
+                // Europe
+                { latRange: [35, 70], lonRange: [-10, 40], density: 0.7 },
+                // Africa
+                { latRange: [-35, 35], lonRange: [-20, 50], density: 0.5 },
+                // Asia
+                { latRange: [5, 75], lonRange: [40, 180], density: 0.6 },
+                // Australia
+                { latRange: [-45, -10], lonRange: [110, 155], density: 0.4 },
+                // Japan/Korea
+                { latRange: [30, 45], lonRange: [125, 145], density: 0.8 },
+                // Southeast Asia
+                { latRange: [-10, 25], lonRange: [95, 140], density: 0.5 },
+            ];
+            
+            function isLand(lat, lon) {
+                for (const region of continentData) {
+                    if (lat >= region.latRange[0] && lat <= region.latRange[1] &&
+                        lon >= region.lonRange[0] && lon <= region.lonRange[1]) {
+                        return Math.random() < region.density;
+                    }
+                }
+                // Ocean particles (very sparse)
+                return Math.random() < 0.02;
             }
-        }
-        
-        // 페이지 로드 시 대화 복원
-        document.addEventListener('DOMContentLoaded', function() {
-            restoreConversation();
-        });
+            
+            function latLonToVector3(lat, lon, radius) {
+                const phi = (90 - lat) * (Math.PI / 180);
+                const theta = (lon + 180) * (Math.PI / 180);
+                return new THREE.Vector3(
+                    -radius * Math.sin(phi) * Math.cos(theta),
+                    radius * Math.cos(phi),
+                    radius * Math.sin(phi) * Math.sin(theta)
+                );
+            }
+            
+            // Create particles
+            const particles = [];
+            const colors = [];
+            const numPoints = 60000;
+            
+            for (let i = 0; i < numPoints; i++) {
+                const lat = (Math.random() - 0.5) * 180;
+                const lon = (Math.random() - 0.5) * 360;
+                
+                if (isLand(lat, lon)) {
+                    const pos = latLonToVector3(lat, lon, 1);
+                    particles.push(pos.x, pos.y, pos.z);
+                    
+                    // Vary brightness
+                    const brightness = 0.4 + Math.random() * 0.6;
+                    colors.push(brightness, brightness, brightness);
+                }
+            }
+            
+            // Globe particles
+            const geometry = new THREE.BufferGeometry();
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(particles, 3));
+            geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+            
+            const material = new THREE.PointsMaterial({
+                size: 0.012,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.8,
+                sizeAttenuation: true
+            });
+            
+            const globe = new THREE.Points(geometry, material);
+            scene.add(globe);
+            
+            // Atmosphere glow
+            const glowGeometry = new THREE.SphereGeometry(1.15, 64, 64);
+            const glowMaterial = new THREE.ShaderMaterial({
+                vertexShader: `
+                    varying vec3 vNormal;
+                    void main() {
+                        vNormal = normalize(normalMatrix * normal);
+                        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                    }
+                `,
+                fragmentShader: `
+                    varying vec3 vNormal;
+                    void main() {
+                        float intensity = pow(0.6 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 2.0);
+                        gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0) * intensity * 0.15;
+                    }
+                `,
+                blending: THREE.AdditiveBlending,
+                side: THREE.BackSide,
+                transparent: true
+            });
+            const atmosphere = new THREE.Mesh(glowGeometry, glowMaterial);
+            scene.add(atmosphere);
+            
+            // Mouse interaction
+            let isDragging = false;
+            let previousMouse = { x: 0, y: 0 };
+            let rotationVelocity = { x: 0, y: 0 };
+            let targetRotation = { x: 0, y: 0 };
+            
+            container.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                previousMouse = { x: e.clientX, y: e.clientY };
+            });
+            
+            window.addEventListener('mouseup', () => {
+                isDragging = false;
+            });
+            
+            window.addEventListener('mousemove', (e) => {
+                if (isDragging) {
+                    const deltaX = e.clientX - previousMouse.x;
+                    const deltaY = e.clientY - previousMouse.y;
+                    
+                    rotationVelocity.y = deltaX * 0.002;
+                    rotationVelocity.x = deltaY * 0.002;
+                    
+                    previousMouse = { x: e.clientX, y: e.clientY };
+                }
+            });
+            
+            // Animation
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                // Auto-rotate when not dragging
+                if (!isDragging) {
+                    rotationVelocity.y = 0.001;
+                    rotationVelocity.x *= 0.95;
+                }
+                
+                // Apply rotation with damping
+                targetRotation.y += rotationVelocity.y;
+                targetRotation.x += rotationVelocity.x;
+                targetRotation.x = Math.max(-0.5, Math.min(0.5, targetRotation.x));
+                
+                globe.rotation.y += (targetRotation.y - globe.rotation.y) * 0.1;
+                globe.rotation.x += (targetRotation.x - globe.rotation.x) * 0.1;
+                
+                // Damping
+                rotationVelocity.y *= 0.95;
+                
+                renderer.render(scene, camera);
+            }
+            animate();
+            
+            // Resize handler
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        })();
     </script>
 </body>
 </html>

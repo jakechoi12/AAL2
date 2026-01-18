@@ -20,13 +20,13 @@
     
     <style>
         :root {
-            --bg-color: #0b0b0d;
+            --bg-color: #000000;
             --text-main: #ffffff;
-            --text-sub: #9ca3af;
-            --accent-color: #3b82f6;
-            --card-bg: #141416;
+            --text-sub: rgba(255, 255, 255, 0.6);
+            --accent-color: #ffffff;
+            --card-bg: #0a0a0a;
             --border-color: rgba(255, 255, 255, 0.1);
-            --input-bg: #1c1c1f;
+            --input-bg: #111111;
             --font-main: 'Inter', 'Pretendard', sans-serif;
             --transition: all 0.2s ease;
         }
@@ -54,8 +54,8 @@
             padding: 1.5rem; display: flex; align-items: center; justify-content: center; gap: 10px;
             cursor: pointer; transition: var(--transition); color: var(--text-sub); min-height: 80px;
         }
-        .option-card:hover { border-color: var(--accent-color); }
-        .option-card.active { background: rgba(59, 130, 246, 0.1); border-color: var(--accent-color); color: var(--accent-color); font-weight: 600; }
+        .option-card:hover { border-color: rgba(255, 255, 255, 0.3); }
+        .option-card.active { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.4); color: #fff; font-weight: 600; }
         .option-card i { font-size: 1.2rem; }
         
         .icon-box {
@@ -1359,15 +1359,49 @@
             <div class="full-name">All About Logistics</div>
         </a>
         <nav>
-            <ul>
-                <li><a href="quotation.html" class="active">Quotation</a></li>
-                <li><a href="shipper-bidding.html">My Quotations</a></li>
-                <li><a href="bidding-list.html">Bidding</a></li>
-                <li><a href="market-data.html">Market Data</a></li>
-                <li><a href="news-intelligence.html">News Intel</a></li>
-                <li><a href="../ai_studio_code_F2.html#tools">Tools</a></li>
-                <li><a href="report-insight.html">Report & Insight</a></li>
-                <li><a href="dashboard-shipper.html">Dashboard</a></li>
+            <ul class="nav-menu">
+                <!-- Company - 단일 메뉴 -->
+                <li class="nav-item">
+                    <a href="company.html" class="nav-link">Company</a>
+                </li>
+                <!-- Quotation 그룹 -->
+                <li class="nav-item has-dropdown active">
+                    <button class="dropdown-toggle">
+                        Quotation <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a href="quotation.html" class="active">Quote</a></li>
+                        <li><a href="bidding-list.html">Bidding</a></li>
+                        <li><a href="shipper-bidding.html">My Quotations</a></li>
+                    </ul>
+                </li>
+                <!-- Operations 그룹 -->
+                <li class="nav-item has-dropdown">
+                    <button class="dropdown-toggle">
+                        Operations <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a href="#" class="coming-soon">Contract <span class="badge-coming-soon">준비중</span></a></li>
+                        <li><a href="#" class="coming-soon">Tracking <span class="badge-coming-soon">준비중</span></a></li>
+                    </ul>
+                </li>
+                <!-- Dashboard - 단일 메뉴 (준비중) -->
+                <li class="nav-item">
+                    <a href="dashboard-shipper.html" class="nav-link coming-soon">
+                        Dashboard <span class="badge-coming-soon">준비중</span>
+                    </a>
+                </li>
+                <!-- Intelligence 그룹 -->
+                <li class="nav-item has-dropdown">
+                    <button class="dropdown-toggle">
+                        Intelligence <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a href="market-data.html">Market Data</a></li>
+                        <li><a href="news-intelligence.html">News Intel</a></li>
+                        <li><a href="report-insight.html">Report & Insight</a></li>
+                    </ul>
+                </li>
             </ul>
         </nav>
         <!-- Auth Container -->
@@ -5760,6 +5794,7 @@
 
     <!-- Auth JavaScript -->
     <script src="../js/features/auth.js"></script>
-
+    <!-- Navigation Dropdown -->
+    <script src="../js/components/navDropdown.js"></script>
 </body>
 </html>

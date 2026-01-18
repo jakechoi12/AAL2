@@ -1,43 +1,104 @@
 /* =====================================================
-   Button & Tab Component Styles
+   Button & Tab Component Styles - Futuristic Theme
    ===================================================== */
 
 /* Tab Buttons */
 .tab-container { display: flex; gap: 1rem; }
 .tab-btn {
-    color: var(--text-sub); border: 1px solid var(--border-color); padding: 0.8rem 2rem;
-    border-radius: 50px; font-size: 1rem; font-weight: 600; transition: var(--transition);
+    color: var(--text-sub); 
+    border: 1px solid var(--border-color); 
+    padding: 0.8rem 2rem;
+    border-radius: 50px; 
+    font-size: 0.95rem; 
+    font-weight: 600; 
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: transparent;
+    position: relative;
+    overflow: hidden;
 }
-.tab-btn:hover { border-color: var(--text-main); color: var(--text-main); }
-.tab-btn.active { background: var(--accent-color); border-color: var(--accent-color); color: #fff; }
+
+.tab-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+    transition: left 0.5s ease;
+}
+
+.tab-btn:hover::before {
+    left: 100%;
+}
+
+.tab-btn:hover { 
+    border-color: rgba(255, 255, 255, 0.3); 
+    color: var(--text-main);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+}
+
+.tab-btn.active { 
+    background: #fff; 
+    border-color: transparent; 
+    color: #000;
+    box-shadow: 0 4px 20px rgba(255, 255, 255, 0.2);
+}
 
 /* Period Buttons */
 .period-btns { 
     display: flex; 
-    background: rgba(255,255,255,0.05); 
-    border-radius: 6px; 
+    background: rgba(255, 255, 255, 0.03); 
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px; 
     padding: 4px; 
     flex-wrap: nowrap;
     gap: 4px;
     flex-shrink: 0;
 }
 .period-btn {
-    padding: 6px 12px; font-size: 0.8rem; color: var(--text-sub); border-radius: 4px; font-weight: 600;
+    padding: 6px 12px; 
+    font-size: 0.8rem; 
+    color: var(--text-sub); 
+    border-radius: 6px; 
+    font-weight: 600;
+    transition: all 0.2s ease;
+    background: transparent;
+    border: none;
+    cursor: pointer;
 }
-.period-btn.active { background: var(--text-main); color: var(--bg-color); }
+.period-btn:hover {
+    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.08);
+}
+.period-btn.active { 
+    background: #fff; 
+    color: #000;
+    box-shadow: 0 2px 8px rgba(255, 255, 255, 0.2);
+}
 
 /* Currency Buttons */
 .currency-buttons { display: flex; gap: 4px; }
 .currency-btn {
-    padding: 4px 12px; border-radius: 16px; font-size: 0.75rem; font-weight: 600;
-    border: 1px solid var(--border-color); color: var(--text-sub); 
-    background: transparent; transition: var(--transition);
+    padding: 4px 12px; 
+    border-radius: 16px; 
+    font-size: 0.75rem; 
+    font-weight: 600;
+    border: 1px solid var(--border-color); 
+    color: var(--text-sub); 
+    background: transparent; 
+    transition: all 0.2s ease;
     cursor: pointer;
 }
-.currency-btn:hover { border-color: var(--text-main); color: var(--text-main); }
+.currency-btn:hover { 
+    border-color: rgba(255, 255, 255, 0.3); 
+    color: #fff;
+    background: rgba(255, 255, 255, 0.05);
+}
 .currency-btn.active {
-    background: rgba(59, 130, 246, 0.2); border-color: var(--c-gdp-total); 
-    color: var(--c-gdp-total);
+    background: rgba(255, 255, 255, 0.1); 
+    border-color: rgba(255, 255, 255, 0.3); 
+    color: #fff;
 }
 
 /* Chips (Currency & Country Toggles) */
@@ -45,12 +106,34 @@
 .country-chips { display: flex; gap: 8px; flex-wrap: wrap; }
 
 .chip {
-    padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;
-    border: 1px solid var(--border-color); color: var(--text-sub); transition: var(--transition);
-    display: flex; align-items: center; gap: 6px;
+    padding: 6px 14px; 
+    border-radius: 20px; 
+    font-size: 0.8rem; 
+    font-weight: 600;
+    border: 1px solid var(--border-color); 
+    color: var(--text-sub); 
+    transition: all 0.2s ease;
+    display: flex; 
+    align-items: center; 
+    gap: 6px;
+    background: transparent;
+    cursor: pointer;
 }
-.chip:hover { border-color: var(--text-main); color: var(--text-main); }
-.chip-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.chip:hover { 
+    border-color: rgba(255, 255, 255, 0.3); 
+    color: #fff;
+    background: rgba(255, 255, 255, 0.05);
+}
+.chip-dot { 
+    width: 8px; 
+    height: 8px; 
+    border-radius: 50%; 
+    background: currentColor;
+    transition: transform 0.2s ease;
+}
+.chip:hover .chip-dot {
+    transform: scale(1.2);
+}
 
 /* Chip Active States (Dynamic Colors) */
 .chip.active[data-curr="USD"] { background: rgba(59, 130, 246, 0.2); border-color: var(--c-usd); color: var(--c-usd); }
@@ -95,24 +178,27 @@
 .view-btn {
     flex: 1;
     padding: 8px;
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(255, 255, 255, 0.02);
     border: 1px solid var(--border-color);
     color: var(--text-sub);
-    border-radius: 6px;
+    border-radius: 8px;
     font-size: 0.75rem;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.2s ease;
     font-weight: 600;
 }
 
 .view-btn:hover {
     background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: var(--text-main);
 }
 
 .view-btn.active {
-    background: var(--accent-color);
-    color: white;
-    border-color: var(--accent-color);
+    background: #fff;
+    color: #000;
+    border-color: transparent;
+    box-shadow: 0 2px 10px rgba(255, 255, 255, 0.15);
 }
 
 /* Filter Buttons */
@@ -130,27 +216,42 @@
     border-radius: 6px;
     font-size: 0.7rem;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.2s ease;
     font-weight: 600;
 }
 
 .filter-btn:hover {
     background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.2);
     color: var(--text-main);
 }
 
 .filter-btn.active {
-    background: var(--accent-color);
-    color: white;
-    border-color: var(--accent-color);
+    background: #fff;
+    color: #000;
+    border-color: transparent;
+    box-shadow: 0 2px 10px rgba(255, 255, 255, 0.15);
 }
 
 /* Swap Button */
 .swap-btn { 
-    width: 45px; height: 45px; border-radius: 50%; 
-    background: var(--border-color); color: var(--text-main); 
-    display: flex; align-items: center; justify-content: center; 
-    transition: var(--transition); 
+    width: 45px; 
+    height: 45px; 
+    border-radius: 50%; 
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #fff; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
 }
-.swap-btn:hover { background: var(--accent-color); transform: rotate(180deg); }
+.swap-btn:hover { 
+    background: #fff; 
+    border-color: transparent;
+    color: #000;
+    transform: rotate(180deg);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+}
 

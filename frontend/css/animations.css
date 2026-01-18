@@ -1,0 +1,446 @@
+/* =====================================================
+   Animation System - Futuristic Theme
+   AAL Platform Micro-interactions & Transitions
+   ===================================================== */
+
+/* =====================================================
+   ENTRANCE ANIMATIONS
+   ===================================================== */
+
+/* Fade variants */
+.animate-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
+.animate-fade-up {
+    animation: fadeUp 0.6s ease-out forwards;
+}
+
+.animate-fade-down {
+    animation: fadeDown 0.6s ease-out forwards;
+}
+
+.animate-fade-left {
+    animation: slideInLeft 0.6s ease-out forwards;
+}
+
+.animate-fade-right {
+    animation: slideInRight 0.6s ease-out forwards;
+}
+
+/* Scale variants */
+.animate-scale-in {
+    animation: fadeInScale 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-pop {
+    animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes fadeDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pop {
+    0% {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* =====================================================
+   HOVER TRANSITIONS
+   ===================================================== */
+
+/* Card lift effect */
+.hover-lift {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 212, 170, 0.1);
+}
+
+/* Glow on hover */
+.hover-glow {
+    transition: box-shadow 0.3s ease;
+}
+
+.hover-glow:hover {
+    box-shadow: 0 0 30px rgba(0, 212, 170, 0.3);
+}
+
+/* Scale on hover */
+.hover-scale {
+    transition: transform 0.2s ease;
+}
+
+.hover-scale:hover {
+    transform: scale(1.02);
+}
+
+/* Border glow on hover */
+.hover-border-glow {
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-border-glow:hover {
+    border-color: var(--accent-color) !important;
+    box-shadow: 0 0 0 1px rgba(0, 212, 170, 0.3), 0 0 20px rgba(0, 212, 170, 0.1);
+}
+
+/* =====================================================
+   LOADING STATES
+   ===================================================== */
+
+/* Spinner */
+.spinner {
+    width: 24px;
+    height: 24px;
+    border: 2px solid rgba(0, 212, 170, 0.2);
+    border-top-color: var(--accent-color);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+.spinner-lg {
+    width: 40px;
+    height: 40px;
+    border-width: 3px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Pulse loader */
+.pulse-loader {
+    display: flex;
+    gap: 6px;
+}
+
+.pulse-loader span {
+    width: 8px;
+    height: 8px;
+    background: var(--accent-color);
+    border-radius: 50%;
+    animation: pulseDot 1.4s ease-in-out infinite;
+}
+
+.pulse-loader span:nth-child(2) { animation-delay: 0.2s; }
+.pulse-loader span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes pulseDot {
+    0%, 80%, 100% {
+        transform: scale(0.6);
+        opacity: 0.5;
+    }
+    40% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Skeleton loading */
+.skeleton-text {
+    height: 1em;
+    background: linear-gradient(
+        90deg,
+        rgba(0, 212, 170, 0.05) 25%,
+        rgba(0, 212, 170, 0.1) 50%,
+        rgba(0, 212, 170, 0.05) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 4px;
+}
+
+.skeleton-box {
+    background: linear-gradient(
+        90deg,
+        rgba(0, 212, 170, 0.05) 25%,
+        rgba(0, 212, 170, 0.1) 50%,
+        rgba(0, 212, 170, 0.05) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 8px;
+}
+
+/* =====================================================
+   MICRO-INTERACTIONS
+   ===================================================== */
+
+/* Button press effect */
+.press-effect {
+    transition: transform 0.1s ease;
+}
+
+.press-effect:active {
+    transform: scale(0.97);
+}
+
+/* Ripple effect container */
+.ripple-container {
+    position: relative;
+    overflow: hidden;
+}
+
+.ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(0, 212, 170, 0.3);
+    transform: scale(0);
+    animation: rippleEffect 0.6s linear;
+    pointer-events: none;
+}
+
+@keyframes rippleEffect {
+    to {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+/* Icon spin on hover */
+.icon-spin-hover:hover i,
+.icon-spin-hover:hover svg {
+    animation: spinOnce 0.5s ease;
+}
+
+@keyframes spinOnce {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Bounce attention */
+.bounce-attention {
+    animation: bounceAttention 2s ease-in-out infinite;
+}
+
+@keyframes bounceAttention {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-8px);
+    }
+    60% {
+        transform: translateY(-4px);
+    }
+}
+
+/* =====================================================
+   PAGE TRANSITIONS
+   ===================================================== */
+
+/* Page enter */
+.page-enter {
+    animation: pageEnter 0.5s ease-out;
+}
+
+@keyframes pageEnter {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Content reveal */
+.content-reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.content-reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Staggered reveal for lists */
+.stagger-reveal > * {
+    opacity: 0;
+    transform: translateY(15px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.stagger-reveal.visible > *:nth-child(1) { transition-delay: 0.05s; }
+.stagger-reveal.visible > *:nth-child(2) { transition-delay: 0.1s; }
+.stagger-reveal.visible > *:nth-child(3) { transition-delay: 0.15s; }
+.stagger-reveal.visible > *:nth-child(4) { transition-delay: 0.2s; }
+.stagger-reveal.visible > *:nth-child(5) { transition-delay: 0.25s; }
+.stagger-reveal.visible > *:nth-child(n+6) { transition-delay: 0.3s; }
+
+.stagger-reveal.visible > * {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* =====================================================
+   NOTIFICATION ANIMATIONS
+   ===================================================== */
+
+/* Toast slide in */
+.toast-enter {
+    animation: toastEnter 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.toast-exit {
+    animation: toastExit 0.3s ease-in forwards;
+}
+
+@keyframes toastEnter {
+    from {
+        opacity: 0;
+        transform: translateX(100%) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+
+@keyframes toastExit {
+    from {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(100%) scale(0.95);
+    }
+}
+
+/* Badge pulse for notifications */
+.badge-pulse {
+    animation: badgePulse 2s ease-in-out infinite;
+}
+
+@keyframes badgePulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(0, 212, 170, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 0 8px rgba(0, 212, 170, 0);
+    }
+}
+
+/* =====================================================
+   SPECIAL EFFECTS
+   ===================================================== */
+
+/* Gradient border animation */
+.gradient-border {
+    position: relative;
+    background: var(--card-bg);
+    border-radius: 12px;
+}
+
+.gradient-border::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: 13px;
+    background: linear-gradient(
+        45deg,
+        var(--accent-color),
+        var(--accent-secondary),
+        var(--accent-color)
+    );
+    background-size: 200% 200%;
+    animation: gradientShift 3s ease infinite;
+    z-index: -1;
+}
+
+@keyframes gradientShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+/* Glitch effect for special text */
+.glitch {
+    position: relative;
+}
+
+.glitch::before,
+.glitch::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.glitch::before {
+    animation: glitchTop 0.5s ease infinite;
+    clip-path: polygon(0 0, 100% 0, 100% 33%, 0 33%);
+    -webkit-clip-path: polygon(0 0, 100% 0, 100% 33%, 0 33%);
+}
+
+.glitch::after {
+    animation: glitchBottom 0.6s ease infinite;
+    clip-path: polygon(0 67%, 100% 67%, 100% 100%, 0 100%);
+    -webkit-clip-path: polygon(0 67%, 100% 67%, 100% 100%, 0 100%);
+}
+
+@keyframes glitchTop {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(-2px); color: var(--accent-secondary); }
+}
+
+@keyframes glitchBottom {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(2px); color: var(--accent-color); }
+}
+
+/* Typing cursor */
+.typing-cursor::after {
+    content: '|';
+    animation: blink 0.8s step-end infinite;
+    color: var(--accent-color);
+}
+
+@keyframes blink {
+    50% { opacity: 0; }
+}
+
+/* =====================================================
+   REDUCED MOTION
+   Respect user preferences for reduced motion
+   ===================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .spinner {
+        animation: none;
+        border-top-color: var(--accent-color);
+    }
+}

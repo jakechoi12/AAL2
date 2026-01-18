@@ -1,29 +1,299 @@
 /* =====================================================
-   Header Component Styles
+   Header Component Styles - Futuristic Theme
    ===================================================== */
 
 header {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 1.5rem 5%; position: fixed; width: 100%; top: 0; z-index: 1000;
-    background: rgba(11, 11, 13, 0.85); backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--border-color);
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    padding: 1.25rem 5%; 
+    position: fixed; 
+    width: 100%; 
+    top: 0; 
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.75); 
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    transition: all 0.3s ease;
 }
 
-.logo { font-size: 2rem; font-weight: 900; letter-spacing: -0.05em; display: flex; align-items: center; }
-.logo span { color: var(--accent-color); }
+header:hover {
+    background: rgba(0, 0, 0, 0.85);
+    border-bottom-color: rgba(255, 255, 255, 0.12);
+}
+
+.logo { 
+    font-size: 1.8rem; 
+    font-weight: 900; 
+    letter-spacing: -0.03em; 
+    display: flex; 
+    align-items: center;
+    color: var(--text-main);
+    text-decoration: none;
+}
+
+.logo span { 
+    color: rgba(255, 255, 255, 0.5);
+}
+
 .logo .full-name {
-    font-size: 0.75rem; font-weight: 500; color: var(--text-sub); margin-left: 12px;
-    letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.8;
-    border-left: 1px solid var(--border-color); padding-left: 12px; line-height: 1;
+    font-size: 0.7rem; 
+    font-weight: 500; 
+    color: var(--text-muted); 
+    margin-left: 12px;
+    letter-spacing: 0.12em; 
+    text-transform: uppercase; 
+    opacity: 0.7;
+    border-left: 1px solid rgba(255, 255, 255, 0.15); 
+    padding-left: 12px; 
+    line-height: 1;
+    transition: opacity 0.2s ease;
+}
+
+.logo:hover .full-name {
+    opacity: 1;
+    color: var(--accent-color);
 }
 
 nav ul { display: flex; gap: 2.5rem; }
-nav li a { font-size: 0.95rem; color: var(--text-sub); transition: var(--transition); font-weight: 500; }
-nav li a:hover, nav li a.active { color: var(--text-main); }
+nav li a { 
+    font-size: 0.9rem; 
+    color: var(--text-sub); 
+    transition: all 0.2s ease; 
+    font-weight: 500;
+    position: relative;
+}
+
+nav li a::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: #fff;
+    transition: width 0.3s ease;
+}
+
+nav li a:hover::after,
+nav li a.active::after {
+    width: 100%;
+}
+
+nav li a:hover { color: var(--text-main); }
+nav li a.active { color: var(--accent-color); }
 .nav-highlight { color: var(--accent-color) !important; }
 
+/* =====================================================
+   Dropdown Navigation
+   ===================================================== */
+
+/* Nav Menu Container */
+nav .nav-menu {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    align-items: center;
+}
+
+/* Nav Item */
+nav .nav-item {
+    position: relative;
+}
+
+/* Nav Link & Dropdown Toggle */
+nav .nav-link,
+nav .dropdown-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.95rem;
+    color: var(--text-sub);
+    font-weight: 500;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem 0;
+    transition: color 0.2s ease;
+    text-decoration: none;
+}
+
+nav .nav-link:hover,
+nav .dropdown-toggle:hover,
+nav .nav-item.active > .nav-link,
+nav .nav-item.active > .dropdown-toggle {
+    color: var(--text-main);
+}
+
+/* Dropdown Arrow Icon */
+nav .dropdown-toggle i {
+    font-size: 0.7rem;
+    transition: transform 0.2s ease;
+}
+
+nav .nav-item.open .dropdown-toggle i {
+    transform: rotate(180deg);
+}
+
+/* Dropdown Menu - Glassmorphism B&W */
+nav .dropdown-menu {
+    position: absolute;
+    top: calc(100% + 12px);
+    left: 50%;
+    transform: translateX(-50%);
+    min-width: 180px;
+    background: rgba(20, 20, 20, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 8px 0;
+    list-style: none;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(-50%) translateY(-8px);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    z-index: 1001;
+    /* 세로 배치 */
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+/* Dropdown Arrow (pointing up) */
+nav .dropdown-menu::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%) rotate(45deg);
+    width: 12px;
+    height: 12px;
+    background: rgba(20, 20, 20, 0.95);
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Show dropdown when open (click) or hover */
+nav .nav-item.open .dropdown-menu,
+nav .nav-item.has-dropdown:hover .dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
+nav .nav-item.has-dropdown:hover .dropdown-toggle i {
+    transform: rotate(180deg);
+}
+
+/* Dropdown Menu Items */
+nav .dropdown-menu li {
+    margin: 0;
+    display: block;
+    width: 100%;
+}
+
+nav .dropdown-menu li a {
+    display: block;
+    padding: 10px 16px;
+    font-size: 0.85rem;
+    color: var(--text-sub);
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    text-align: left;
+    position: relative;
+}
+
+nav .dropdown-menu li a::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 60%;
+    background: #fff;
+    border-radius: 0 2px 2px 0;
+    transition: width 0.2s ease;
+}
+
+nav .dropdown-menu li a:hover {
+    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.05);
+    padding-left: 20px;
+}
+
+nav .dropdown-menu li a:hover::before {
+    width: 3px;
+}
+
+nav .dropdown-menu li a.active {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+nav .dropdown-menu li a.active::before {
+    width: 3px;
+}
+
+/* Coming Soon Badge */
+.badge-coming-soon {
+    font-size: 0.6rem;
+    padding: 2px 6px;
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.5);
+    border-radius: 4px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+nav .dropdown-menu li a.coming-soon {
+    color: var(--text-muted);
+    cursor: default;
+}
+
+nav .dropdown-menu li a.coming-soon:hover {
+    background: transparent;
+    color: var(--text-muted);
+}
+
+/* Single nav item with coming soon */
+nav .nav-link.coming-soon {
+    color: var(--text-muted);
+}
+
+nav .nav-link .badge-coming-soon {
+    margin-left: 6px;
+}
+
 /* Footer */
-footer { padding: 4rem 5%; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; color: var(--text-sub); font-size: 0.9rem; }
+footer { 
+    padding: 3rem 5%; 
+    border-top: 1px solid rgba(255, 255, 255, 0.08); 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    color: var(--text-muted); 
+    font-size: 0.85rem;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.footer-brand {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #fff;
+}
+
+.copyright {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
 
 /* =====================================================
    Mobile Navigation
@@ -174,10 +444,25 @@ footer { padding: 4rem 5%; border-top: 1px solid var(--border-color); display: f
     color: var(--text-tertiary);
 }
 
-/* Responsive */
+/* Responsive - Medium screens (tablets) */
+@media (max-width: 1100px) {
+    nav .nav-menu {
+        gap: 1.2rem;
+    }
+    
+    nav .nav-link,
+    nav .dropdown-toggle {
+        font-size: 0.85rem;
+    }
+    
+    .logo .full-name {
+        display: none;
+    }
+}
+
+/* Responsive - Small screens */
 @media (max-width: 768px) {
     nav { display: none; }
-    .logo .full-name { display: none; }
     
     .mobile-menu-toggle {
         display: flex;

@@ -1,26 +1,30 @@
 /**
  * Shipper Bidding Management Module
  * 화주를 위한 운송 요청 및 입찰 관리 기능
+ * Dashboard 2-Column Layout Version
  */
 
 const ShipperBidding = {
     // State
     shipper: null,  // 현재 로그인한 화주 (customer)
     currentPage: 1,
-    limit: 20,
+    limit: 15,
     filters: {
         status: '',
         shipping_type: '',
         search: ''
     },
-    currentBidding: null,  // 현재 선택된 비딩
-    selectedBid: null,     // 선정하려는 입찰
+    biddingList: [],          // 비딩 목록 데이터
+    selectedBiddingNo: null,  // 현재 선택된 비딩 번호
+    currentBidding: null,     // 현재 선택된 비딩 상세 데이터
+    selectedBid: null,        // 선정하려는 입찰
+    currentForwarderId: null, // 프로필 모달용 포워더 ID
 
     /**
      * Initialize the module
      */
     init() {
-        console.log('🚀 ShipperBidding module initialized');
+        console.log('🚀 ShipperBidding module initialized (Dashboard Mode)');
         
         // Check for stored shipper session
         this.loadSession();
@@ -94,6 +98,7 @@ const ShipperBidding = {
             if (e.key === 'Escape') {
                 this.closeModal();
                 this.closeConfirmModal();
+                this.closeForwarderProfile();
             }
         });
     },
@@ -103,16 +108,19 @@ const ShipperBidding = {
      */
     updateAuthUI() {
         const loginRequiredState = document.getElementById('loginRequiredState');
+        const dashboardLayout = document.querySelector('.dashboard-layout');
         const emptyState = document.getElementById('emptyState');
-        const biddingTableBody = document.getElementById('biddingTableBody');
+        const cardsContainer = document.getElementById('biddingCardsContainer');
 
         if (this.shipper) {
             // Logged in state
             if (loginRequiredState) loginRequiredState.style.display = 'none';
+            if (dashboardLayout) dashboardLayout.style.display = 'grid';
         } else {
             // Logged out state
-            if (biddingTableBody) biddingTableBody.innerHTML = '';
+            if (cardsContainer) cardsContainer.innerHTML = '';
             if (emptyState) emptyState.style.display = 'none';
+            if (dashboardLayout) dashboardLayout.style.display = 'none';
             if (loginRequiredState) loginRequiredState.style.display = 'block';
         }
     },
@@ -178,25 +186,28 @@ const ShipperBidding = {
         this.filters.shipping_type = document.getElementById('filterShipping')?.value || '';
         this.filters.search = document.getElementById('filterSearch')?.value.trim() || '';
         this.currentPage = 1;
+        this.selectedBiddingNo = null;
         this.loadBiddingList();
     },
 
     /**
-     * Load bidding list
+     * Load bidding list and render as cards
      */
     async loadBiddingList() {
         if (!this.shipper) return;
         
-        const tbody = document.getElementById('biddingTableBody');
+        const cardsContainer = document.getElementById('biddingCardsContainer');
         const emptyState = document.getElementById('emptyState');
         const loadingState = document.getElementById('loadingState');
-        const loginRequiredState = document.getElementById('loginRequiredState');
+        const biddingCount = document.getElementById('biddingCount');
 
         // Show loading
-        if (tbody) tbody.innerHTML = '';
+        if (cardsContainer) cardsContainer.innerHTML = '';
         if (loadingState) loadingState.style.display = 'flex';
         if (emptyState) emptyState.style.display = 'none';
-        if (loginRequiredState) loginRequiredState.style.display = 'none';
+
+        // Reset detail panel
+        this.showDetailPlaceholder();
 
         try {
             const params = new URLSearchParams({
@@ -214,17 +225,28 @@ const ShipperBidding = {
 
             if (loadingState) loadingState.style.display = 'none';
 
+            this.biddingList = data.data;
+
             if (data.data.length === 0) {
                 if (emptyState) emptyState.style.display = 'block';
+                if (biddingCount) biddingCount.textContent = '0건';
                 this.renderPagination(0, 0);
                 return;
             }
 
-            // Render rows
-            if (tbody) tbody.innerHTML = data.data.map(item => this.renderRow(item)).join('');
+            // Update count
+            if (biddingCount) biddingCount.textContent = `${data.total}건`;
+
+            // Render cards
+            this.renderBiddingCards(data.data);
             
             // Render pagination
             this.renderPagination(data.total, Math.ceil(data.total / this.limit));
+
+            // Auto-select first card if none selected
+            if (!this.selectedBiddingNo && data.data.length > 0) {
+                this.selectBidding(data.data[0].bidding_no);
+            }
 
         } catch (error) {
             console.error('Failed to load bidding list:', error);
@@ -232,8 +254,7 @@ const ShipperBidding = {
             if (emptyState) {
                 emptyState.innerHTML = `
                     <i class="fas fa-exclamation-triangle"></i>
-                    <h3>데이터를 불러오는데 실패했습니다</h3>
-                    <p>서버 연결을 확인하고 다시 시도해주세요.</p>
+                    <p>데이터를 불러오는데 실패했습니다</p>
                 `;
                 emptyState.style.display = 'block';
             }
@@ -241,74 +262,234 @@ const ShipperBidding = {
     },
 
     /**
-     * Render a table row
+     * Render bidding cards in left panel
      */
-    renderRow(item) {
-        const isExpired = item.deadline && this.isDeadlinePassed(item.deadline);
+    renderBiddingCards(biddings) {
+        const container = document.getElementById('biddingCardsContainer');
+        if (!container) return;
         
-        // Determine effective status
+        container.innerHTML = biddings.map(item => {
+            const isExpired = item.deadline && this.isDeadlinePassed(item.deadline);
         let effectiveStatus = item.status;
         if (item.status === 'open' && isExpired) {
             effectiveStatus = 'expired';
         }
         
-        // Determine action button
-        let actionBtn = '';
-        if (effectiveStatus === 'open' && item.bid_count > 0) {
-            actionBtn = `<button class="action-btn primary" onclick="ShipperBidding.openBidSelectionModal('${item.bidding_no}')">
-                <i class="fas fa-user-check"></i> 선정
-            </button>`;
-        } else if (effectiveStatus === 'open' && item.bid_count === 0) {
-            actionBtn = `<span class="status-text waiting">대기중</span>`;
-        } else if (effectiveStatus === 'awarded') {
-            actionBtn = `<span class="status-badge awarded"><i class="fas fa-trophy"></i></span>`;
+            const isSelected = this.selectedBiddingNo === item.bidding_no;
+
+            return `
+                <div class="bidding-card ${isSelected ? 'selected' : ''}" 
+                     onclick="ShipperBidding.selectBidding('${item.bidding_no}')"
+                     data-bidding-no="${item.bidding_no}">
+                    <div class="card-header">
+                        <span class="card-bidding-no">${item.bidding_no}</span>
+                        <span class="card-status ${effectiveStatus}">${this.getStatusLabel(effectiveStatus)}</span>
+                    </div>
+                    <div class="card-route">
+                        <span class="port">${item.pol || '-'}</span>
+                        <span class="arrow"><i class="fas fa-arrow-right"></i></span>
+                        <span class="port">${item.pod || '-'}</span>
+                    </div>
+                    <div class="card-footer">
+                        <span class="card-type">
+                            <i class="fas fa-${this.getShippingIcon(item.shipping_type)}"></i>
+                            ${item.shipping_type?.toUpperCase() || '-'}
+                        </span>
+                        <span class="card-bids ${item.bid_count > 0 ? 'has-bids' : ''}">
+                            <i class="fas fa-users"></i> ${item.bid_count}건
+                        </span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    },
+
+    /**
+     * Select a bidding and load detail in right panel
+     */
+    async selectBidding(biddingNo) {
+        // Update selected state
+        this.selectedBiddingNo = biddingNo;
+
+        // Update card selection UI
+        document.querySelectorAll('.bidding-card').forEach(card => {
+            card.classList.toggle('selected', card.dataset.biddingNo === biddingNo);
+        });
+
+        // Find bidding data from list
+        const biddingData = this.biddingList.find(b => b.bidding_no === biddingNo);
+        if (!biddingData) return;
+
+        // Load bids for this bidding
+        await this.loadBiddingDetail(biddingNo, biddingData);
+    },
+
+    /**
+     * Load bidding detail and bids for right panel
+     */
+    async loadBiddingDetail(biddingNo, biddingData) {
+        try {
+            const response = await fetch(
+                `${QUOTE_API_BASE}/api/shipper/bidding/${biddingNo}/bids?customer_email=${encodeURIComponent(this.shipper.email)}`
+            );
+            
+            if (!response.ok) {
+                throw new Error('Failed to load bids');
+            }
+            
+            const data = await response.json();
+            this.currentBidding = data;
+
+            // Show detail content
+            this.showDetailContent();
+
+            // Update header
+            document.getElementById('detailBiddingNo').textContent = data.bidding_no;
+            document.getElementById('detailRoute').textContent = `${data.pol} → ${data.pod}`;
+            
+            // Update type badge
+            const typeBadge = document.getElementById('detailTypeBadge');
+            typeBadge.className = `detail-type-badge ${data.shipping_type}`;
+            typeBadge.innerHTML = `<i class="fas fa-${this.getShippingIcon(data.shipping_type)}"></i> ${data.shipping_type?.toUpperCase()}`;
+
+            // Update deadline
+            const deadlineEl = document.getElementById('detailDeadline');
+            if (data.deadline) {
+                const dDays = this.getDaysUntilDeadline(data.deadline);
+                deadlineEl.textContent = dDays < 0 ? '마감' : (dDays === 0 ? 'D-Day' : `D-${dDays}`);
         } else {
-            actionBtn = `-`;
+                deadlineEl.textContent = '-';
+            }
+
+            // Update summary cards
+            this.updateSummaryCards(data);
+
+            // Render bids table
+            this.renderBidsTable(data.bids);
+
+        } catch (error) {
+            console.error('Failed to load bidding detail:', error);
+        }
+    },
+
+    /**
+     * Show detail placeholder (nothing selected)
+     */
+    showDetailPlaceholder() {
+        const placeholder = document.getElementById('detailPlaceholder');
+        const content = document.getElementById('detailContent');
+        if (placeholder) placeholder.style.display = 'flex';
+        if (content) content.style.display = 'none';
+    },
+
+    /**
+     * Show detail content
+     */
+    showDetailContent() {
+        const placeholder = document.getElementById('detailPlaceholder');
+        const content = document.getElementById('detailContent');
+        if (placeholder) placeholder.style.display = 'none';
+        if (content) content.style.display = 'flex';
+    },
+
+    /**
+     * Update summary cards in detail panel
+     */
+    updateSummaryCards(data) {
+        // Participants count
+        document.getElementById('summaryBidCount').textContent = data.bid_count || 0;
+
+        // Calculate lowest and average price
+        if (data.bids && data.bids.length > 0) {
+            const prices = data.bids.map(b => b.total_amount_krw).filter(p => p > 0);
+            if (prices.length > 0) {
+                const lowestPrice = Math.min(...prices);
+                const avgPrice = prices.reduce((a, b) => a + b, 0) / prices.length;
+                
+                document.getElementById('summaryLowestPrice').textContent = 
+                    `₩${Math.round(lowestPrice).toLocaleString('ko-KR')}`;
+                document.getElementById('summaryAvgPrice').textContent = 
+                    `₩${Math.round(avgPrice).toLocaleString('ko-KR')}`;
+            } else {
+                document.getElementById('summaryLowestPrice').textContent = '-';
+                document.getElementById('summaryAvgPrice').textContent = '-';
+            }
+        } else {
+            document.getElementById('summaryLowestPrice').textContent = '-';
+            document.getElementById('summaryAvgPrice').textContent = '-';
         }
 
-        // Format minimum bid price (KRW)
-        const minPriceFormatted = item.min_bid_price_krw 
-            ? `₩${Math.round(item.min_bid_price_krw).toLocaleString('ko-KR')}`
-            : '-';
+        // Status
+        document.getElementById('summaryStatus').textContent = this.getStatusLabel(data.bidding_status);
+    },
 
-        // Format volume
-        const volumeFormatted = item.volume || '-';
+    /**
+     * Render bids table in detail panel
+     */
+    renderBidsTable(bids) {
+        const tbody = document.getElementById('bidsTableBody');
+        const noBidsMsg = document.getElementById('noBidsMessage');
 
-        // Format deadline with D-day badge
-        const deadlineBadge = this.formatDeadlineBadge(item.deadline);
+        if (!bids || bids.length === 0) {
+            if (tbody) tbody.innerHTML = '';
+            if (noBidsMsg) noBidsMsg.style.display = 'block';
+            return;
+        }
 
-        const rowClass = isExpired ? 'expired-row' : '';
+        if (noBidsMsg) noBidsMsg.style.display = 'none';
+
+        tbody.innerHTML = bids.map(bid => {
+            const ratingStars = this.renderRatingStars(bid.rating);
+            const priceFormatted = `₩${Math.round(bid.total_amount_krw).toLocaleString('ko-KR')}`;
+            const rankClass = bid.rank === 1 ? 'rank-1' : (bid.rank === 2 ? 'rank-2' : (bid.rank === 3 ? 'rank-3' : ''));
+            const etdStr = bid.etd ? this.formatDateShort(bid.etd) : '-';
+            const etaStr = bid.eta ? this.formatDateShort(bid.eta) : '-';
+
+            // Check if bidding is still open
+            const canSelect = this.currentBidding?.bidding_status === 'open';
 
         return `
-            <tr class="${rowClass}">
-                <td>
-                    <span class="bidding-no ${isExpired ? 'expired-text' : ''}">
-                        ${item.bidding_no}
+                <tr data-bid-id="${bid.id}">
+                    <td class="col-rank">
+                        <span class="rank-badge ${rankClass}">${bid.rank}</span>
+                </td>
+                    <td class="col-company">
+                        <span class="company-link" onclick="ShipperBidding.openForwarderProfile(${bid.id}, '${bid.company_masked}')">
+                            ${bid.company_masked}
                     </span>
                 </td>
-                <td><span class="port-code">${item.pol || '-'}</span></td>
-                <td><span class="port-code">${item.pod || '-'}</span></td>
-                <td>
-                    <span class="type-badge ${item.shipping_type}">
-                        <i class="fas fa-${this.getShippingIcon(item.shipping_type)}"></i>
-                        ${item.shipping_type.toUpperCase()} / ${item.load_type}
-                    </span>
+                    <td class="col-rating">
+                        <div class="rating-display">
+                            ${ratingStars}
+                            <span class="rating-value">${bid.rating.toFixed(1)}</span>
+                        </div>
                 </td>
-                <td><span class="volume-cell">${volumeFormatted}</span></td>
-                <td>${this.formatDate(item.etd)}</td>
-                <td>${deadlineBadge}</td>
-                <td>
-                    <span class="status-badge ${effectiveStatus}">${this.getStatusLabel(effectiveStatus)}</span>
+                    <td class="col-etd">${etdStr}</td>
+                    <td class="col-eta">${etaStr}</td>
+                    <td class="col-price">
+                        <span class="bid-price">${priceFormatted}</span>
                 </td>
-                <td>
-                    <span class="bid-count ${item.bid_count > 0 ? 'has-bids' : ''}">${item.bid_count}</span>
+                    <td class="col-action">
+                        ${canSelect ? `
+                            <button class="action-btn award-btn" onclick="ShipperBidding.selectBid(${bid.id}, '${bid.company_masked}', ${bid.total_amount_krw})">
+                                <i class="fas fa-check"></i>
+                            </button>
+                        ` : '-'}
                 </td>
-                <td>
-                    <span class="min-price">${minPriceFormatted}</span>
-                </td>
-                <td>${actionBtn}</td>
             </tr>
         `;
+        }).join('');
+    },
+
+    /**
+     * Get days until deadline
+     */
+    getDaysUntilDeadline(deadline) {
+        if (!deadline) return null;
+        const deadlineDate = new Date(deadline);
+        const now = new Date();
+        const diffTime = deadlineDate - now;
+        return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     },
 
     /**
@@ -353,7 +534,7 @@ const ShipperBidding = {
         if (!pagination) return;
         
         if (totalPages <= 1) {
-            pagination.innerHTML = '';
+            pagination.innerHTML = `<span class="pagination-info">총 ${total}건</span>`;
             return;
         }
 
@@ -364,28 +545,10 @@ const ShipperBidding = {
             </button>
         `;
 
-        const startPage = Math.max(1, this.currentPage - 2);
-        const endPage = Math.min(totalPages, this.currentPage + 2);
+        // Show current page / total pages
+        html += `<span class="pagination-info">${this.currentPage} / ${totalPages}</span>`;
 
-        if (startPage > 1) {
-            html += `<button class="pagination-btn" onclick="ShipperBidding.goToPage(1)">1</button>`;
-            if (startPage > 2) html += `<span class="pagination-info">...</span>`;
-        }
-
-        for (let i = startPage; i <= endPage; i++) {
             html += `
-                <button class="pagination-btn ${i === this.currentPage ? 'active' : ''}" 
-                        onclick="ShipperBidding.goToPage(${i})">${i}</button>
-            `;
-        }
-
-        if (endPage < totalPages) {
-            if (endPage < totalPages - 1) html += `<span class="pagination-info">...</span>`;
-            html += `<button class="pagination-btn" onclick="ShipperBidding.goToPage(${totalPages})">${totalPages}</button>`;
-        }
-
-        html += `
-            <span class="pagination-info">총 ${total}건</span>
             <button class="pagination-btn" onclick="ShipperBidding.goToPage(${this.currentPage + 1})" 
                     ${this.currentPage === totalPages ? 'disabled' : ''}>
                 <i class="fas fa-chevron-right"></i>
@@ -400,6 +563,7 @@ const ShipperBidding = {
      */
     goToPage(page) {
         this.currentPage = page;
+        this.selectedBiddingNo = null;
         this.loadBiddingList();
     },
 
@@ -410,6 +574,250 @@ const ShipperBidding = {
         this.loadStats();
         this.loadBiddingList();
     },
+
+    // ==========================================
+    // FORWARDER PROFILE MODAL
+    // ==========================================
+
+    /**
+     * Open forwarder profile modal
+     */
+    async openForwarderProfile(bidId, companyMasked) {
+        // Find forwarder_id from current bidding bids
+        const bid = this.currentBidding?.bids?.find(b => b.id === bidId);
+        if (!bid) {
+            console.warn('Bid not found for profile');
+            return;
+        }
+
+        // Store for later use (selection)
+        this.currentForwarderId = bid.forwarder_id;
+        this.currentProfileBid = bid;
+
+        // Show modal with loading state
+        const modal = document.getElementById('forwarderProfileModal');
+        modal.classList.add('active');
+
+        // Update basic info first
+        document.getElementById('profileCompany').textContent = companyMasked;
+        document.getElementById('profileAvatar').textContent = companyMasked.charAt(0);
+        document.getElementById('profileStars').innerHTML = this.renderRatingStars(bid.rating);
+        document.getElementById('profileRatingValue').textContent = bid.rating.toFixed(1);
+        document.getElementById('profileRatingCount').textContent = `(${bid.rating_count})`;
+
+        // Try to fetch detailed profile using forwarder_id
+        if (bid.forwarder_id) {
+            try {
+                const response = await fetch(`${QUOTE_API_BASE}/api/forwarders/${bid.forwarder_id}/profile`);
+                if (response.ok) {
+                    const profileData = await response.json();
+                    this.renderForwarderProfile(profileData);
+                    return;
+                }
+            } catch (error) {
+                console.error('Failed to load forwarder profile:', error);
+            }
+        }
+
+        // Fallback: display what we have from the bid data
+        this.renderProfileWithBidData(bid);
+    },
+
+    /**
+     * Render forwarder profile with full API data
+     */
+    renderForwarderProfile(profile) {
+        // Stats row
+        document.getElementById('profileTotalBids').textContent = profile.total_bids || 0;
+        document.getElementById('profileTotalAwarded').textContent = profile.total_awarded || 0;
+        document.getElementById('profileAwardRate').textContent = `${profile.award_rate || 0}%`;
+        
+        if (profile.member_since) {
+            const date = new Date(profile.member_since);
+            document.getElementById('profileMemberSince').textContent = 
+                date.toLocaleDateString('ko-KR', { year: 'numeric', month: 'short' });
+        } else {
+            document.getElementById('profileMemberSince').textContent = '-';
+        }
+
+        // Score breakdown
+        const scoreMapping = [
+            { type: 'price', value: profile.avg_price_score },
+            { type: 'service', value: profile.avg_service_score },
+            { type: 'punctuality', value: profile.avg_punctuality_score },
+            { type: 'communication', value: profile.avg_communication_score }
+        ];
+        
+        scoreMapping.forEach(({ type, value }) => {
+            const bar = document.getElementById(`${type}ScoreBar`);
+            const valueEl = document.getElementById(`${type}ScoreValue`);
+            if (value) {
+                const percentage = (value / 5) * 100;
+                if (bar) bar.style.width = `${percentage}%`;
+                if (valueEl) valueEl.textContent = value.toFixed(1);
+            } else {
+                if (bar) bar.style.width = '0%';
+                if (valueEl) valueEl.textContent = '-';
+            }
+        });
+
+        // Top routes
+        const routesList = document.getElementById('topRoutesList');
+        if (profile.top_routes && profile.top_routes.length > 0) {
+            routesList.innerHTML = profile.top_routes.map(route => `
+                <div class="route-item">
+                    <div class="route-info">
+                        <span class="pol">${route.pol}</span>
+                        <span class="arrow"><i class="fas fa-arrow-right"></i></span>
+                        <span class="pod">${route.pod}</span>
+                    </div>
+                    <div class="route-stats">
+                        <span>${route.count}건</span>
+                        <span class="awarded">낙찰 ${route.awarded_count}</span>
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            routesList.innerHTML = '<div class="empty-data">데이터 없음</div>';
+        }
+
+        // Shipping mode stats
+        const modeChart = document.getElementById('shippingModeChart');
+        if (profile.shipping_mode_stats && profile.shipping_mode_stats.length > 0) {
+            modeChart.innerHTML = profile.shipping_mode_stats.map(mode => `
+                <div class="mode-item ${mode.shipping_type}">
+                    <div class="mode-icon">
+                        <i class="fas fa-${this.getShippingIcon(mode.shipping_type)}"></i>
+                    </div>
+                    <div class="mode-info">
+                        <span class="mode-name">${mode.shipping_type.toUpperCase()}</span>
+                        <span class="mode-stats">${mode.count}건 (${mode.percentage}%)</span>
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            modeChart.innerHTML = '<div class="empty-data">데이터 없음</div>';
+        }
+
+        // Reviews
+        const reviewsList = document.getElementById('reviewsList');
+        if (profile.reviews && profile.reviews.length > 0) {
+            reviewsList.innerHTML = profile.reviews.map(review => `
+                <div class="review-item">
+                    <div class="review-header">
+                        <span class="review-customer">${review.customer_company_masked}</span>
+                        <div class="review-score">
+                            ${this.renderRatingStars(review.score)}
+                            <span>${review.score.toFixed(1)}</span>
+                        </div>
+                    </div>
+                    <div class="review-meta">
+                        <span>${review.bidding_no}</span>
+                        <span>${review.pol} → ${review.pod}</span>
+                        <span>${this.formatDate(review.created_at)}</span>
+                    </div>
+                    ${review.comment ? `<div class="review-comment">${review.comment}</div>` : ''}
+                </div>
+            `).join('');
+        } else {
+            reviewsList.innerHTML = '<div class="empty-data">리뷰가 없습니다</div>';
+        }
+
+        // Enable/disable select button
+        const selectBtn = document.getElementById('profileSelectBtn');
+        if (this.currentBidding?.bidding_status === 'open') {
+            selectBtn.disabled = false;
+            selectBtn.style.display = 'inline-flex';
+        } else {
+            selectBtn.style.display = 'none';
+        }
+    },
+
+    /**
+     * Render profile using bid data (fallback when full API not available)
+     */
+    renderProfileWithBidData(bid) {
+        // Stats row - show available data
+        document.getElementById('profileTotalBids').textContent = '-';
+        document.getElementById('profileTotalAwarded').textContent = '-';
+        document.getElementById('profileAwardRate').textContent = '-';
+        document.getElementById('profileMemberSince').textContent = '-';
+
+        // Score breakdown - placeholder
+        const scoreItems = ['price', 'service', 'punctuality', 'communication'];
+        scoreItems.forEach(type => {
+            const bar = document.getElementById(`${type}ScoreBar`);
+            const value = document.getElementById(`${type}ScoreValue`);
+            if (bar) bar.style.width = '0%';
+            if (value) value.textContent = '-';
+        });
+
+        // Top routes - placeholder
+        document.getElementById('topRoutesList').innerHTML = `
+            <div class="route-item">
+                <div class="route-info">
+                    <span class="pol">${this.currentBidding?.pol || '-'}</span>
+                    <span class="arrow"><i class="fas fa-arrow-right"></i></span>
+                    <span class="pod">${this.currentBidding?.pod || '-'}</span>
+                </div>
+                <div class="route-stats">
+                    <span>현재 입찰 중</span>
+                </div>
+            </div>
+        `;
+
+        // Shipping mode - from current bidding
+        const shippingType = this.currentBidding?.shipping_type || 'ocean';
+        document.getElementById('shippingModeChart').innerHTML = `
+            <div class="mode-item ${shippingType}">
+                <div class="mode-icon">
+                    <i class="fas fa-${this.getShippingIcon(shippingType)}"></i>
+                </div>
+                <div class="mode-info">
+                    <span class="mode-name">${shippingType.toUpperCase()}</span>
+                    <span class="mode-stats">현재 입찰</span>
+                </div>
+            </div>
+        `;
+
+        // Reviews - placeholder
+        document.getElementById('reviewsList').innerHTML = `
+            <div class="empty-data">리뷰 정보를 불러올 수 없습니다</div>
+        `;
+
+        // Enable/disable select button based on bidding status
+        const selectBtn = document.getElementById('profileSelectBtn');
+        if (this.currentBidding?.bidding_status === 'open') {
+            selectBtn.disabled = false;
+            selectBtn.style.display = 'inline-flex';
+        } else {
+            selectBtn.style.display = 'none';
+        }
+    },
+
+    /**
+     * Close forwarder profile modal
+     */
+    closeForwarderProfile() {
+        document.getElementById('forwarderProfileModal').classList.remove('active');
+        this.currentForwarderId = null;
+        this.currentProfileBid = null;
+    },
+
+    /**
+     * Select forwarder from profile modal
+     */
+    selectFromProfile() {
+        if (!this.currentProfileBid) return;
+        
+        const bid = this.currentProfileBid;
+        this.closeForwarderProfile();
+        this.selectBid(bid.id, bid.company_masked, bid.total_amount_krw);
+    },
+
+    // ==========================================
+    // BID SELECTION MODAL (Legacy support)
+    // ==========================================
 
     /**
      * Open bid selection modal
@@ -459,27 +867,16 @@ const ShipperBidding = {
     },
 
     /**
-     * Render a bid row with detail accordion
+     * Render a bid row with detail accordion (legacy modal)
      */
     renderBidRow(bid) {
-        // Render rating stars
         const ratingStars = this.renderRatingStars(bid.rating);
-        
-        // Format KRW price
         const priceFormatted = `₩${Math.round(bid.total_amount_krw).toLocaleString('ko-KR')}`;
-        
-        // Format schedule
         const etdStr = bid.etd ? this.formatDate(bid.etd) : '-';
         const etaStr = bid.eta ? this.formatDate(bid.eta) : '-';
         const scheduleStr = `${etdStr}<br><span class="text-muted">→ ${etaStr}</span>`;
-        
-        // Rank badge class
         const rankClass = bid.rank === 1 ? 'rank-1' : (bid.rank === 2 ? 'rank-2' : (bid.rank === 3 ? 'rank-3' : ''));
-
-        // Format validity date
         const validityStr = bid.validity_date ? this.formatDate(bid.validity_date) : '-';
-
-        // Column count for detail row
         const colSpan = 9;
 
         return `
@@ -595,17 +992,14 @@ const ShipperBidding = {
         const hasHalfStar = (rating % 1) >= 0.5;
         const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
 
-        // Full stars
         for (let i = 0; i < fullStars; i++) {
             html += '<i class="fas fa-star"></i>';
         }
         
-        // Half star
         if (hasHalfStar) {
             html += '<i class="fas fa-star-half-alt"></i>';
         }
         
-        // Empty stars
         for (let i = 0; i < emptyStars; i++) {
             html += '<i class="far fa-star"></i>';
         }
@@ -617,8 +1011,7 @@ const ShipperBidding = {
      * Close bid selection modal
      */
     closeModal() {
-        document.getElementById('bidSelectionModal').classList.remove('active');
-        this.currentBidding = null;
+        document.getElementById('bidSelectionModal')?.classList.remove('active');
     },
 
     /**
@@ -732,6 +1125,15 @@ const ShipperBidding = {
         const date = new Date(dateStr);
         return date.toLocaleDateString('ko-KR', {
             year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        });
+    },
+
+    formatDateShort(dateStr) {
+        if (!dateStr) return '-';
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('ko-KR', {
             month: '2-digit',
             day: '2-digit'
         });

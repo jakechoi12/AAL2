@@ -1943,8 +1943,11 @@ def get_exchange_rates(
             
             if response.status_code == 200:
                 data = response.json()
-                if data.get("data") and len(data["data"]) > 0:
-                    latest = data["data"][-1]
+                # BOK API 응답 형식: {"StatisticSearch": {"row": [...], "list_total_count": N}}
+                stat_search = data.get("StatisticSearch", {})
+                rows = stat_search.get("row", [])
+                if rows and len(rows) > 0:
+                    latest = rows[-1]
                     return float(latest.get("DATA_VALUE", 0))
         except Exception as e:
             logger.warning(f"한국은행 API 환율 조회 실패 ({currency}): {e}")

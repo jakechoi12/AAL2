@@ -1,20 +1,22 @@
 /* ============================================================
-   Freight Deals Ticker - Stock Ticker Style
-   물류 특가 운임 티커 (금융 주가 티커 스타일)
+   Freight Deals Ticker - Futuristic Style
+   물류 특가 운임 티커
    ============================================================ */
 
 .freight-ticker-wrapper {
     position: fixed;
-    top: 100px; /* Below header */
+    top: 72px; /* Below header */
     left: 0;
     right: 0;
     z-index: 900; /* Below header (1000) */
-    height: 44px;
-    background: linear-gradient(90deg, #0a0f1a 0%, #111827 50%, #0a0f1a 100%);
-    border-top: 1px solid rgba(59, 130, 246, 0.15);
-    border-bottom: 1px solid rgba(59, 130, 246, 0.3);
+    height: 42px;
+    background: linear-gradient(90deg, rgba(5, 5, 8, 0.95) 0%, rgba(10, 10, 15, 0.95) 50%, rgba(5, 5, 8, 0.95) 100%);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(0, 212, 170, 0.08);
+    border-bottom: 1px solid rgba(0, 212, 170, 0.15);
     overflow: hidden;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
 .freight-ticker {
@@ -43,13 +45,13 @@
     align-items: center;
     padding: 0 28px;
     height: 100%;
-    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    border-right: 1px solid rgba(0, 212, 170, 0.1);
     cursor: pointer;
     transition: background 0.2s ease;
 }
 
 .freight-ticker-item:hover {
-    background: rgba(59, 130, 246, 0.1);
+    background: rgba(0, 212, 170, 0.08);
 }
 
 .ticker-icon {
@@ -81,24 +83,24 @@
     margin-left: 14px;
     font-size: 0.9rem;
     font-weight: 600;
-    color: #10b981;
+    color: var(--accent-color);
     font-family: 'Inter', monospace;
 }
 
 .ticker-discount {
     margin-left: 10px;
     padding: 3px 10px;
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.1));
-    border: 1px solid rgba(16, 185, 129, 0.3);
+    background: linear-gradient(135deg, rgba(0, 212, 170, 0.15), rgba(14, 165, 233, 0.1));
+    border: 1px solid rgba(0, 212, 170, 0.25);
     border-radius: 12px;
     font-size: 0.75rem;
     font-weight: 700;
-    color: #34d399;
+    color: var(--accent-color);
     letter-spacing: 0.5px;
 }
 
 .ticker-discount::before {
-    content: "🔥 ";
+    content: "⚡ ";
     font-size: 0.7rem;
 }
 
@@ -120,8 +122,8 @@
     gap: 8px;
     padding: 0 20px;
     height: 100%;
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2));
-    border-right: 1px solid rgba(59, 130, 246, 0.3);
+    background: linear-gradient(135deg, rgba(0, 212, 170, 0.15), rgba(14, 165, 233, 0.1));
+    border-right: 1px solid rgba(0, 212, 170, 0.2);
     font-size: 0.75rem;
     font-weight: 600;
     color: var(--accent-color);
@@ -139,9 +141,10 @@
     content: "";
     width: 8px;
     height: 8px;
-    background: #10b981;
+    background: var(--accent-color);
     border-radius: 50%;
     animation: pulse-dot 2s infinite;
+    box-shadow: 0 0 8px var(--accent-color);
 }
 
 @keyframes pulse-dot {
@@ -158,12 +161,12 @@
 /* Mobile adjustments */
 @media (max-width: 768px) {
     .freight-ticker-wrapper {
-        top: 65px; /* Smaller header on mobile */
-        height: 38px;
+        top: 56px; /* Smaller header on mobile */
+        height: 36px;
     }
     
     .freight-ticker {
-        height: 38px;
+        height: 36px;
     }
     
     .freight-ticker-item {

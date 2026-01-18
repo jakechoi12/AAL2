@@ -51,14 +51,16 @@
     --radius-full: 9999px;
     
     /* Box Shadows */
-    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.1);
-    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.12);
-    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
-    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.2);
-    --shadow-xl: 0 12px 32px rgba(0, 0, 0, 0.25);
-    --shadow-2xl: 0 20px 48px rgba(0, 0, 0, 0.3);
-    --shadow-glow: 0 0 20px rgba(59, 130, 246, 0.3);
-    --shadow-glow-lg: 0 0 40px rgba(59, 130, 246, 0.4);
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.2);
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.25);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.35);
+    --shadow-xl: 0 12px 32px rgba(0, 0, 0, 0.4);
+    --shadow-2xl: 0 20px 48px rgba(0, 0, 0, 0.5);
+    --shadow-glow: 0 0 20px rgba(255, 255, 255, 0.15);
+    --shadow-glow-lg: 0 0 40px rgba(255, 255, 255, 0.2);
+    --shadow-glow-cyan: 0 0 20px rgba(255, 255, 255, 0.15);
+    --shadow-glow-intense: 0 0 60px rgba(255, 255, 255, 0.25);
     
     /* Z-Index Scale */
     --z-base: 0;
@@ -85,35 +87,60 @@
     --container-max: 1800px;
     
     /* ================================================
-       THEME COLORS
+       THEME COLORS - Pure Black & White
+       Google Language Explorer Style
        ================================================ */
     
-    /* Base Colors */
-    --bg-color: #0b0b0d;
-    --bg-elevated: #111113;
-    --bg-surface: #18181b;
+    /* Base Colors - Pure Black */
+    --bg-color: #000000;
+    --bg-elevated: #0a0a0a;
+    --bg-surface: #111111;
+    --bg-overlay: rgba(0, 0, 0, 0.85);
     --text-main: #ffffff;
-    --text-sub: #a1a1aa;
-    --text-muted: #71717a;
-    --accent-color: #3b82f6; /* Blue */
-    --accent-hover: #2563eb;
-    --accent-light: rgba(59, 130, 246, 0.15);
-    --card-bg: #141416;
-    --card-bg-hover: #1a1a1d;
-    --border-color: rgba(255, 255, 255, 0.08);
+    --text-sub: rgba(255, 255, 255, 0.7);
+    --text-muted: rgba(255, 255, 255, 0.4);
+    
+    /* Primary Accent - White (Monochrome) */
+    --accent-color: #ffffff;
+    --accent-hover: #e5e5e5;
+    --accent-muted: #a3a3a3;
+    --accent-light: rgba(255, 255, 255, 0.1);
+    --accent-glow: rgba(255, 255, 255, 0.3);
+    
+    /* Secondary Accent - Light Gray */
+    --accent-secondary: #d4d4d4;
+    --accent-secondary-hover: #e5e5e5;
+    --accent-secondary-light: rgba(255, 255, 255, 0.08);
+    
+    /* Gradient Accents - Monochrome */
+    --gradient-primary: linear-gradient(135deg, #ffffff 0%, #a3a3a3 100%);
+    --gradient-glow: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%);
+    --gradient-surface: linear-gradient(180deg, rgba(20, 20, 20, 0.8) 0%, rgba(0, 0, 0, 0.95) 100%);
+    
+    /* Card & Surface */
+    --card-bg: #0a0a0a;
+    --card-bg-hover: #141414;
+    --card-glass: rgba(255, 255, 255, 0.03);
+    --card-glass-border: rgba(255, 255, 255, 0.08);
+    
+    /* Borders */
+    --border-color: rgba(255, 255, 255, 0.1);
     --border-color-strong: rgba(255, 255, 255, 0.15);
+    --border-accent: rgba(255, 255, 255, 0.2);
+    
+    /* Typography */
     --font-main: 'Inter', 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
     --transition: var(--transition-slow);
     
-    /* Status Colors */
-    --color-success: #22c55e;
-    --color-success-bg: rgba(34, 197, 94, 0.15);
+    /* Status Colors - Keep functional but monochrome-friendly */
+    --color-success: #ffffff;
+    --color-success-bg: rgba(255, 255, 255, 0.1);
     --color-warning: #f59e0b;
     --color-warning-bg: rgba(245, 158, 11, 0.15);
     --color-error: #ef4444;
     --color-error-bg: rgba(239, 68, 68, 0.15);
-    --color-info: #3b82f6;
-    --color-info-bg: rgba(59, 130, 246, 0.15);
+    --color-info: #ffffff;
+    --color-info-bg: rgba(255, 255, 255, 0.1);
 
     /* Currency Colors for Graph */
     --c-usd: #3b82f6; /* Blue */

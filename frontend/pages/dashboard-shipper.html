@@ -31,25 +31,51 @@
 <body>
     <!-- Header -->
     <header>
-        <a href="/" class="logo">
-            AAL<span>.</span>
-            <div class="full-name">All About Logistics</div>
-        </a>
+        <a href="/" class="logo">AAL<span>.</span></a>
         <nav>
-            <ul>
-                <li><a href="quotation.html">Quotation</a></li>
-                <li><a href="shipper-bidding.html">My Quotations</a></li>
-                <li><a href="bidding-list.html">Bidding</a></li>
-                <li><a href="market-data.html">Market Data</a></li>
-                <li><a href="news-intelligence.html">News Intel</a></li>
-                <li><a href="../ai_studio_code_F2.html#tools">Tools</a></li>
-                <li><a href="dashboard-shipper.html" class="active">Dashboard</a></li>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="company.html" class="nav-link">Company</a>
+                </li>
+                <li class="nav-item has-dropdown">
+                    <button class="dropdown-toggle">
+                        Quotation <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a href="quotation.html">Quote</a></li>
+                        <li><a href="bidding-list.html">Bidding</a></li>
+                        <li><a href="shipper-bidding.html">My Quotations</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item has-dropdown">
+                    <button class="dropdown-toggle">
+                        Operations <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a href="#" class="coming-soon">Contract <span class="badge-coming-soon">준비중</span></a></li>
+                        <li><a href="#" class="coming-soon">Tracking <span class="badge-coming-soon">준비중</span></a></li>
+                    </ul>
+                </li>
+                <li class="nav-item active">
+                    <a href="dashboard-shipper.html" class="nav-link active coming-soon">
+                        Dashboard <span class="badge-coming-soon">준비중</span>
+                    </a>
+                </li>
+                <li class="nav-item has-dropdown">
+                    <button class="dropdown-toggle">
+                        Intelligence <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a href="market-data.html">Market Data</a></li>
+                        <li><a href="news-intelligence.html">News Intel</a></li>
+                        <li><a href="report-insight.html">Report & Insight</a></li>
+                    </ul>
+                </li>
             </ul>
         </nav>
-        <!-- Auth Container -->
         <div class="header-auth" id="headerAuthContainer">
             <button class="header-auth-btn" onclick="Auth.openModal()">
-                <i class="fas fa-sign-in-alt"></i> 로그인
+                <i class="fas fa-user"></i> Login
             </button>
         </div>
     </header>
@@ -326,5 +352,7 @@
             Dashboard.init('shipper');
         });
     </script>
+    <!-- Navigation Dropdown -->
+    <script src="../js/components/navDropdown.js"></script>
 </body>
 </html>

@@ -131,7 +131,9 @@ from schemas import (
     BookmarkBiddingRequest, BookmarkedBiddingResponse, BookmarkedBiddingListResponse,
     QuoteRequestUpdate, QuoteRequestCopyRequest,
     RecommendedForwarder, ForwarderRecommendationResponse,
-    RecommendedBidding, BiddingRecommendationResponse, PriceGuideResponse
+    RecommendedBidding, BiddingRecommendationResponse, PriceGuideResponse,
+    # Forwarder Profile schemas
+    ForwarderProfileResponse, ForwarderTopRoute, ForwarderShippingModeStats, ForwarderReviewItem
 )
 from pdf_generator import RFQPDFGenerator
 import hashlib
@@ -2719,6 +2721,7 @@ def get_shipper_bidding_bids(
         
         bid_items.append(ShipperBidItem(
             id=bid.id,
+            forwarder_id=forwarder.id,
             rank=rank,
             company_masked=mask_company_name(forwarder.company),
             rating=float(forwarder.rating) if forwarder.rating else 3.0,
@@ -3128,6 +3131,170 @@ def get_bidding_rating(
         comment=rating.comment,
         is_visible=rating.is_visible,
         created_at=rating.created_at
+    )
+
+
+# ==========================================
+# FORWARDER PROFILE ENDPOINT
+# ==========================================
+
+@app.get("/api/forwarders/{forwarder_id}/profile", response_model=ForwarderProfileResponse, tags=["Forwarder Profile"])
+def get_forwarder_profile(
+    forwarder_id: int,
+    limit_reviews: int = 10,
+    db: Session = Depends(get_db)
+):
+    """
+    포워더 프로필 상세 조회
+    
+    - 포워더 기본 정보 및 평점
+    - 주요 운송 루트 (Top 5)
+    - 운송 모드별 통계
+    - 최근 리뷰 목록
+    """
+    # 포워더 조회
+    forwarder = db.query(Forwarder).filter(Forwarder.id == forwarder_id).first()
+    if not forwarder:
+        raise HTTPException(status_code=404, detail="Forwarder not found")
+    
+    # 모든 입찰 조회 (submitted 또는 awarded)
+    bids = db.query(Bid).filter(
+        Bid.forwarder_id == forwarder_id,
+        Bid.status.in_(["submitted", "awarded"])
+    ).all()
+    
+    total_bids = len(bids)
+    total_awarded = sum(1 for b in bids if b.status == "awarded")
+    award_rate = (total_awarded / total_bids * 100) if total_bids > 0 else 0.0
+    
+    # 주요 루트 계산 (입찰 이력 기반)
+    route_counts = {}
+    for bid in bids:
+        bidding = db.query(Bidding).filter(Bidding.id == bid.bidding_id).first()
+        if bidding:
+            quote_req = db.query(QuoteRequest).filter(QuoteRequest.id == bidding.quote_request_id).first()
+            if quote_req:
+                route_key = (quote_req.pol, quote_req.pod)
+                if route_key not in route_counts:
+                    route_counts[route_key] = {"count": 0, "awarded": 0}
+                route_counts[route_key]["count"] += 1
+                if bid.status == "awarded":
+                    route_counts[route_key]["awarded"] += 1
+    
+    # Top 5 루트 정렬
+    top_routes = []
+    sorted_routes = sorted(route_counts.items(), key=lambda x: x[1]["count"], reverse=True)[:5]
+    for (pol, pod), data in sorted_routes:
+        top_routes.append(ForwarderTopRoute(
+            pol=pol,
+            pod=pod,
+            count=data["count"],
+            awarded_count=data["awarded"]
+        ))
+    
+    # 운송 모드별 통계
+    shipping_mode_counts = {}
+    for bid in bids:
+        bidding = db.query(Bidding).filter(Bidding.id == bid.bidding_id).first()
+        if bidding:
+            quote_req = db.query(QuoteRequest).filter(QuoteRequest.id == bidding.quote_request_id).first()
+            if quote_req:
+                mode = quote_req.shipping_type
+                if mode not in shipping_mode_counts:
+                    shipping_mode_counts[mode] = {"count": 0, "awarded": 0}
+                shipping_mode_counts[mode]["count"] += 1
+                if bid.status == "awarded":
+                    shipping_mode_counts[mode]["awarded"] += 1
+    
+    shipping_mode_stats = []
+    for mode, data in shipping_mode_counts.items():
+        percentage = (data["count"] / total_bids * 100) if total_bids > 0 else 0.0
+        shipping_mode_stats.append(ForwarderShippingModeStats(
+            shipping_type=mode,
+            count=data["count"],
+            percentage=round(percentage, 1),
+            awarded_count=data["awarded"]
+        ))
+    
+    # 정렬: count 기준 내림차순
+    shipping_mode_stats.sort(key=lambda x: x.count, reverse=True)
+    
+    # 평점 조회 및 분석
+    ratings = db.query(Rating).filter(
+        Rating.forwarder_id == forwarder_id,
+        Rating.is_visible == True
+    ).all()
+    
+    score_distribution = {}
+    price_scores = []
+    service_scores = []
+    punctuality_scores = []
+    communication_scores = []
+    
+    for r in ratings:
+        score_key = str(float(r.score))
+        score_distribution[score_key] = score_distribution.get(score_key, 0) + 1
+        if r.price_score:
+            price_scores.append(float(r.price_score))
+        if r.service_score:
+            service_scores.append(float(r.service_score))
+        if r.punctuality_score:
+            punctuality_scores.append(float(r.punctuality_score))
+        if r.communication_score:
+            communication_scores.append(float(r.communication_score))
+    
+    # 리뷰 목록 조회 (최신순)
+    reviews_query = db.query(Rating).filter(
+        Rating.forwarder_id == forwarder_id,
+        Rating.is_visible == True
+    ).order_by(Rating.created_at.desc()).limit(limit_reviews).all()
+    
+    reviews = []
+    for r in reviews_query:
+        # 비딩 정보 조회
+        bidding = db.query(Bidding).filter(Bidding.id == r.bidding_id).first()
+        quote_req = None
+        if bidding:
+            quote_req = db.query(QuoteRequest).filter(QuoteRequest.id == bidding.quote_request_id).first()
+        
+        # 화주 정보 조회
+        customer = db.query(Customer).filter(Customer.id == r.customer_id).first()
+        customer_company_masked = mask_company_name(customer.company) if customer else "***"
+        
+        reviews.append(ForwarderReviewItem(
+            id=r.id,
+            score=float(r.score),
+            price_score=float(r.price_score) if r.price_score else None,
+            service_score=float(r.service_score) if r.service_score else None,
+            punctuality_score=float(r.punctuality_score) if r.punctuality_score else None,
+            communication_score=float(r.communication_score) if r.communication_score else None,
+            comment=r.comment,
+            bidding_no=bidding.bidding_no if bidding else "",
+            pol=quote_req.pol if quote_req else "",
+            pod=quote_req.pod if quote_req else "",
+            shipping_type=quote_req.shipping_type if quote_req else "",
+            created_at=r.created_at,
+            customer_company_masked=customer_company_masked
+        ))
+    
+    return ForwarderProfileResponse(
+        forwarder_id=forwarder.id,
+        company=forwarder.company,
+        company_masked=mask_company_name(forwarder.company),
+        rating=float(forwarder.rating) if forwarder.rating else 3.0,
+        rating_count=forwarder.rating_count or 0,
+        avg_price_score=sum(price_scores) / len(price_scores) if price_scores else None,
+        avg_service_score=sum(service_scores) / len(service_scores) if service_scores else None,
+        avg_punctuality_score=sum(punctuality_scores) / len(punctuality_scores) if punctuality_scores else None,
+        avg_communication_score=sum(communication_scores) / len(communication_scores) if communication_scores else None,
+        score_distribution=score_distribution,
+        total_bids=total_bids,
+        total_awarded=total_awarded,
+        award_rate=round(award_rate, 1),
+        top_routes=top_routes,
+        shipping_mode_stats=shipping_mode_stats,
+        reviews=reviews,
+        member_since=forwarder.created_at
     )
 
 
