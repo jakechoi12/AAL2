@@ -13,6 +13,7 @@ from .rss_collector import RSSCollector
 from .gdelt_collector import GDELTCollector
 from .google_news_collector import GoogleNewsCollector
 from .naver_news_collector import NaverNewsCollector
+from .base import article_filter
 from ..models import NewsArticle, CollectionLog, get_session, init_database
 
 logger = logging.getLogger(__name__)
@@ -71,6 +72,7 @@ class NewsCollectorManager:
             'total_collected': 0,
             'new_articles': 0,
             'duplicates': 0,
+            'filtered_out': 0,
             'kr_count': 0,
             'global_count': 0,
             'errors': [],
@@ -78,6 +80,9 @@ class NewsCollectorManager:
         }
         
         all_articles = []
+        
+        # Reset filter count for this collection run
+        article_filter.reset_count()
         
         # Collect from all sources
         for collector in self.collectors:
@@ -91,6 +96,10 @@ class NewsCollectorManager:
                 result['errors'].append(error_msg)
         
         result['total_collected'] = len(all_articles)
+        
+        # Filter out irrelevant articles (v2.4)
+        all_articles = article_filter.filter_articles(all_articles)
+        result['filtered_out'] = article_filter.get_filtered_count()
         
         # Store articles (with deduplication)
         try:

@@ -23,6 +23,9 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
+    <!-- WordCloud2.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/wordcloud2.js/1.2.2/wordcloud2.min.js"></script>
+    
     <!-- CSS - Design System -->
     <link rel="stylesheet" href="../css/variables.css">
     <link rel="stylesheet" href="../css/base.css">
@@ -163,7 +166,8 @@
             <div class="wordcloud-container">
                 <div class="wordcloud-title">INTELLIGENCE WORD CLOUD</div>
                 <div class="wordcloud-content" id="wordcloud-content">
-                    <div class="loading-spinner">
+                    <canvas id="wordcloud-canvas"></canvas>
+                    <div class="loading-spinner" id="wordcloud-loading">
                         <div class="spinner"></div>
                         Loading keywords...
                     </div>

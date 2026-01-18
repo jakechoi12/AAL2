@@ -17,58 +17,98 @@ logger = logging.getLogger(__name__)
 
 # RSS Feed configurations
 RSS_FEEDS = {
-    # International logistics news
-    'global': [
-        {
-            'name': 'The Loadstar',
-            'url': 'https://theloadstar.com/feed/',
-            'type': 'GLOBAL'
-        },
-        {
-            'name': 'FreightWaves',
-            'url': 'https://www.freightwaves.com/feed',
-            'type': 'GLOBAL'
-        },
-        {
-            'name': 'Supply Chain Dive',
-            'url': 'https://www.supplychaindive.com/feeds/news/',
-            'type': 'GLOBAL'
-        },
-        {
-            'name': 'Splash247',
-            'url': 'https://splash247.com/feed/',
-            'type': 'GLOBAL'
-        },
-        {
-            'name': 'Air Cargo Week',
-            'url': 'https://aircargoweek.com/feed/',
-            'type': 'GLOBAL'
-        },
-        {
-            'name': 'Supply Chain 247',
-            'url': 'https://www.supplychain247.com/rss/all/feeds',
-            'type': 'GLOBAL'
-        },
+    # ===== 해외 물류/공급망 뉴스 =====
+    'global_logistics': [
+        {'name': 'The Loadstar', 'url': 'https://theloadstar.com/feed/', 'type': 'GLOBAL'},
+        {'name': 'FreightWaves', 'url': 'https://www.freightwaves.com/feed', 'type': 'GLOBAL'},
+        {'name': 'Supply Chain Dive', 'url': 'https://www.supplychaindive.com/feeds/news/', 'type': 'GLOBAL'},
+        {'name': 'Splash247', 'url': 'https://splash247.com/feed/', 'type': 'GLOBAL'},
+        {'name': 'Air Cargo Week', 'url': 'https://aircargoweek.com/feed/', 'type': 'GLOBAL'},
+        {'name': 'Supply Chain 247', 'url': 'https://www.supplychain247.com/rss/all/feeds', 'type': 'GLOBAL'},
+        {'name': 'Logistics Management', 'url': 'https://www.logisticsmgmt.com/rss/news', 'type': 'GLOBAL'},
+        {'name': 'DC Velocity', 'url': 'https://www.dcvelocity.com/rss/news', 'type': 'GLOBAL'},
+        {'name': 'American Shipper', 'url': 'https://www.freightwaves.com/american-shipper/feed', 'type': 'GLOBAL'},
+        {'name': 'Supply Chain Brain', 'url': 'https://www.supplychainbrain.com/rss/articles', 'type': 'GLOBAL'},
+        {'name': 'Material Handling & Logistics', 'url': 'https://www.mhlnews.com/rss', 'type': 'GLOBAL'},
+        {'name': 'Global Trade Magazine', 'url': 'https://www.globaltrademag.com/feed/', 'type': 'GLOBAL'},
+        {'name': 'Transport Topics', 'url': 'https://www.ttnews.com/rss/all', 'type': 'GLOBAL'},
+        {'name': 'Seatrade Maritime', 'url': 'https://www.seatrade-maritime.com/rss.xml', 'type': 'GLOBAL'},
+        {'name': 'Hellenic Shipping News', 'url': 'https://www.hellenicshippingnews.com/feed/', 'type': 'GLOBAL'},
+        {'name': 'Port Technology', 'url': 'https://www.porttechnology.org/feed/', 'type': 'GLOBAL'},
+        {'name': 'Container News', 'url': 'https://container-news.com/feed/', 'type': 'GLOBAL'},
     ],
-    # Korean logistics news
-    'korean': [
-        {
-            'name': '물류신문',
-            'url': 'https://www.klnews.co.kr/rss/allArticle.xml',
-            'type': 'KR'
-        },
-        {
-            'name': '해운신문',
-            'url': 'https://www.maritimepress.co.kr/rss/allArticle.xml',
-            'type': 'KR'
-        },
-        {
-            'name': '카고뉴스',
-            'url': 'https://www.cargonews.co.kr/rss/allArticle.xml',
-            'type': 'KR'
-        },
-    ]
+    
+    # ===== 해외 경제/금융 뉴스 =====
+    'global_economy': [
+        {'name': 'Reuters Business', 'url': 'https://feeds.reuters.com/reuters/businessNews', 'type': 'GLOBAL'},
+        {'name': 'Reuters Markets', 'url': 'https://feeds.reuters.com/reuters/marketsNews', 'type': 'GLOBAL'},
+        {'name': 'CNBC World', 'url': 'https://www.cnbc.com/id/100727362/device/rss/rss.html', 'type': 'GLOBAL'},
+        {'name': 'CNBC Finance', 'url': 'https://www.cnbc.com/id/10000664/device/rss/rss.html', 'type': 'GLOBAL'},
+        {'name': 'MarketWatch', 'url': 'https://feeds.marketwatch.com/marketwatch/topstories', 'type': 'GLOBAL'},
+        {'name': 'Business Insider', 'url': 'https://www.businessinsider.com/rss', 'type': 'GLOBAL'},
+        {'name': 'Forbes', 'url': 'https://www.forbes.com/business/feed/', 'type': 'GLOBAL'},
+        {'name': 'Yahoo Finance', 'url': 'https://finance.yahoo.com/news/rssindex', 'type': 'GLOBAL'},
+        {'name': 'Investing.com', 'url': 'https://www.investing.com/rss/news.rss', 'type': 'GLOBAL'},
+        {'name': 'Seeking Alpha', 'url': 'https://seekingalpha.com/market_currents.xml', 'type': 'GLOBAL'},
+    ],
+    
+    # ===== 해외 무역/관세 뉴스 =====
+    'global_trade': [
+        {'name': 'Trade.gov', 'url': 'https://www.trade.gov/rss/feed', 'type': 'GLOBAL'},
+        {'name': 'WTO News', 'url': 'https://www.wto.org/english/news_e/news_rss_e.xml', 'type': 'GLOBAL'},
+        {'name': 'Customs Today', 'url': 'https://customstoday.com/feed/', 'type': 'GLOBAL'},
+    ],
+    
+    # ===== 국내 물류 뉴스 =====
+    'korean_logistics': [
+        {'name': '물류신문', 'url': 'https://www.klnews.co.kr/rss/allArticle.xml', 'type': 'KR'},
+        {'name': '해운신문', 'url': 'https://www.maritimepress.co.kr/rss/allArticle.xml', 'type': 'KR'},
+        {'name': '카고뉴스', 'url': 'https://www.cargonews.co.kr/rss/allArticle.xml', 'type': 'KR'},
+        {'name': '코리아쉬핑가제트', 'url': 'https://www.ksg.co.kr/rss/allArticle.xml', 'type': 'KR'},
+        {'name': '현대해양', 'url': 'https://www.hdhy.co.kr/rss/allArticle.xml', 'type': 'KR'},
+        {'name': '월간 해양한국', 'url': 'https://www.monthlymaritimekorea.com/rss/allArticle.xml', 'type': 'KR'},
+        {'name': '한국해사신문', 'url': 'https://www.haesanews.com/rss/allArticle.xml', 'type': 'KR'},
+        {'name': '로지스틱스매거진', 'url': 'https://www.logisticsmagazine.co.kr/rss/allArticle.xml', 'type': 'KR'},
+        {'name': 'SCM인사이트', 'url': 'https://www.scminsight.co.kr/rss/allArticle.xml', 'type': 'KR'},
+    ],
+    
+    # ===== 국내 경제/금융 뉴스 =====
+    'korean_economy': [
+        {'name': '매일경제', 'url': 'https://www.mk.co.kr/rss/30000001/', 'type': 'KR'},
+        {'name': '한국경제', 'url': 'https://www.hankyung.com/feed/all-news', 'type': 'KR'},
+        {'name': '아시아경제', 'url': 'https://www.asiae.co.kr/rss/all.xml', 'type': 'KR'},
+        {'name': '이데일리', 'url': 'https://www.edaily.co.kr/rss/all.xml', 'type': 'KR'},
+        {'name': '머니투데이', 'url': 'https://news.mt.co.kr/rss/all.xml', 'type': 'KR'},
+        {'name': '파이낸셜뉴스', 'url': 'https://www.fnnews.com/rss/all.xml', 'type': 'KR'},
+        {'name': '서울경제', 'url': 'https://www.sedaily.com/rss/all.xml', 'type': 'KR'},
+        {'name': '헤럴드경제', 'url': 'https://biz.heraldcorp.com/rss/all.xml', 'type': 'KR'},
+        {'name': '뉴스핌', 'url': 'https://www.newspim.com/rss/all.xml', 'type': 'KR'},
+        {'name': '이투데이', 'url': 'https://www.etoday.co.kr/rss/all.xml', 'type': 'KR'},
+    ],
+    
+    # ===== 국내 무역/산업 뉴스 =====
+    'korean_trade': [
+        {'name': '한국무역신문', 'url': 'https://www.weeklytrade.co.kr/rss/allArticle.xml', 'type': 'KR'},
+        {'name': '전자신문', 'url': 'https://www.etnews.com/rss/all.xml', 'type': 'KR'},
+        {'name': '산업일보', 'url': 'https://www.kidd.co.kr/rss/allArticle.xml', 'type': 'KR'},
+        {'name': '철강금속신문', 'url': 'https://www.snmnews.com/rss/allArticle.xml', 'type': 'KR'},
+        {'name': '오토타임즈', 'url': 'https://www.autotimes.co.kr/rss/allArticle.xml', 'type': 'KR'},
+        {'name': '반도체뉴스', 'url': 'https://www.snnews.co.kr/rss/allArticle.xml', 'type': 'KR'},
+        {'name': '전기신문', 'url': 'https://www.electimes.com/rss/allArticle.xml', 'type': 'KR'},
+    ],
 }
+
+# Legacy compatibility - combined feed groups
+RSS_FEEDS['global'] = (
+    RSS_FEEDS['global_logistics'] + 
+    RSS_FEEDS['global_economy'] + 
+    RSS_FEEDS['global_trade']
+)
+RSS_FEEDS['korean'] = (
+    RSS_FEEDS['korean_logistics'] + 
+    RSS_FEEDS['korean_economy'] + 
+    RSS_FEEDS['korean_trade']
+)
 
 
 class RSSCollector(BaseCollector):

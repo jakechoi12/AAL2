@@ -467,31 +467,143 @@ async function loadWordcloudData() {
 }
 
 /**
- * Render word cloud
+ * Render word cloud with cloud mask using WordCloud2.js
+ * Based on requirements: Cloud shape mask, bigram/trigram support
  */
 function renderWordcloud() {
+    const canvas = document.getElementById('wordcloud-canvas');
+    const loading = document.getElementById('wordcloud-loading');
     const container = document.getElementById('wordcloud-content');
-    if (!container || !state.wordcloudData) return;
     
-    const keywords = state.wordcloudData.keywords || {};
-    const entries = Object.entries(keywords);
+    if (!canvas || !state.wordcloudData) return;
+    
+    // Hide loading spinner
+    if (loading) loading.style.display = 'none';
+    
+    const keywords = state.wordcloudData.keywords || [];
+    
+    // Handle both old format (object) and new format (array)
+    let entries = [];
+    if (Array.isArray(keywords)) {
+        // New format: [{text, count, size}]
+        entries = keywords.map(item => [item.text, item.count]);
+    } else {
+        // Old format: {word: count}
+        entries = Object.entries(keywords);
+    }
     
     if (entries.length === 0) {
+        canvas.style.display = 'none';
         container.innerHTML = '<span class="empty-state">No keywords available</span>';
         return;
     }
     
-    // Find max frequency for scaling
-    const maxFreq = Math.max(...entries.map(([_, freq]) => freq));
+    // Set canvas size based on container
+    const containerRect = container.getBoundingClientRect();
+    canvas.width = containerRect.width || 800;
+    canvas.height = containerRect.height || 200;
+    canvas.style.display = 'block';
     
-    // Generate word cloud HTML
-    const words = entries.map(([word, freq]) => {
-        // Calculate font size (1rem to 2.5rem based on frequency)
-        const sizeScale = freq / maxFreq;
-        const fontSize = 1 + sizeScale * 1.5;
+    // Find max frequency for weight scaling
+    const maxFreq = Math.max(...entries.map(([_, freq]) => freq));
+    const minFreq = Math.min(...entries.map(([_, freq]) => freq));
+    
+    // Scale weights for better visualization (range: 8 to 48 for font size)
+    const wordList = entries.map(([word, freq]) => {
+        const normalized = (freq - minFreq) / (maxFreq - minFreq || 1);
+        const weight = 10 + normalized * 38; // Font size range: 10px to 48px
+        return [word, weight];
+    });
+    
+    // Color palette (logistics-themed)
+    const colors = ['#6366f1', '#818cf8', '#a78bfa', '#c4b5fd', '#3b82f6', '#60a5fa', '#10b981', '#34d399', '#f59e0b'];
+    
+    // Create cloud mask shape
+    // Using cardioid (cloud-like shape) as the mask
+    const cloudShape = function(theta) {
+        // Cardioid formula creates a cloud-like silhouette
+        return 1 - Math.sin(theta);
+    };
+    
+    // Alternative: Actual cloud shape using multiple circles
+    const cloudMaskShape = function(theta) {
+        // Simulate fluffy cloud shape
+        const baseR = 0.65;
+        const bumps = [
+            { angle: 0, r: 0.25 },
+            { angle: Math.PI * 0.25, r: 0.2 },
+            { angle: Math.PI * 0.5, r: 0.3 },
+            { angle: Math.PI * 0.75, r: 0.25 },
+            { angle: Math.PI, r: 0.35 },
+            { angle: Math.PI * 1.25, r: 0.2 },
+            { angle: Math.PI * 1.5, r: 0.15 },
+            { angle: Math.PI * 1.75, r: 0.2 },
+        ];
         
-        // Alternate colors
-        const colors = ['#ffffff', '#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#a855f7'];
+        let r = baseR;
+        bumps.forEach(bump => {
+            const dist = Math.abs(theta - bump.angle);
+            const minDist = Math.min(dist, Math.PI * 2 - dist);
+            if (minDist < Math.PI * 0.3) {
+                r += bump.r * (1 - minDist / (Math.PI * 0.3));
+            }
+        });
+        
+        return Math.min(1, r);
+    };
+    
+    // Check if WordCloud library is loaded
+    if (typeof WordCloud === 'undefined') {
+        console.warn('WordCloud2.js not loaded, using fallback rendering');
+        renderWordcloudFallback(container, entries, maxFreq);
+        return;
+    }
+    
+    // Clear previous content
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Render using WordCloud2.js with cloud mask
+    try {
+        WordCloud(canvas, {
+            list: wordList,
+            gridSize: Math.round(8 * canvas.width / 1000),
+            weightFactor: function(size) {
+                return size * canvas.width / 800;
+            },
+            fontFamily: 'Pretendard, Noto Sans KR, sans-serif',
+            fontWeight: '600',
+            color: function(word, weight) {
+                // Higher weight = more saturated color
+                const idx = Math.floor(Math.random() * colors.length);
+                return colors[idx];
+            },
+            backgroundColor: 'transparent',
+            rotateRatio: 0.1, // Minimize rotation for readability (especially for bigrams/trigrams)
+            rotationSteps: 2,
+            shuffle: true,
+            shape: cloudMaskShape, // Cloud mask shape
+            ellipticity: 0.6, // Cloud-like ratio
+            drawOutOfBound: false,
+            shrinkToFit: true,
+            minSize: 8,
+            wait: 0,
+        });
+    } catch (e) {
+        console.error('WordCloud rendering error:', e);
+        renderWordcloudFallback(container, entries, maxFreq);
+    }
+}
+
+/**
+ * Fallback word cloud rendering (if WordCloud2.js fails)
+ */
+function renderWordcloudFallback(container, entries, maxFreq) {
+    const colors = ['#6366f1', '#818cf8', '#a78bfa', '#c4b5fd', '#3b82f6', '#60a5fa', '#10b981'];
+    
+    const words = entries.map(([word, freq]) => {
+        const sizeScale = freq / maxFreq;
+        const fontSize = 0.75 + sizeScale * 1.25;
         const color = colors[Math.floor(Math.random() * colors.length)];
         
         return `<span class="keyword-item" style="font-size: ${fontSize}rem; color: ${color};" title="${freq} mentions">${word}</span>`;

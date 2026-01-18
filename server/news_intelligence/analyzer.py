@@ -7,6 +7,8 @@ Provides AI-powered analysis for news articles with optimization:
 3. Designed for async background processing
 
 Categories: Crisis, Ocean, Air, Inland, Economy, ETC
+
+v2.5: Migrated from OpenAI to Google Gemini
 """
 
 import os
@@ -16,19 +18,34 @@ import re
 from typing import List, Dict, Any, Optional, Tuple
 from datetime import datetime, timezone
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from collections import Counter
+
+# Load environment variables
+from dotenv import load_dotenv
+load_dotenv()
 
 logger = logging.getLogger(__name__)
 
-# Try to import OpenAI
+# Try to import Google Gemini (new google-genai package)
+GEMINI_AVAILABLE = False
+genai_client = None
+
 try:
-    from openai import OpenAI
-    OPENAI_AVAILABLE = True
+    from google import genai
+    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+    if GEMINI_API_KEY:
+        genai_client = genai.Client(api_key=GEMINI_API_KEY)
+        GEMINI_AVAILABLE = True
+        logger.info("Gemini API (google-genai) configured successfully for news analysis")
+    else:
+        logger.warning("GEMINI_API_KEY not found. AI analysis will use fallback methods.")
 except ImportError:
-    OPENAI_AVAILABLE = False
-    logger.warning("OpenAI package not installed. AI analysis will use fallback methods.")
+    logger.warning("google-genai package not installed. AI analysis will use fallback methods.")
 
 
-# Stop words to exclude from word cloud
+# ===== 일반 키워드 필터링 강화 (v2.3) =====
+# 워드클라우드에서 제외할 일반적인 업계 용어
+
 STOP_WORDS = {
     # English common words
     'the', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
@@ -40,18 +57,39 @@ STOP_WORDS = {
     'what', 'which', 'who', 'whom', 'whose', 'when', 'where', 'why', 'how',
     'all', 'each', 'every', 'both', 'few', 'more', 'most', 'other', 'some',
     'such', 'no', 'not', 'only', 'same', 'than', 'too', 'very',
-    # Logistics-generic words (too common)
+    'about', 'after', 'before', 'over', 'under', 'again', 'further',
+    'then', 'once', 'here', 'there', 'any', 'own', 'just', 'now',
+    
+    # Logistics-generic words (too common) - 강화
     'logistics', 'company', 'market', 'industry', 'business', 'report',
     'news', 'says', 'said', 'new', 'year', 'month', 'week', 'day',
     'percent', 'million', 'billion', 'according', 'also', 'however',
-    # GDELT-specific terms (should not appear in word cloud)
+    'freight', 'shipping', 'port', 'container', 'cargo', 'trade',
+    'import', 'export', 'supply', 'chain', 'supply chain',
+    'service', 'services', 'global', 'world', 'international',
+    'first', 'second', 'last', 'next', 'latest', 'recent', 'today',
+    'growth', 'increase', 'decrease', 'change', 'expected', 'announced',
+    'quarter', 'half', 'annual', 'monthly', 'weekly', 'daily',
+    'total', 'number', 'amount', 'level', 'rate', 'rates',
+    
+    # GDELT-specific terms
     'goldstein', 'goldstein scale', 'average tone', 'avg tone', 'mentions',
     'sources', 'articles', 'material conflict', 'verbal conflict',
     'material cooperation', 'verbal cooperation', 'category', 'event',
     'location', 'involves', 'unknown',
-    # Korean common words
+    
+    # 조사/관사 구문 필터링 (v2.4)
+    'in 2025', 'in 2026', 'in 2024', 'in the', 'to the', 'of the',
+    'port of', 'the post', 'at the', 'on the', 'for the', 'by the',
+    'from the', 'with the', 'as the', 'will be', 'has been', 'have been',
+    
+    # Korean common words - 확장
     '있다', '하다', '되다', '이다', '있는', '하는', '되는', '대한', '위한', '통해',
     '따르면', '것으로', '지난', '오는', '관련', '등', '및', '위해', '대해', '있어',
+    '물류', '해운', '항만', '컨테이너', '수출', '수입', '무역', '화물', '운송', '공급망',
+    '뉴스', '기사', '보도', '전망', '올해', '내년', '지난해', '상반기', '하반기',
+    '것으로', '밝혔다', '전했다', '보도했다', '알려졌다', '나타났다',
+    '증가', '감소', '상승', '하락', '유지', '기록', '달성', '예상', '전년',
 }
 
 # Country code mappings
@@ -156,6 +194,8 @@ class NewsAnalyzer:
     1. Rule-based first: Analyze with keywords/rules first
     2. AI supplementary: Only use AI for uncertain classifications
     3. Batch processing: Process multiple articles in one API call
+    
+    v2.5: Uses Google Gemini instead of OpenAI
     """
     
     CATEGORIES = ['Crisis', 'Ocean', 'Air', 'Inland', 'Economy', 'ETC']
@@ -166,24 +206,20 @@ class NewsAnalyzer:
     # Batch size for AI processing
     BATCH_SIZE = 10
     
-    def __init__(self, api_key: str = None, model: str = 'gpt-4o-mini'):
+    def __init__(self, model: str = 'gemini-2.0-flash'):
         """
         Initialize analyzer.
         
         Args:
-            api_key: OpenAI API key (defaults to OPENAI_API_KEY env var)
-            model: OpenAI model to use
+            model: Gemini model to use (default: gemini-2.0-flash)
         """
-        self.model = model
-        self.api_key = api_key or os.getenv('OPENAI_API_KEY')
-        self.client = None
+        self.model_name = model
+        self.client = genai_client  # Use global client
         
-        if OPENAI_AVAILABLE and self.api_key:
-            try:
-                self.client = OpenAI(api_key=self.api_key)
-                logger.info("OpenAI client initialized successfully")
-            except Exception as e:
-                logger.error(f"Failed to initialize OpenAI client: {e}")
+        if GEMINI_AVAILABLE and self.client:
+            logger.info(f"Gemini analyzer ready with model: {self.model_name}")
+        else:
+            logger.warning("Gemini not available, using rule-based analysis only")
         
         self.logger = logging.getLogger(__name__)
         
@@ -234,7 +270,7 @@ class NewsAnalyzer:
                 self.stats['ai_count'] += 1
                 ai_result = self._analyze_with_ai(title, summary)
                 ai_result['confidence'] = 0.9  # AI typically high confidence
-                ai_result['analysis_method'] = 'ai'
+                ai_result['analysis_method'] = 'ai_gemini'
                 return ai_result
             except Exception as e:
                 self.logger.error(f"AI analysis failed, using rule-based: {e}")
@@ -295,7 +331,7 @@ class NewsAnalyzer:
         
         # Step 2: Batch AI analysis for uncertain articles
         if needs_ai and self.client:
-            self.logger.info(f"Processing {len(needs_ai)} articles with AI (batch mode)")
+            self.logger.info(f"Processing {len(needs_ai)} articles with Gemini (batch mode)")
             self._batch_ai_analysis(needs_ai, results)
         else:
             # No AI available - use rule-based results
@@ -439,7 +475,7 @@ class NewsAnalyzer:
                     
                     article.update(ai_result)
                     article['confidence'] = 0.9
-                    article['analysis_method'] = 'ai_batch'
+                    article['analysis_method'] = 'ai_gemini_batch'
                     results[idx] = article
                     
             except Exception as e:
@@ -455,7 +491,7 @@ class NewsAnalyzer:
     
     def _analyze_batch_with_ai(self, batch: List[Tuple[int, Dict]]) -> List[Dict[str, Any]]:
         """
-        Analyze multiple articles in a single AI API call.
+        Analyze multiple articles in a single AI API call using Gemini (google-genai).
         
         Args:
             batch: List of (index, article) tuples
@@ -470,7 +506,7 @@ class NewsAnalyzer:
             summary = article.get('content_summary', '')[:200]
             articles_text.append(f"[{i}] Title: {title}\nContent: {summary}")
         
-        prompt = f"""Analyze these {len(batch)} logistics news articles. For each, provide:
+        prompt = f"""You are a logistics news analyst. Analyze these {len(batch)} logistics news articles. For each, provide:
 - category: One of [Crisis, Ocean, Air, Inland, Economy, ETC]
 - countries: ISO 2-letter country codes mentioned (max 3)
 - keywords: 3 important keywords
@@ -479,26 +515,28 @@ class NewsAnalyzer:
 Articles:
 {chr(10).join(articles_text)}
 
-Respond with a JSON array:
+Respond ONLY with a valid JSON array (no markdown, no explanation):
 [{{"id": 0, "category": "...", "countries": ["XX"], "keywords": ["..."], "is_crisis": false}}, ...]"""
 
-        response = self.client.chat.completions.create(
-            model=self.model,
-            messages=[
-                {"role": "system", "content": "You are a logistics news analyst. Respond only with valid JSON array."},
-                {"role": "user", "content": prompt}
-            ],
-            temperature=0.3,
-            max_tokens=1000,
+        # Use new google-genai API
+        response = self.client.models.generate_content(
+            model=self.model_name,
+            contents=prompt,
+            config={
+                "temperature": 0.3,
+                "max_output_tokens": 1000,
+            }
         )
+        result_text = response.text.strip()
         
-        result_text = response.choices[0].message.content.strip()
-        
-        # Parse JSON response
+        # Parse JSON response (remove markdown code blocks if present)
         if result_text.startswith('```'):
             result_text = result_text.split('```')[1]
             if result_text.startswith('json'):
                 result_text = result_text[4:]
+        if result_text.endswith('```'):
+            result_text = result_text[:-3]
+        result_text = result_text.strip()
         
         results = json.loads(result_text)
         
@@ -528,9 +566,9 @@ Respond with a JSON array:
     
     def _analyze_with_ai(self, title: str, summary: str) -> Dict[str, Any]:
         """
-        Analyze single article using OpenAI API (fallback for single articles).
+        Analyze single article using Gemini API (google-genai).
         """
-        prompt = f"""Analyze this logistics news article and provide:
+        prompt = f"""You are a logistics news analyst. Analyze this logistics news article and provide:
 1. Category: One of [Crisis, Ocean, Air, Inland, Economy, ETC]
 2. Countries: List of ISO 2-letter country codes mentioned (max 5)
 3. Keywords: 3-5 important keywords/phrases
@@ -539,26 +577,28 @@ Respond with a JSON array:
 Title: {title}
 Content: {summary}
 
-Respond in JSON format:
+Respond ONLY with valid JSON (no markdown, no explanation):
 {{"category": "...", "countries": ["XX", "YY"], "keywords": ["word1", "word2"], "is_crisis": true/false}}"""
         
-        response = self.client.chat.completions.create(
-            model=self.model,
-            messages=[
-                {"role": "system", "content": "You are a logistics news analyst. Respond only with valid JSON."},
-                {"role": "user", "content": prompt}
-            ],
-            temperature=0.3,
-            max_tokens=200,
+        # Use new google-genai API
+        response = self.client.models.generate_content(
+            model=self.model_name,
+            contents=prompt,
+            config={
+                "temperature": 0.3,
+                "max_output_tokens": 200,
+            }
         )
+        result_text = response.text.strip()
         
-        result_text = response.choices[0].message.content.strip()
-        
-        # Parse JSON response
+        # Parse JSON response (remove markdown code blocks if present)
         if result_text.startswith('```'):
             result_text = result_text.split('```')[1]
             if result_text.startswith('json'):
                 result_text = result_text[4:]
+        if result_text.endswith('```'):
+            result_text = result_text[:-3]
+        result_text = result_text.strip()
         
         result = json.loads(result_text)
         
@@ -576,7 +616,7 @@ Respond in JSON format:
     
     def generate_crisis_summary(self, crisis_articles: List[Dict[str, Any]], max_articles: int = 5) -> str:
         """
-        Generate a summary of current crisis/critical alerts.
+        Generate a summary of current crisis/critical alerts using Gemini.
         """
         if not crisis_articles:
             return "No critical alerts at this time."
@@ -587,7 +627,7 @@ Respond in JSON format:
             try:
                 return self._generate_summary_with_ai(articles_to_summarize)
             except Exception as e:
-                self.logger.error(f"AI summary failed, using fallback: {e}")
+                self.logger.error(f"Gemini summary failed, using fallback: {e}")
         
         # Fallback: Simple list format
         summaries = []
@@ -599,31 +639,30 @@ Respond in JSON format:
         return "\n".join(summaries)
     
     def _generate_summary_with_ai(self, articles: List[Dict[str, Any]]) -> str:
-        """Generate crisis summary using AI"""
+        """Generate crisis summary using Gemini (google-genai)"""
         articles_text = "\n".join([
             f"- {a.get('title', '')}: {a.get('content_summary', '')[:200]}"
             for a in articles
         ])
         
-        prompt = f"""Summarize these logistics crisis alerts in 2-3 concise bullet points.
+        prompt = f"""You are a logistics crisis analyst. Summarize these logistics crisis alerts in 2-3 concise bullet points.
 Focus on: What happened, where, and potential supply chain impact.
 
 Articles:
 {articles_text}
 
-Provide a brief, actionable summary for logistics professionals."""
+Provide a brief, actionable summary for logistics professionals. Be concise and actionable."""
 
-        response = self.client.chat.completions.create(
-            model=self.model,
-            messages=[
-                {"role": "system", "content": "You are a logistics crisis analyst. Be concise and actionable."},
-                {"role": "user", "content": prompt}
-            ],
-            temperature=0.5,
-            max_tokens=300,
+        # Use new google-genai API
+        response = self.client.models.generate_content(
+            model=self.model_name,
+            contents=prompt,
+            config={
+                "temperature": 0.5,
+                "max_output_tokens": 300,
+            }
         )
-        
-        return response.choices[0].message.content.strip()
+        return response.text.strip()
     
     def get_stats(self) -> Dict[str, Any]:
         """Get analysis statistics"""
@@ -646,17 +685,145 @@ Provide a brief, actionable summary for logistics professionals."""
             'batch_count': 0,
         }
     
-    def extract_keywords_for_wordcloud(self, articles: List[Dict[str, Any]]) -> Dict[str, int]:
+    def extract_keywords_for_wordcloud(self, articles: List[Dict[str, Any]], max_keywords: int = 100) -> Dict[str, int]:
         """
         Extract keywords from articles for word cloud visualization.
+        
+        v2.4 개선:
+        - 2-3단어 구문(bigram/trigram) 추출
+        - 조사/관사 필터링
+        - 키워드 수 50개 → 100개
+        - 우선순위: trigram > bigram > 고유명사 > 이슈 키워드
+        
+        Args:
+            articles: 분석할 기사 목록
+            max_keywords: 반환할 최대 키워드 수 (기본 100)
+            
+        Returns:
+            키워드와 빈도수 딕셔너리
         """
-        keyword_freq = {}
+        word_freq = {}
+        bigram_freq = {}
+        trigram_freq = {}
         
         for article in articles:
+            title = article.get('title', '')
+            summary = article.get('content_summary', '')
+            text = f"{title} {summary}".strip()
+            
+            if not text:
+                continue
+            
+            # Extract n-grams
+            words = self._tokenize_for_ngrams(text)
+            
+            # 단일 단어 추출
+            for word in words:
+                if self._is_valid_keyword(word):
+                    word_freq[word] = word_freq.get(word, 0) + 1
+            
+            # Bigram 추출 (2단어 구문)
+            for i in range(len(words) - 1):
+                bigram = f"{words[i]} {words[i+1]}"
+                if self._is_valid_ngram(bigram, words[i], words[i+1]):
+                    bigram_freq[bigram] = bigram_freq.get(bigram, 0) + 1
+            
+            # Trigram 추출 (3단어 구문)
+            for i in range(len(words) - 2):
+                trigram = f"{words[i]} {words[i+1]} {words[i+2]}"
+                if self._is_valid_trigram(trigram, words[i], words[i+1], words[i+2]):
+                    trigram_freq[trigram] = trigram_freq.get(trigram, 0) + 1
+            
+            # 기사에 이미 추출된 키워드가 있으면 가중치 추가
             keywords = article.get('keywords', [])
             for keyword in keywords:
                 keyword = keyword.lower().strip()
-                if keyword and keyword not in STOP_WORDS and len(keyword) > 2:
-                    keyword_freq[keyword] = keyword_freq.get(keyword, 0) + 1
+                if keyword and self._is_valid_keyword(keyword):
+                    word_freq[keyword] = word_freq.get(keyword, 0) + 2  # 가중치 2
         
-        return keyword_freq
+        # 결과 통합 및 우선순위 적용
+        result = {}
+        
+        # 1. Trigram 우선 (중요한 이슈)
+        for trigram, freq in sorted(trigram_freq.items(), key=lambda x: x[1], reverse=True):
+            if freq >= 2 and len(result) < max_keywords // 3:  # 최소 2회 이상 등장
+                result[trigram] = freq * 3  # 가중치 3
+        
+        # 2. Bigram (구체적 사건/현상)
+        for bigram, freq in sorted(bigram_freq.items(), key=lambda x: x[1], reverse=True):
+            if freq >= 2 and len(result) < max_keywords * 2 // 3:
+                # 이미 trigram에 포함된 bigram은 제외
+                if not any(bigram in t for t in result.keys()):
+                    result[bigram] = freq * 2  # 가중치 2
+        
+        # 3. 단일 단어
+        for word, freq in sorted(word_freq.items(), key=lambda x: x[1], reverse=True):
+            if freq >= 2 and len(result) < max_keywords:
+                # 이미 bigram/trigram에 포함된 단어는 낮은 우선순위
+                if not any(word in ng for ng in result.keys()):
+                    result[word] = freq
+        
+        return result
+    
+    def _tokenize_for_ngrams(self, text: str) -> List[str]:
+        """텍스트를 n-gram 추출을 위해 토큰화"""
+        # 소문자 변환 및 정규화
+        text = text.lower()
+        
+        # 특수문자 제거 (하이픈은 유지)
+        text = re.sub(r'[^\w\s\-가-힣]', ' ', text)
+        
+        # 연속된 공백 제거
+        text = re.sub(r'\s+', ' ', text)
+        
+        # 토큰화
+        words = text.split()
+        
+        # 너무 짧은 단어 제거 (2글자 이하)
+        words = [w for w in words if len(w) > 2 or re.match(r'^[가-힣]+$', w)]
+        
+        return words
+    
+    def _is_valid_keyword(self, word: str) -> bool:
+        """유효한 키워드인지 확인"""
+        if not word or len(word) < 2:
+            return False
+        if word in STOP_WORDS:
+            return False
+        if word.isdigit():
+            return False
+        return True
+    
+    def _is_valid_ngram(self, ngram: str, word1: str, word2: str) -> bool:
+        """유효한 bigram인지 확인"""
+        # 불용어로 시작하거나 끝나는 bigram 제외
+        filler_words = {'the', 'a', 'an', 'of', 'in', 'to', 'for', 'at', 'by', 'on', 'is', 'are', 'was', 'were', 'be', 'has', 'have', 'had', 'will', 'would', 'with', 'from', 'as'}
+        
+        if word1 in filler_words or word2 in filler_words:
+            return False
+        
+        if ngram in STOP_WORDS:
+            return False
+        
+        # 둘 다 유효한 키워드여야 함
+        return self._is_valid_keyword(word1) and self._is_valid_keyword(word2)
+    
+    def _is_valid_trigram(self, trigram: str, word1: str, word2: str, word3: str) -> bool:
+        """유효한 trigram인지 확인"""
+        # 불용어로 시작하거나 끝나는 trigram 제외
+        filler_words = {'the', 'a', 'an', 'of', 'in', 'to', 'for', 'at', 'by', 'on', 'is', 'are', 'was', 'were', 'be', 'has', 'have', 'had', 'will', 'would', 'with', 'from', 'as'}
+        
+        if word1 in filler_words or word3 in filler_words:
+            return False
+        
+        if trigram in STOP_WORDS:
+            return False
+        
+        # 최소 2개 이상의 유효한 키워드 포함
+        valid_count = sum([
+            self._is_valid_keyword(word1),
+            self._is_valid_keyword(word2),
+            self._is_valid_keyword(word3)
+        ])
+        
+        return valid_count >= 2

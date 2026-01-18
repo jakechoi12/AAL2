@@ -163,14 +163,26 @@ def verify_password(password: str, password_hash: str) -> bool:
     except Exception:
         return False
 
-# Create tables
+# Create tables for quote_backend models
 Base.metadata.create_all(bind=engine)
+
+# Import and create tables for commerce models
+from commerce_models import (
+    Company, CompanyCertification, CommerceUser, Category, Product,
+    ProductRFQ, ProductRFQItem, ProductRFQInvitation,
+    ProductQuotation, ProductQuotationItem, ProductQuotationRevision,
+    ProductTransaction, ProductTransactionItem, ProductTransactionStatusLog,
+    CommerceNotification, CommerceMessage
+)
+
+# Import commerce router
+from commerce_api import router as commerce_router
 
 # Initialize FastAPI app
 app = FastAPI(
-    title="Quote Request API",
-    description="API for handling international shipping quote requests",
-    version="1.0.0"
+    title="AAL Quote & Commerce API",
+    description="API for international shipping quotes and B2B commerce",
+    version="2.0.0"
 )
 
 # CORS Configuration
@@ -188,6 +200,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Register Commerce Router
+app.include_router(commerce_router)
 
 
 # ==========================================
