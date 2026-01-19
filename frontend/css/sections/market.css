@@ -1410,9 +1410,7 @@
 
 [data-theme="dark"] .kcci-routes-table tbody tr:hover {
     background: rgba(255, 255, 255, 0.02);
-}
-
-[data-theme="dark"] .kcci-routes-table .route-code {
+}[data-theme="dark"] .kcci-routes-table .route-code {
     background: rgba(255, 255, 255, 0.08);
 }[data-theme="dark"] .kcci-routes-table .route-change.up {
     background: rgba(76, 175, 80, 0.2);

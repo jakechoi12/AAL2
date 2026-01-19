@@ -494,6 +494,8 @@ class BiddingDetailResponse(BaseModel):
     incoterms: Optional[str] = None
     pol: str
     pod: str
+    pol_code: Optional[str] = None  # 출발항 코드 (Quick Quotation용)
+    pod_code: Optional[str] = None  # 도착항 코드 (Quick Quotation용)
     etd: datetime
     eta: Optional[datetime] = None
     is_dg: bool
@@ -1478,6 +1480,16 @@ class FreightGroupBreakdown(BaseModel):
     subtotal_eur: float = 0
 
 
+class DefaultChargeItem(BaseModel):
+    """기본 비용 항목 (경로 운임이 없을 때 사용)"""
+    code: str
+    name: str
+    name_ko: Optional[str] = None
+    rate: float
+    currency: str
+    unit: str
+
+
 class QuickQuotationResponse(BaseModel):
     """Quick Quotation 응답 (운임 자동완성)"""
     quick_quotation: bool
@@ -1509,6 +1521,9 @@ class QuickQuotationResponse(BaseModel):
     # Quick Quotation = N인 경우 - 유효한 운임 데이터 기간 안내
     available_from: Optional[str] = None
     available_to: Optional[str] = None
+    
+    # Quick Quotation = N인 경우 - 기본 비용 (DOC, SEAL, THC)
+    default_charges: Optional[List[DefaultChargeItem]] = None
 
 
 # ==========================================

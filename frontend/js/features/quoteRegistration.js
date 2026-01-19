@@ -130,11 +130,247 @@ const QuoteReg = {
             // If has existing bid, load it
             if (data.my_bid) {
                 this.loadExistingBid(data.my_bid);
+            } else {
+                // 기존 입찰이 없으면 Quick Quotation 시도
+                await this.tryQuickQuotation(data);
             }
 
         } catch (error) {
             console.error('Failed to load bidding detail:', error);
             this.showToast('입찰 정보를 불러오는데 실패했습니다.', 'error');
+        }
+    },
+    
+    /**
+     * Quick Quotation 시도 - 자동 운임 완성
+     */
+    async tryQuickQuotation(biddingData) {
+        const polCode = biddingData.pol_code;
+        const podCode = biddingData.pod_code;
+        const containerType = biddingData.container_type;
+        
+        // 필수 정보 확인
+        if (!polCode || !podCode || !containerType) {
+            console.log('Quick Quotation: 필수 정보 부족 (pol_code, pod_code, container_type)');
+            this.initializeRateLines();
+            this.renderRatesTable();
+            this.calculateTotals();
+            return;
+        }
+        
+        try {
+            const quickQuote = await this.fetchQuickQuotation(polCode, podCode, containerType);
+            
+            if (quickQuote) {
+                if (quickQuote.quick_quotation) {
+                    // 전체 운임 자동완성
+                    this.applyFullQuickQuotation(quickQuote);
+                } else if (quickQuote.default_charges && quickQuote.default_charges.length > 0) {
+                    // 기본 비용만 자동완성 (DOC, SEAL, THC)
+                    this.applyDefaultCharges(quickQuote);
+                } else {
+                    this.initializeRateLines();
+                    this.renderRatesTable();
+                    this.calculateTotals();
+                }
+            } else {
+                this.initializeRateLines();
+                this.renderRatesTable();
+                this.calculateTotals();
+            }
+        } catch (error) {
+            console.error('Quick Quotation 실패:', error);
+            this.initializeRateLines();
+            this.renderRatesTable();
+            this.calculateTotals();
+        }
+    },
+    
+    /**
+     * Quick Quotation API 호출
+     */
+    async fetchQuickQuotation(polCode, podCode, containerType) {
+        try {
+            const url = `${QUOTE_API_BASE}/api/freight/estimate?pol=${polCode}&pod=${podCode}&container_type=${containerType}`;
+            console.log('🔍 Quick Quotation 조회:', url);
+            
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            console.log('📊 Quick Quotation 결과:', data);
+            return data;
+        } catch (error) {
+            console.error('Quick Quotation API 오류:', error);
+            return null;
+        }
+    },
+    
+    /**
+     * 전체 운임 자동완성 적용 (Quick Quotation = true)
+     */
+    applyFullQuickQuotation(quotationData) {
+        const defaultUnit = this.currentBidding?.container_type || '20DC';
+        this.rateLines = [];
+        
+        // Ocean Freight 항목 추가
+        if (quotationData.ocean_freight?.items) {
+            quotationData.ocean_freight.items.forEach(item => {
+                if (item.rate !== null && item.rate !== undefined) {
+                    this.rateLines.push({
+                        id: this.generateId(),
+                        code: item.code,
+                        category: item.name || 'Ocean Freight',
+                        selling: { 
+                            unit: item.unit === 'Qty' ? defaultUnit : item.unit, 
+                            qty: 1, 
+                            rate: item.rate, 
+                            currency: item.currency, 
+                            tax: '영세', 
+                            vat: 0 
+                        },
+                        buying: { 
+                            customer: '', 
+                            rate: item.rate,
+                            currency: item.currency, 
+                            tax: '영세', 
+                            vat: 0 
+                        }
+                    });
+                }
+            });
+        }
+        
+        // Origin Local Charges 항목 추가
+        if (quotationData.origin_local?.items) {
+            quotationData.origin_local.items.forEach(item => {
+                if (item.rate !== null && item.rate !== undefined) {
+                    const isKRW = item.currency === 'KRW';
+                    this.rateLines.push({
+                        id: this.generateId(),
+                        code: item.code,
+                        category: item.name || 'Local Charge',
+                        selling: { 
+                            unit: item.unit === 'Qty' ? defaultUnit : item.unit, 
+                            qty: 1, 
+                            rate: item.rate, 
+                            currency: item.currency, 
+                            tax: isKRW ? '과세' : '영세', 
+                            vat: isKRW ? 10 : 0 
+                        },
+                        buying: { 
+                            customer: '', 
+                            rate: item.rate,
+                            currency: item.currency, 
+                            tax: isKRW ? '과세' : '영세', 
+                            vat: isKRW ? 10 : 0 
+                        }
+                    });
+                }
+            });
+        }
+        
+        if (this.rateLines.length === 0) {
+            this.initializeRateLines();
+        }
+        
+        // Quick Quote 배지 표시
+        this.showQuickQuoteBadge(quotationData);
+        this.showToast(`✅ 운임 ${this.rateLines.length}개 항목이 자동으로 완성되었습니다!`, 'success');
+        
+        this.renderRatesTable();
+        this.calculateTotals();
+    },
+    
+    /**
+     * 기본 비용만 자동완성 (Quick Quotation = false, default_charges 있음)
+     */
+    applyDefaultCharges(quotationData) {
+        const defaultUnit = this.currentBidding?.container_type || '20DC';
+        this.rateLines = [];
+        
+        // 기본 운임 항목 추가 (OFR - 빈 값으로 추가해서 사용자가 입력하도록)
+        this.rateLines.push({
+            id: this.generateId(),
+            code: 'OFR',
+            category: 'Ocean Freight',
+            selling: { unit: defaultUnit, qty: 1, rate: 0, currency: 'USD', tax: '영세', vat: 0 },
+            buying: { customer: '', rate: 0, currency: 'USD', tax: '영세', vat: 0 }
+        });
+        
+        // 기본 비용 항목 추가 (DOC, SEAL/CSL, THC)
+        if (quotationData.default_charges) {
+            quotationData.default_charges.forEach(item => {
+                const isKRW = item.currency === 'KRW';
+                this.rateLines.push({
+                    id: this.generateId(),
+                    code: item.code,
+                    category: item.name_ko || item.name,
+                    selling: { 
+                        unit: item.unit === 'Qty' ? defaultUnit : item.unit, 
+                        qty: 1, 
+                        rate: item.rate, 
+                        currency: item.currency, 
+                        tax: isKRW ? '과세' : '영세', 
+                        vat: isKRW ? 10 : 0 
+                    },
+                    buying: { 
+                        customer: '', 
+                        rate: item.rate,
+                        currency: item.currency, 
+                        tax: isKRW ? '과세' : '영세', 
+                        vat: isKRW ? 10 : 0 
+                    }
+                });
+            });
+        }
+        
+        // 안내 메시지 표시
+        this.showDefaultChargesBadge(quotationData);
+        this.showToast(`ℹ️ 기본 비용(DOC, 씰, THC)이 자동완성되었습니다.\n운임(OFR)은 직접 입력해 주세요.`, 'info');
+        
+        this.renderRatesTable();
+        this.calculateTotals();
+    },
+    
+    /**
+     * Quick Quote 배지 표시 (전체 운임 자동완성)
+     */
+    showQuickQuoteBadge(data) {
+        const existingBadge = document.getElementById('quickQuoteBadge');
+        if (existingBadge) existingBadge.remove();
+        
+        const badge = document.createElement('div');
+        badge.id = 'quickQuoteBadge';
+        badge.innerHTML = `
+            <span class="qr-badge qr-badge-success" style="margin-left: 10px; display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 4px; background: #10b981; color: white; font-size: 0.75rem;">
+                <i class="fas fa-bolt"></i> Quick Quote
+                <small style="opacity: 0.9;">(${data.carrier || 'N/A'} / ${data.valid_from} ~ ${data.valid_to})</small>
+            </span>
+        `;
+        const quoteNoEl = document.getElementById('quoteNo');
+        if (quoteNoEl && quoteNoEl.parentNode) {
+            quoteNoEl.parentNode.appendChild(badge);
+        }
+    },
+    
+    /**
+     * 기본 비용 배지 표시 (부분 자동완성)
+     */
+    showDefaultChargesBadge(data) {
+        const existingBadge = document.getElementById('quickQuoteBadge');
+        if (existingBadge) existingBadge.remove();
+        
+        const badge = document.createElement('div');
+        badge.id = 'quickQuoteBadge';
+        badge.innerHTML = `
+            <span class="qr-badge qr-badge-info" style="margin-left: 10px; display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 4px; background: #3b82f6; color: white; font-size: 0.75rem;">
+                <i class="fas fa-info-circle"></i> 기본 비용 자동완성
+                <small style="opacity: 0.9;">(운임 직접 입력 필요)</small>
+            </span>
+        `;
+        const quoteNoEl = document.getElementById('quoteNo');
+        if (quoteNoEl && quoteNoEl.parentNode) {
+            quoteNoEl.parentNode.appendChild(badge);
         }
     },
 

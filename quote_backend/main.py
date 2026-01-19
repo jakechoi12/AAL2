@@ -1456,6 +1456,33 @@ def get_bidding_detail(
                 chargeable_weight=cd.chargeable_weight
             ))
     
+    # Get POL/POD codes for Quick Quotation
+    # qr.pol/pod가 코드일 수도 있고, 이름일 수도 있으므로 두 경우 모두 처리
+    pol_code = None
+    pod_code = None
+    
+    # 먼저 코드로 검색 시도
+    pol_port = db.query(Port).filter(Port.code == qr.pol).first()
+    if pol_port:
+        pol_code = pol_port.code
+    else:
+        # 이름으로 검색 시도 (name 또는 name_ko에서 검색)
+        pol_port = db.query(Port).filter(
+            (Port.name.ilike(f"%{qr.pol}%")) | (Port.name_ko.ilike(f"%{qr.pol}%"))
+        ).first()
+        if pol_port:
+            pol_code = pol_port.code
+    
+    pod_port = db.query(Port).filter(Port.code == qr.pod).first()
+    if pod_port:
+        pod_code = pod_port.code
+    else:
+        pod_port = db.query(Port).filter(
+            (Port.name.ilike(f"%{qr.pod}%")) | (Port.name_ko.ilike(f"%{qr.pod}%"))
+        ).first()
+        if pod_port:
+            pod_code = pod_port.code
+    
     return BiddingDetailResponse(
         id=bidding.id,
         bidding_no=bidding.bidding_no,
@@ -1473,6 +1500,8 @@ def get_bidding_detail(
         incoterms=qr.incoterms,
         pol=qr.pol,
         pod=qr.pod,
+        pol_code=pol_code,
+        pod_code=pod_code,
         etd=qr.etd,
         eta=qr.eta,
         is_dg=qr.is_dg,
@@ -2052,7 +2081,75 @@ def get_freight_categories(
 # ==========================================
 
 from models import OceanRateSheet, OceanRateItem
-from schemas import QuickQuotationResponse, FreightRateItem, FreightGroupBreakdown
+from schemas import QuickQuotationResponse, FreightRateItem, FreightGroupBreakdown, DefaultChargeItem
+
+
+def get_default_charges(db: Session, container_type_code: str) -> List[DefaultChargeItem]:
+    """
+    기본 비용 조회 (DOC, SEAL/CSL, THC)
+    경로 운임이 없을 때 사용
+    """
+    default_charges = []
+    
+    # Get container type
+    ct = db.query(ContainerType).filter(ContainerType.code == container_type_code.upper()).first()
+    
+    # 컨테이너 사이즈에 따른 THC 요금 결정
+    thc_rate = 150000  # 기본값 (20ft)
+    if container_type_code.upper().startswith('4'):
+        thc_rate = 210000  # 40ft
+    elif container_type_code.upper().startswith('45'):
+        thc_rate = 250000  # 45ft
+    
+    # DOC (서류 발급 비용) - 50,000 KRW, BL 단위
+    doc_code = db.query(FreightCode).filter(FreightCode.code == "DOC").first()
+    if doc_code:
+        default_charges.append(DefaultChargeItem(
+            code="DOC",
+            name="DOCUMENT FEE",
+            name_ko="서류 발급 비용",
+            rate=50000,
+            currency="KRW",
+            unit="BL"
+        ))
+    
+    # CSL (컨테이너 씰 비용) - 5,000 KRW, Qty 단위
+    csl_code = db.query(FreightCode).filter(FreightCode.code == "CSL").first()
+    if csl_code:
+        default_charges.append(DefaultChargeItem(
+            code="CSL",
+            name="CONTAINER SEAL CHARGE",
+            name_ko="컨테이너 씰 비용",
+            rate=5000,
+            currency="KRW",
+            unit="Qty"
+        ))
+    else:
+        # CSL이 없으면 SEAL로 시도
+        seal_code = db.query(FreightCode).filter(FreightCode.code == "SEAL").first()
+        if seal_code:
+            default_charges.append(DefaultChargeItem(
+                code="SEAL",
+                name="SEAL FEE",
+                name_ko="씰 비용",
+                rate=5000,
+                currency="KRW",
+                unit="Qty"
+            ))
+    
+    # THC (터미널 작업비) - 컨테이너 사이즈별 차등
+    thc_code = db.query(FreightCode).filter(FreightCode.code == "THC").first()
+    if thc_code:
+        default_charges.append(DefaultChargeItem(
+            code="THC",
+            name="TERMINAL HANDLING CHARGE",
+            name_ko="터미널 작업비",
+            rate=thc_rate,
+            currency="KRW",
+            unit="Qty"
+        ))
+    
+    return default_charges
 
 
 @app.get("/api/freight/estimate", response_model=QuickQuotationResponse, tags=["Quick Quotation"])
@@ -2129,6 +2226,9 @@ def get_freight_estimate(
             OceanRateSheet.is_active == True
         ).order_by(OceanRateSheet.valid_from.desc()).first()
         
+        # 기본 비용 조회 (DOC, SEAL, THC)
+        default_charges = get_default_charges(db, container_type)
+        
         if available_sheet:
             # 운임 데이터는 있지만 요청한 날짜가 유효 기간 외
             return QuickQuotationResponse(
@@ -2136,14 +2236,20 @@ def get_freight_estimate(
                 message=f"요청하신 날짜({etd or '미지정'})에 운임 데이터가 없습니다.",
                 guide=f"현재 운임 데이터: {available_sheet.valid_from.strftime('%Y-%m-%d')} ~ {available_sheet.valid_to.strftime('%Y-%m-%d')}",
                 available_from=available_sheet.valid_from.strftime('%Y-%m-%d'),
-                available_to=available_sheet.valid_to.strftime('%Y-%m-%d')
+                available_to=available_sheet.valid_to.strftime('%Y-%m-%d'),
+                container_type=ct.code,
+                container_name=ct.name,
+                default_charges=default_charges
             )
         else:
             # 해당 구간에 운임 데이터가 전혀 없음
             return QuickQuotationResponse(
                 quick_quotation=False,
                 message="해당 구간은 실시간 견적을 제공하지 않습니다.",
-                guide="견적 요청을 통해 포워더 비딩을 진행해 주세요."
+                guide="기본 비용(DOC, 씰, THC)만 자동완성됩니다. 운임은 직접 입력해 주세요.",
+                container_type=ct.code,
+                container_name=ct.name,
+                default_charges=default_charges
             )
     
     # Get rate items for this container type
@@ -2154,10 +2260,15 @@ def get_freight_estimate(
     ).all()
     
     if not items:
+        # 기본 비용 조회 (DOC, SEAL, THC)
+        default_charges = get_default_charges(db, container_type)
         return QuickQuotationResponse(
             quick_quotation=False,
             message="해당 컨테이너 타입의 운임 정보가 없습니다.",
-            guide="견적 요청을 통해 포워더 비딩을 진행해 주세요."
+            guide="기본 비용(DOC, 씰, THC)만 자동완성됩니다. 운임은 직접 입력해 주세요.",
+            container_type=ct.code,
+            container_name=ct.name,
+            default_charges=default_charges
         )
     
     # Check if Ocean Freight (FRT) rate exists
@@ -2165,12 +2276,15 @@ def get_freight_estimate(
     frt_item = next((i for i in items if i.freight_code_id == frt_code.id), None) if frt_code else None
     
     if not frt_item or frt_item.rate is None:
+        # 기본 비용 조회 (DOC, SEAL, THC)
+        default_charges = get_default_charges(db, container_type)
         return QuickQuotationResponse(
             quick_quotation=False,
             message="해당 컨테이너 타입의 기본 운임이 등록되지 않았습니다.",
-            guide="견적 요청을 통해 포워더 비딩을 진행해 주세요.",
+            guide="기본 비용(DOC, 씰, THC)만 자동완성됩니다. 운임은 직접 입력해 주세요.",
             container_type=ct.code,
-            container_name=ct.name
+            container_name=ct.name,
+            default_charges=default_charges
         )
     
     # Build breakdown
