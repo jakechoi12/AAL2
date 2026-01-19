@@ -1458,6 +1458,76 @@ class PriceGuideResponse(BaseModel):
 
 
 # ==========================================
+# FORWARDER PROFILE SCHEMAS
+# ==========================================
+
+class ForwarderTopRoute(BaseModel):
+    """포워더 주요 운송 루트"""
+    pol: str
+    pod: str
+    count: int  # 해당 루트 입찰 횟수
+    awarded_count: int  # 낙찰 횟수
+
+
+class ForwarderShippingModeStats(BaseModel):
+    """포워더 운송 모드별 통계"""
+    shipping_type: str  # ocean, air, truck
+    count: int
+    percentage: float
+    awarded_count: int
+
+
+class ForwarderReviewItem(BaseModel):
+    """포워더 리뷰 항목"""
+    id: int
+    score: float
+    price_score: Optional[float] = None
+    service_score: Optional[float] = None
+    punctuality_score: Optional[float] = None
+    communication_score: Optional[float] = None
+    comment: Optional[str] = None
+    bidding_no: str
+    pol: str
+    pod: str
+    shipping_type: str
+    created_at: datetime
+    customer_company_masked: str  # 익명화된 화주 회사명
+
+
+class ForwarderProfileResponse(BaseModel):
+    """포워더 프로필 상세 응답"""
+    forwarder_id: int
+    company: str
+    company_masked: str
+    
+    # 평점 정보
+    rating: float
+    rating_count: int
+    avg_price_score: Optional[float] = None
+    avg_service_score: Optional[float] = None
+    avg_punctuality_score: Optional[float] = None
+    avg_communication_score: Optional[float] = None
+    score_distribution: dict = {}  # {5.0: 10, 4.5: 5, ...}
+    
+    # 실적 정보
+    total_bids: int  # 총 입찰 수
+    total_awarded: int  # 총 낙찰 수
+    award_rate: float  # 낙찰률 (%)
+    
+    # 주요 루트 (Top 5)
+    top_routes: List[ForwarderTopRoute] = []
+    
+    # 운송 모드별 통계
+    shipping_mode_stats: List[ForwarderShippingModeStats] = []
+    
+    # 최근 리뷰 목록
+    reviews: List[ForwarderReviewItem] = []
+    
+    # 메타 정보
+    member_since: Optional[datetime] = None
+
+
+# ==========================================
 # QUICK QUOTATION / FREIGHT ESTIMATE SCHEMAS
 # ==========================================
 
